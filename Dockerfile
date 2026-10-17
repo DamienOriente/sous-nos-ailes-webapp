@@ -2,7 +2,7 @@
 # Multi-stage build: deps → builder → (migrator | runner | worker).
 # Every runtime stage runs as the unprivileged "node" user.
 
-FROM node:22-alpine AS base
+FROM node:25-alpine AS base
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable && corepack prepare pnpm@12.4.2 --activate
 WORKDIR /app
@@ -36,7 +36,7 @@ USER node
 CMD ["pnpm", "worker"]
 
 # ── runner: Next.js standalone server ────────────────────────────────────────
-FROM node:22-alpine AS runner
+FROM node:25-alpine AS runner
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
 WORKDIR /app
 RUN mkdir -p /app/.secrets && chown node:node /app/.secrets

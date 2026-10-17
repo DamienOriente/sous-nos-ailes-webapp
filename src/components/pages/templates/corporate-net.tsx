@@ -14,7 +14,7 @@ export default function CorporateNet({ data, ctx, blocks }: TemplateProps) {
   const pro = data.professional;
   const facts = [
     pro.city ? { k: "Basé à", v: pro.city } : null,
-    { k: "Rayon d'intervention", v: `${pro.interventionRadiusKm} km` },
+    pro.interventionRadiusKm > 0 ? { k: "Rayon d'intervention", v: `${pro.interventionRadiusKm} km` } : { k: "Accueil", v: "Sur place" },
     pro.priceFromCents ? { k: "À partir de", v: `${Math.round(pro.priceFromCents / 100)} €${pro.priceUnit ? ` / ${pro.priceUnit}` : ""}` } : null,
     pro.yearsExperience ? { k: "Expérience", v: `${pro.yearsExperience} ans` } : null,
     pro.languages.length ? { k: "Langues", v: pro.languages.map((l) => l.toUpperCase()).join(", ") } : null,

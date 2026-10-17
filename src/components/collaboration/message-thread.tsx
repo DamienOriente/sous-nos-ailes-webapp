@@ -3,7 +3,9 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Archive, ArchiveRestore, Eye, Flag, Paperclip, Pencil, Send, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { FileUpload } from "@/components/files/file-upload";
+import { ChatScene } from "@/components/illustrations/event-scenes";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { FormMessage } from "@/components/shared/form-message";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ActionResult } from "@/lib/errors";
 import { cn, formatDateFr, initials } from "@/lib/utils";
 import { REPORT_REASONS } from "@/modules/collaboration/domain/report-reasons";
+import { MESSAGE_PLACEHOLDERS } from "@/modules/events/domain/suggestions";
 import { privateFileHref } from "@/modules/files/application/file-urls";
 import type { SerializedMessage } from "@/app/app/evenements/[id]/messages/actions";
 
@@ -122,7 +125,17 @@ export function MessageThread({ eventId, channel, members, allMembers, initialMe
             </Button>
           </div>
         )}
-        {messages.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">Aucun message. Lancez la conversation !</p>}
+        {messages.length === 0 && (
+          <IllustratedEmpty
+            scene={ChatScene}
+            compact
+            className="border-0 bg-transparent"
+            title={channel.kind === "general" ? "Personne n'a encore écrit ici" : "Ce canal attend son premier message"}
+            description={channel.kind === "general" ? "Le canal Général réunit toute l'équipe : organisateurs, prestataires et renforts. Mentionnez quelqu'un avec @Prénom pour le prévenir." : "Un canal de coordination réunit quelques membres autour d'un sujet ; les organisateurs y ont toujours accès."}
+            example={channel.kind === "general" ? "Bienvenue à toute l'équipe ! Le planning du jour J est dans l'onglet Planning." : "@Hélène, à quelle heure le portail livraisons est-il ouvert samedi ?"}
+            testId="thread-empty"
+          />
+        )}
         {messages.map((m, i) => {
           const prev = messages[i - 1];
           const grouped = prev && prev.authorUserId === m.authorUserId && new Date(m.createdAt).getTime() - new Date(prev.createdAt).getTime() < 5 * 60_000;
@@ -132,7 +145,7 @@ export function MessageThread({ eventId, channel, members, allMembers, initialMe
       </div>
 
       {canPost ? (
-        <Composer eventId={eventId} channelId={channel.id} members={members.filter((m) => m.userId !== currentUserId)} action={actions.post} />
+        <Composer eventId={eventId} channelId={channel.id} members={members.filter((m) => m.userId !== currentUserId)} placeholder={messages.length === 0 ? (MESSAGE_PLACEHOLDERS[channel.kind] ?? MESSAGE_PLACEHOLDERS.direct) : undefined} action={actions.post} />
       ) : (
         <p className="border-t px-4 py-3 text-sm text-muted-foreground">{channel.archived ? "Ce canal est archivé : lecture seule." : "Vous pouvez lire ce canal mais pas y écrire."}</p>
       )}
@@ -382,7 +395,7 @@ function MembersDialog({ channel, members, allMembers, canManage, eventId, actio
   );
 }
 
-function Composer({ eventId, channelId, members, action }: { eventId: string; channelId: string; members: Member[]; action: Actions["post"] }) {
+function Composer({ eventId, channelId, members, placeholder, action }: { eventId: string; channelId: string; members: Member[]; placeholder?: string; action: Actions["post"] }) {
   const router = useRouter();
   const [body, setBody] = useState("");
   const [files, setFiles] = useState<Array<{ id: string; name: string }>>([]);
@@ -469,7 +482,7 @@ function Composer({ eventId, channelId, members, action }: { eventId: string; ch
         }}
         rows={2}
         maxLength={4000}
-        placeholder="Écrire un message… Utilisez @Prénom pour mentionner quelqu'un."
+        placeholder={placeholder ?? "Écrire un message… Utilisez @Prénom pour mentionner quelqu'un."}
       />
       {files.length > 0 && (
         <ul className="flex flex-wrap gap-2 text-xs">

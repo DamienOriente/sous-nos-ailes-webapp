@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Store } from "lucide-react";
 import { LiveBillingBanner } from "@/components/billing/live-billing-banner";
+import { PlanChanges } from "@/components/billing/plan-changes";
 import { PlanComparison } from "@/components/billing/plan-comparison";
 import { SubscriptionCard } from "@/components/billing/subscription-card";
 import { ActionForm, ActionSubmit } from "@/components/admin/action-form";
@@ -67,6 +68,8 @@ export default async function AccountSubscriptionPage({ searchParams }: { search
         </Card>
       )}
       <SubscriptionCard overview={overview} actions={{ cancel: cancelSubscriptionAction, resume: resumeSubscriptionAction, portal: openPortalAction, simulateEnd: simulatePeriodEndAction }} />
+
+      <PlanChanges audience="organizer" plans={overview.plans} currentPlanKey={overview.effective.planKey} highlightFeature={feature} />
 
       <section className="space-y-4" aria-labelledby="comparatif">
         <h2 id="comparatif" className="text-xl font-semibold">

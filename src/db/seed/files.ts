@@ -1,20 +1,30 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import sharp from "sharp";
-import { eventDocuments, events, mediaAssets, professionals, users } from "@/db/schema";
+import { eventDocuments, events, files, mediaAssets, professionalCategories, professionals, profileVersions, publicProfiles, users } from "@/db/schema";
 import { logger } from "@/lib/logger";
 import type { Actor } from "@/lib/session";
 import { createUpload } from "@/modules/files/application/upload-service";
+import { CATEGORY_PHOTO_THEMES, photosByTheme, unsplashUrl, type DemoPhoto } from "@/modules/media/demo-photos";
+import { bindMediaToContent, type MediaLibrary } from "@/modules/pages/domain/media-binding";
+import { parseContent } from "@/modules/pages/domain/page-schema";
 import type { SeedContext } from "./context";
 
 /**
- * Demo files: real images (SVG rendered to PNG with sharp) for the demo
- * professionals, uploaded through the real pipeline (policy, antivirus,
- * optimisation), plus synthetic PDF documents for the "Louis & Lisa" wedding.
- * Idempotent: business keys (media kind / document title) are checked first,
- * and the pipeline deduplicates identical bytes inside a scope anyway.
+ * Demo files for the fictitious professionals: real photographs from the demo
+ * catalogue (Unsplash, downloaded at seed time) for the cover and the gallery,
+ * a generated monogram logo, plus synthetic PDF documents for the "Louis &
+ * Lisa" wedding. Everything goes through the real upload pipeline (policy,
+ * antivirus, EXIF stripping, WebP variants).
  *
- * Tables written outside the files module: media_assets (pages), event_documents (events).
+ * Idempotent: every planned picture has a business key (the `files.original_name`,
+ * which embeds the catalogue photo id) checked before any download; identical
+ * bytes are deduplicated by the pipeline (sha256 per scope). When the network
+ * is unavailable the seed falls back to generated gradients so the pages are
+ * never empty, and replaces them by photographs on the next online run.
+ *
+ * Tables written outside the files module: media_assets, profile_versions.content
+ * (pages: hero/about/gallery references), event_documents (events).
  */
 
 type Palette = { from: string; to: string; text: string };
@@ -25,6 +35,9 @@ const PALETTES: Palette[] = [
   { from: "#8fb8cf", to: "#c8dfea", text: "#2f3437" }, // sky
   { from: "#c9a86a", to: "#e6d4a8", text: "#2f3437" }, // gold
 ];
+
+const DOWNLOAD_BATCH = 6;
+const DOWNLOAD_TIMEOUT_MS = 15_000;
 
 function escapeXml(s: string): string {
   return s.replace(/[<>&"']/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[c] ?? c);
@@ -42,6 +55,16 @@ function gradientSvg(width: number, height: number, palette: Palette, title: str
 </svg>`;
 }
 
+/** Monogram logo: initials set in the palette, a thin ring, flat colour (reads well at 48 px). */
+function monogramSvg(size: number, palette: Palette, initials: string): string {
+  const r = size / 2;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  <rect width="${size}" height="${size}" rx="${size * 0.22}" fill="${palette.from}"/>
+  <circle cx="${r}" cy="${r}" r="${r * 0.72}" fill="none" stroke="${palette.text}" stroke-opacity="0.35" stroke-width="${size * 0.012}"/>
+  <text x="50%" y="50%" dy="${size * 0.13}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="600" font-size="${Math.round(size * (initials.length > 1 ? 0.36 : 0.44))}" letter-spacing="${size * 0.01}" fill="${palette.text}">${escapeXml(initials)}</text>
+</svg>`;
+}
+
 async function renderPng(svg: string): Promise<Buffer> {
   return sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer();
 }
@@ -52,8 +75,8 @@ async function renderJpeg(svg: string): Promise<Buffer> {
 
 function initialsOf(name: string): string {
   return name
-    .split(/\s+/)
-    .filter(Boolean)
+    .split(/[\s—–-]+/)
+    .filter((p) => p && !/^(de|du|des|la|le|les|et|&)$/i.test(p))
     .slice(0, 2)
     .map((p) => p[0]?.toUpperCase() ?? "")
     .join("");
@@ -104,40 +127,203 @@ async function uploadInline(actor: Actor, input: { scope: "professional" | "even
   }
 }
 
-async function seedProfessionalMedia(ctx: SeedContext): Promise<number> {
-  let created = 0;
-  const keys = Object.keys(ctx.professionals);
-  for (const [i, key] of keys.entries()) {
-    const professionalId = ctx.professionals[key];
-    if (!professionalId) continue;
-    const [pro] = await ctx.db.select({ id: professionals.id, ownerUserId: professionals.ownerUserId, displayName: professionals.displayName, city: professionals.city }).from(professionals).where(eq(professionals.id, professionalId)).limit(1);
-    if (!pro) continue;
-    const actor = await actorFor(ctx, pro.ownerUserId);
-    if (!actor) continue;
-    const existing = await ctx.db.select({ kind: mediaAssets.kind }).from(mediaAssets).where(eq(mediaAssets.professionalId, pro.id));
-    const kinds = new Set(existing.map((e) => e.kind));
-    const palette = PALETTES[i % PALETTES.length] ?? PALETTES[0]!;
-    const alt = pro.displayName;
-
-    const plan: Array<{ kind: "cover" | "logo" | "gallery"; name: string; bytes: () => Promise<Buffer>; sortOrder: number }> = [];
-    if (!kinds.has("cover")) plan.push({ kind: "cover", name: `${key}-cover.jpg`, bytes: () => renderJpeg(gradientSvg(1600, 900, palette, pro.displayName, pro.city ?? undefined)), sortOrder: 0 });
-    if (!kinds.has("logo")) plan.push({ kind: "logo", name: `${key}-logo.png`, bytes: () => renderPng(gradientSvg(512, 512, palette, initialsOf(pro.displayName))), sortOrder: 0 });
-    if (!kinds.has("gallery")) {
-      for (let g = 0; g < 3; g += 1) {
-        const p = PALETTES[(i + g + 1) % PALETTES.length] ?? palette;
-        plan.push({ kind: "gallery", name: `${key}-galerie-${g + 1}.jpg`, bytes: () => renderJpeg(gradientSvg(1200, 800, p, `Réalisation ${g + 1}`, pro.displayName)), sortOrder: g });
+// ── Photo plan ──────────────────────────────────────────────────────────────
+/**
+ * Distinct catalogue photos for a category, rotated by `offset` so two
+ * listings of the same trade do not share the same cover. Deterministic.
+ */
+function photoPlan(categorySlug: string, offset: number, count: number): DemoPhoto[] {
+  const themes = CATEGORY_PHOTO_THEMES[categorySlug] ?? ["reception"];
+  const pools = themes.map((t) => photosByTheme(t)).filter((p) => p.length > 0);
+  const all: DemoPhoto[] = [];
+  const seen = new Set<string>();
+  for (let round = 0; all.length < 40 && round < 12; round += 1) {
+    for (const pool of pools) {
+      const p = pool[round];
+      if (p && !seen.has(p.id)) {
+        seen.add(p.id);
+        all.push(p);
       }
     }
+  }
+  if (all.length === 0) return [];
+  const start = offset % all.length;
+  return Array.from({ length: Math.min(count, all.length) }, (_, i) => all[(start + i) % all.length]!);
+}
+
+type DownloadResult = Map<string, Buffer | null>;
+
+/** Downloads the catalogue photos in parallel batches; a failed download is null (fallback to generated visuals). */
+async function downloadPhotos(ids: string[]): Promise<DownloadResult> {
+  const out: DownloadResult = new Map();
+  const unique = Array.from(new Set(ids));
+  for (let i = 0; i < unique.length; i += DOWNLOAD_BATCH) {
+    const batch = unique.slice(i, i + DOWNLOAD_BATCH);
+    const results = await Promise.all(
+      batch.map(async (id) => {
+        try {
+          const res = await fetch(unsplashUrl(id, { w: 2000, q: 80 }), { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS), headers: { accept: "image/jpeg,image/*;q=0.8" } });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const buf = Buffer.from(await res.arrayBuffer());
+          // The pipeline detects the real type from magic bytes; make sure we got an image and not an HTML error page.
+          const meta = await sharp(buf).metadata();
+          if (!meta.format || !meta.width) throw new Error("not an image");
+          return [id, buf] as const;
+        } catch (err) {
+          logger.warn({ id, err: (err as Error).message }, "demo photo download failed, falling back to generated visual");
+          return [id, null] as const;
+        }
+      }),
+    );
+    for (const [id, buf] of results) out.set(id, buf);
+  }
+  return out;
+}
+
+type PlannedPicture = { kind: "cover" | "gallery"; photo: DemoPhoto; name: string; alt: string; caption: string; sortOrder: number };
+
+function picturesFor(key: string, displayName: string, categorySlug: string, offset: number, galleryCount: number): PlannedPicture[] {
+  const photos = photoPlan(categorySlug, offset, galleryCount + 1);
+  return photos.map((photo, i) =>
+    i === 0
+      ? { kind: "cover", photo, name: `${key}-cover-${photo.id}.jpg`, alt: `${displayName} — ${photo.alt} (photo de démonstration)`, caption: photo.alt, sortOrder: 0 }
+      : { kind: "gallery", photo, name: `${key}-galerie-${photo.id}.jpg`, alt: `${displayName} — ${photo.alt} (photo de démonstration)`, caption: photo.alt, sortOrder: i - 1 },
+  );
+}
+
+async function ensureMediaAsset(ctx: SeedContext, professionalId: string, fileId: string, kind: string, alt: string, caption: string | null, sortOrder: number): Promise<boolean> {
+  const [dup] = await ctx.db.select({ id: mediaAssets.id }).from(mediaAssets).where(and(eq(mediaAssets.professionalId, professionalId), eq(mediaAssets.fileId, fileId))).limit(1);
+  if (dup) {
+    await ctx.db.update(mediaAssets).set({ kind, alt, caption, sortOrder }).where(eq(mediaAssets.id, dup.id));
+    return false;
+  }
+  await ctx.db.insert(mediaAssets).values({ professionalId, fileId, kind, alt, caption, sortOrder });
+  return true;
+}
+
+async function seedProfessionalMedia(ctx: SeedContext): Promise<{ created: number; photos: number; generated: number }> {
+  const stats = { created: 0, photos: 0, generated: 0 };
+  const keys = Object.keys(ctx.professionals);
+  const pros: Array<{ key: string; id: string; ownerUserId: string; displayName: string; city: string | null; status: string; categorySlug: string; index: number }> = [];
+  for (const [index, key] of keys.entries()) {
+    const professionalId = ctx.professionals[key];
+    if (!professionalId) continue;
+    const [row] = await ctx.db
+      .select({ id: professionals.id, ownerUserId: professionals.ownerUserId, displayName: professionals.displayName, city: professionals.city, status: professionals.status, categorySlug: professionalCategories.slug })
+      .from(professionals)
+      .innerJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
+      .where(eq(professionals.id, professionalId))
+      .limit(1);
+    if (row) pros.push({ key, index, ...row });
+  }
+
+  // 1. plan every picture, 2. find what already exists, 3. download only what is missing.
+  const plans = new Map<string, PlannedPicture[]>();
+  for (const pro of pros) {
+    // Spread the covers: trades sharing a theme (childcare, baby-sitting, animation) must not all open on the same photo.
+    const offset = pro.index * 5;
+    const galleryCount = pro.status === "published" ? 4 + (pro.index % 3) : 2; // 4–6 for published, 2 for drafts
+    plans.set(pro.key, picturesFor(pro.key, pro.displayName, pro.categorySlug, offset, galleryCount));
+  }
+  const existingByPro = new Map<string, Map<string, string>>();
+  const missingPhotoIds: string[] = [];
+  for (const pro of pros) {
+    const rows = await ctx.db.select({ id: files.id, originalName: files.originalName }).from(files).where(and(eq(files.scope, "professional"), eq(files.scopeId, pro.id), eq(files.status, "clean")));
+    const byName = new Map(rows.map((r) => [r.originalName, r.id]));
+    existingByPro.set(pro.key, byName);
+    for (const p of plans.get(pro.key) ?? []) if (!byName.has(p.name)) missingPhotoIds.push(p.photo.id);
+  }
+  const downloads = missingPhotoIds.length > 0 ? await downloadPhotos(missingPhotoIds) : new Map<string, Buffer | null>();
+  const online = Array.from(downloads.values()).some((b) => b !== null);
+  if (missingPhotoIds.length > 0 && !online) logger.warn("no demo photo could be downloaded: generated visuals will be used");
+
+  for (const pro of pros) {
+    const actor = await actorFor(ctx, pro.ownerUserId);
+    if (!actor) continue;
+    const byName = existingByPro.get(pro.key) ?? new Map<string, string>();
+    const palette = PALETTES[pro.index % PALETTES.length] ?? PALETTES[0]!;
+    const plan = plans.get(pro.key) ?? [];
+    const photoNames = new Set(plan.map((p) => p.name));
+    const gotPhoto: Record<"cover" | "gallery", boolean> = { cover: false, gallery: false };
+
     for (const item of plan) {
-      const fileId = await uploadInline(actor, { scope: "professional", scopeId: pro.id, purpose: item.kind, originalName: item.name, bytes: await item.bytes() });
-      if (!fileId) continue;
-      const [dup] = await ctx.db.select({ id: mediaAssets.id }).from(mediaAssets).where(and(eq(mediaAssets.professionalId, pro.id), eq(mediaAssets.fileId, fileId))).limit(1);
-      if (dup) continue;
-      await ctx.db.insert(mediaAssets).values({ professionalId: pro.id, fileId, kind: item.kind, alt: item.kind === "gallery" ? `${alt} — réalisation ${item.sortOrder + 1}` : alt, sortOrder: item.sortOrder });
-      created += 1;
+      let fileId = byName.get(item.name) ?? null;
+      if (!fileId) {
+        const bytes = downloads.get(item.photo.id);
+        if (!bytes) continue;
+        fileId = await uploadInline(actor, { scope: "professional", scopeId: pro.id, purpose: item.kind, originalName: item.name, bytes });
+        if (!fileId) continue;
+        stats.photos += 1;
+      }
+      gotPhoto[item.kind] = true;
+      if (await ensureMediaAsset(ctx, pro.id, fileId, item.kind, item.alt, item.caption, item.sortOrder)) stats.created += 1;
+    }
+
+    // Logo: generated monogram, always (no photograph could honestly stand for a logo).
+    const logoName = `${pro.key}-logo.png`;
+    let logoId = byName.get(logoName) ?? null;
+    if (!logoId) {
+      logoId = await uploadInline(actor, { scope: "professional", scopeId: pro.id, purpose: "logo", originalName: logoName, bytes: await renderPng(monogramSvg(512, palette, initialsOf(pro.displayName))) });
+      if (logoId) stats.generated += 1;
+    }
+    if (logoId && (await ensureMediaAsset(ctx, pro.id, logoId, "logo", `${pro.displayName} — monogramme`, null, 0))) stats.created += 1;
+
+    // Fallback (offline): generated gradients, only for the kinds without a single photograph.
+    const fallback: Array<{ kind: "cover" | "gallery"; name: string; bytes: () => Promise<Buffer>; sortOrder: number; alt: string }> = [];
+    if (!gotPhoto.cover) fallback.push({ kind: "cover", name: `${pro.key}-cover-generated.jpg`, bytes: () => renderJpeg(gradientSvg(1600, 900, palette, pro.displayName, pro.city ?? undefined)), sortOrder: 0, alt: `${pro.displayName} (visuel généré)` });
+    if (!gotPhoto.gallery) {
+      for (let g = 0; g < 3; g += 1) {
+        const p = PALETTES[(pro.index + g + 1) % PALETTES.length] ?? palette;
+        fallback.push({ kind: "gallery", name: `${pro.key}-galerie-generated-${g + 1}.jpg`, bytes: () => renderJpeg(gradientSvg(1200, 800, p, `Réalisation ${g + 1}`, pro.displayName)), sortOrder: g, alt: `${pro.displayName} — réalisation ${g + 1} (visuel généré)` });
+      }
+    }
+    for (const item of fallback) {
+      let fileId = byName.get(item.name) ?? null;
+      if (!fileId) {
+        fileId = await uploadInline(actor, { scope: "professional", scopeId: pro.id, purpose: item.kind, originalName: item.name, bytes: await item.bytes() });
+        if (fileId) stats.generated += 1;
+      }
+      if (fileId && (await ensureMediaAsset(ctx, pro.id, fileId, item.kind, item.alt, null, item.sortOrder))) stats.created += 1;
+    }
+
+    // Converge: once real photographs exist for a kind, drop the generated/legacy assets of that kind.
+    const assets = await ctx.db
+      .select({ id: mediaAssets.id, kind: mediaAssets.kind, originalName: files.originalName })
+      .from(mediaAssets)
+      .innerJoin(files, eq(files.id, mediaAssets.fileId))
+      .where(eq(mediaAssets.professionalId, pro.id));
+    const stale = assets.filter((a) => (a.kind === "cover" || a.kind === "gallery") && gotPhoto[a.kind] && !photoNames.has(a.originalName)).map((a) => a.id);
+    if (stale.length) await ctx.db.delete(mediaAssets).where(inArray(mediaAssets.id, stale));
+  }
+  return stats;
+}
+
+/** Points the hero, the about picture and the gallery of every page version to the media library. */
+async function syncPageMedia(ctx: SeedContext): Promise<number> {
+  let updated = 0;
+  for (const professionalId of Object.values(ctx.professionals)) {
+    const assets = await ctx.db
+      .select({ fileId: mediaAssets.fileId, kind: mediaAssets.kind, alt: mediaAssets.alt, caption: mediaAssets.caption, sortOrder: mediaAssets.sortOrder })
+      .from(mediaAssets)
+      .innerJoin(files, eq(files.id, mediaAssets.fileId))
+      .where(and(eq(mediaAssets.professionalId, professionalId), eq(files.status, "clean")))
+      .orderBy(mediaAssets.sortOrder);
+    const cover = assets.find((a) => a.kind === "cover") ?? null;
+    const library: MediaLibrary = { cover: cover ? { fileId: cover.fileId, alt: cover.alt } : null, gallery: assets.filter((a) => a.kind === "gallery").map((a) => ({ fileId: a.fileId, alt: a.alt, caption: a.caption })) };
+    if (!library.cover && library.gallery.length === 0) continue;
+    const [profile] = await ctx.db.select({ id: publicProfiles.id }).from(publicProfiles).where(eq(publicProfiles.professionalId, professionalId)).limit(1);
+    if (!profile) continue;
+    const versions = await ctx.db.select({ id: profileVersions.id, content: profileVersions.content }).from(profileVersions).where(eq(profileVersions.publicProfileId, profile.id));
+    for (const v of versions) {
+      const parsed = parseContent(v.content);
+      if (!parsed.ok) continue;
+      const bound = bindMediaToContent(parsed.value, library);
+      if (JSON.stringify(bound) === JSON.stringify(parsed.value)) continue;
+      await ctx.db.update(profileVersions).set({ content: bound, updatedAt: ctx.now }).where(eq(profileVersions.id, v.id));
+      updated += 1;
     }
   }
-  return created;
+  return updated;
 }
 
 async function seedEventDocuments(ctx: SeedContext): Promise<number> {
@@ -188,6 +374,7 @@ async function seedEventDocuments(ctx: SeedContext): Promise<number> {
 
 export async function seed(ctx: SeedContext): Promise<void> {
   const media = await seedProfessionalMedia(ctx);
+  const pages = await syncPageMedia(ctx);
   const docs = await seedEventDocuments(ctx);
-  process.stdout.write(`files: ${media} media assets, ${docs} event documents created\n`);
+  process.stdout.write(`files: ${media.created} media assets created (${media.photos} photos downloaded, ${media.generated} generated), ${pages} page versions bound, ${docs} event documents created\n`);
 }

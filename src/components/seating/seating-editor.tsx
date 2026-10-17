@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { TableScene } from "@/components/illustrations";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import type { ActionResult } from "@/lib/errors";
 import { cn } from "@/lib/utils";
@@ -337,7 +339,15 @@ export function SeatingEditor({ eventId, plan, canManage, actions }: { eventId: 
             </CardHeader>
             <CardContent>
               {tables.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucune table pour le moment.</p>
+                <IllustratedEmpty
+                  scene={TableScene}
+                  compact
+                  className="border-0 bg-transparent px-0 py-2"
+                  title="Aucune table pour le moment"
+                  description="Ajoutez vos tables (ronde, rectangle, carrée, ovale), déplacez-les sur le plan puis placez les invités par glisser-déposer ou via « Placer à… »."
+                  example="Table d'honneur — rectangle, 10 places"
+                  testId="seating-empty"
+                />
               ) : (
                 <ul className="divide-y">
                   {tables.map((t) => (

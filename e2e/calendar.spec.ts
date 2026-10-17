@@ -60,13 +60,13 @@ test.describe("Calendrier", () => {
 
     // Louis (organiser, no listing): connectors are free; providers are not configured on this instance.
     // An expired Google connection is inserted for him to show the "reconnect" state.
-    const [louis] = await db.select({ id: users.id }).from(users).where(eq(users.email, EMAILS.louis)).limit(1);
+    const [louis] = await db.select({ id: users.id }).from(users).where(eq(users.email, EMAILS.paul)).limit(1);
     await db
       .insert(calendarConnections)
       .values({ userId: louis!.id, provider: "google", externalAccountEmail: "louis@gmail.test", externalCalendarId: "primary", accessTokenEncrypted: encryptText("expired"), accessTokenExpiresAt: new Date(Date.now() - 86_400_000), status: "expired", syncDirection: "export_only", lastError: "Jeton expiré : reconnectez le calendrier." })
       .onConflictDoUpdate({ target: [calendarConnections.userId, calendarConnections.provider], set: { status: "expired", lastError: "Jeton expiré : reconnectez le calendrier." } });
     try {
-      await signIn(page, EMAILS.louis);
+      await signIn(page, EMAILS.paul);
       await page.goto("/app/calendrier/connexions");
       await expect(page.getByRole("heading", { name: /Connexions Google/ })).toBeVisible();
       await expect(page.getByTestId("connection-google")).toContainText("Jeton expiré");

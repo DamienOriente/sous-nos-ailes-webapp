@@ -1,11 +1,12 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Plus, Receipt, Trash2 } from "lucide-react";
+import { Pencil, Plus, Receipt, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { FileUpload } from "@/components/files/file-upload";
+import { BudgetScene } from "@/components/illustrations/event-scenes";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { EmptyState } from "@/components/shared/empty-state";
 import { FormMessage } from "@/components/shared/form-message";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { ActionResult } from "@/lib/errors";
 import { cn, formatEuros } from "@/lib/utils";
 import type { BudgetSummary } from "@/modules/events/domain/budget";
+import type { BudgetTemplateLine } from "@/modules/events/domain/suggestions";
 import { privateFileHref } from "@/modules/files/application/file-urls";
 
 export type ExpenseItem = { id: string; label: string; amountCents: number; status: "planned" | "committed" | "paid"; budgetLineId: string | null; lineLabel: string | null; paidAt: string | null; receiptFileId: string | null };
@@ -26,13 +28,35 @@ type Actions = {
   createExpense: (eventId: string, input: unknown) => Promise<ActionResult<{ id: string }>>;
   updateExpense: (eventId: string, expenseId: string, input: unknown) => Promise<ActionResult>;
   deleteExpense: (eventId: string, expenseId: string) => Promise<ActionResult>;
+  /** Creates the indicative "budget type" lines for real (computed from the guests and the provider slots). */
+  applyTemplate?: (eventId: string) => Promise<ActionResult<{ created: number }>>;
 };
 
 const EXPENSE_STATUS = { planned: "Prévue", committed: "Engagée", paid: "Payée" } as const;
 const EXPENSE_TONE = { planned: "neutral", committed: "warning", paid: "success" } as const;
 
-export function BudgetBoard({ eventId, summary, expenses, providers, canManage, actions }: { eventId: string; summary: BudgetSummary; expenses: ExpenseItem[]; providers: Array<{ id: string; label: string; quoteCents: number | null }>; canManage: boolean; actions: Actions }) {
+export function BudgetBoard({ eventId, summary, expenses, providers, canManage, template, templateLabel, actions }: { eventId: string; summary: BudgetSummary; expenses: ExpenseItem[]; providers: Array<{ id: string; label: string; quoteCents: number | null }>; canManage: boolean; /** Lines the template chip would create (empty = nothing to suggest). */ template?: BudgetTemplateLine[]; templateLabel?: string; actions: Actions }) {
   const router = useRouter();
+  const [pendingTemplate, startTemplate] = useTransition();
+  const templateTotal = (template ?? []).reduce((s, l) => s + l.plannedCents, 0);
+  const hasAmounts = summary.lines.some((l) => l.plannedCents > 0);
+  function applyTemplate() {
+    if (!actions.applyTemplate) return;
+    startTemplate(async () => {
+      const res = await actions.applyTemplate!(eventId);
+      if (!res.ok) toast.error(res.error);
+      else {
+        toast.success(res.data.created ? `${res.data.created} poste${res.data.created > 1 ? "s" : ""} de budget ajouté${res.data.created > 1 ? "s" : ""}. Ajustez les montants à votre situation.` : "Rien à ajouter : vos postes couvrent déjà ces catégories.");
+        router.refresh();
+      }
+    });
+  }
+  const templateChip = canManage && actions.applyTemplate && template && template.length > 0 && (
+    <Button variant="outline" size="sm" onClick={applyTemplate} disabled={pendingTemplate} data-testid="apply-budget-template" title={`${template.length} postes, environ ${formatEuros(templateTotal)} — montants indicatifs à ajuster`}>
+      <Sparkles className="size-3.5" aria-hidden="true" />
+      {templateLabel ?? "Budget type"} · {formatEuros(templateTotal)}
+    </Button>
+  );
   const [lineDialog, setLineDialog] = useState<BudgetSummary["lines"][number] | "new" | null>(null);
   const [expenseDialog, setExpenseDialog] = useState<ExpenseItem | "new" | null>(null);
   const max = Math.max(1, ...summary.lines.map((l) => Math.max(l.plannedCents, l.committedCents)));
@@ -80,15 +104,25 @@ export function BudgetBoard({ eventId, summary, expenses, providers, canManage, 
           <h2 id="lines" className="text-lg font-semibold">
             Postes de budget
           </h2>
-          {canManage && (
-            <Button size="sm" onClick={() => setLineDialog("new")}>
-              <Plus className="size-3.5" aria-hidden="true" />
-              Ajouter un poste
-            </Button>
+          {canManage && summary.lines.length > 0 && hasAmounts && (
+            <div className="flex flex-wrap items-center gap-2">
+              {templateChip}
+              <Button size="sm" onClick={() => setLineDialog("new")}>
+                <Plus className="size-3.5" aria-hidden="true" />
+                Ajouter un poste
+              </Button>
+            </div>
           )}
         </div>
-        {summary.lines.length === 0 ? (
-          <EmptyState title="Aucun poste" description="Lieu, traiteur, enfants, photo… définissez ce que vous prévoyez de dépenser." />
+        {summary.lines.length === 0 || !hasAmounts ? (
+          <IllustratedEmpty
+            scene={BudgetScene}
+            title={summary.lines.length === 0 ? "Aucun poste de budget" : "Vos postes n'ont pas encore de montant"}
+            description="Un poste = ce que vous prévoyez de dépenser (lieu, traiteur, enfants, photo…). Les dépenses viennent ensuite s'y rattacher pour suivre l'engagé, le payé et l'écart."
+            example="Traiteur — Cocktail + dîner 120 couverts : 12 000 €"
+            action={canManage ? <>{templateChip}<Button size="sm" onClick={() => setLineDialog("new")}><Plus className="size-3.5" aria-hidden="true" />Ajouter un poste</Button></> : undefined}
+            testId="budget-empty"
+          />
         ) : (
           <div className="overflow-x-auto rounded-2xl border bg-card">
             <table className="w-full text-sm">
@@ -155,7 +189,7 @@ export function BudgetBoard({ eventId, summary, expenses, providers, canManage, 
           <h2 id="expenses" className="text-lg font-semibold">
             Dépenses
           </h2>
-          {canManage && (
+          {canManage && expenses.length > 0 && (
             <Button size="sm" onClick={() => setExpenseDialog("new")}>
               <Plus className="size-3.5" aria-hidden="true" />
               Ajouter une dépense
@@ -163,7 +197,14 @@ export function BudgetBoard({ eventId, summary, expenses, providers, canManage, 
           )}
         </div>
         {expenses.length === 0 ? (
-          <EmptyState icon={Receipt} title="Aucune dépense" description="Acomptes, factures, achats : saisissez-les pour suivre l'engagé et le payé." />
+          <IllustratedEmpty
+            scene={BudgetScene}
+            compact
+            title="Aucune dépense saisie"
+            description="Acomptes, factures, achats : chaque dépense est « engagée » (due) ou « payée », avec un justificatif si vous le souhaitez."
+            example="Acompte domaine (30 %) — 2 550 €, payé le 15 septembre"
+            action={canManage ? <Button size="sm" onClick={() => setExpenseDialog("new")}><Receipt className="size-3.5" aria-hidden="true" />Ajouter une dépense</Button> : undefined}
+          />
         ) : (
           <ul className="divide-y rounded-2xl border bg-card">
             {expenses.map((e) => (
@@ -263,11 +304,11 @@ function LineDialog({ eventId, item, providers, onClose, actions }: { eventId: s
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="bl-label">Libellé</Label>
-              <Input id="bl-label" name="label" defaultValue={l?.label ?? ""} required maxLength={160} />
+              <Input id="bl-label" name="label" defaultValue={l?.label ?? ""} required maxLength={160} placeholder="Cocktail + dîner 120 couverts" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="bl-planned">Prévu (€)</Label>
-              <Input id="bl-planned" name="planned" type="number" min={0} step="0.01" inputMode="decimal" defaultValue={l ? (l.plannedCents / 100).toString() : ""} required />
+              <Input id="bl-planned" name="planned" type="number" min={0} step="0.01" inputMode="decimal" defaultValue={l ? (l.plannedCents / 100).toString() : ""} required placeholder="12 000" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="bl-pro">Devis lié</Label>
@@ -346,7 +387,7 @@ function ExpenseDialog({ eventId, item, lines, onClose, actions }: { eventId: st
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="ex-label">Libellé</Label>
-              <Input id="ex-label" name="label" defaultValue={e?.label ?? ""} required maxLength={160} />
+              <Input id="ex-label" name="label" defaultValue={e?.label ?? ""} required maxLength={160} placeholder="Acompte traiteur (30 %)" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ex-amount">Montant (€)</Label>

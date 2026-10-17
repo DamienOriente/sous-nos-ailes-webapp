@@ -4,14 +4,17 @@ import { ArrowRight, CalendarDays, Inbox, Send } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState } from "@/components/shared/empty-state";
 import { StatCard } from "@/components/shared/stat-card";
+import { DescriptionExample } from "@/components/pages/workspace/examples";
+import { IllustratedEmpty } from "@/components/pages/workspace/illustrated-empty";
+import { WelcomeCard } from "@/components/pages/workspace/welcome-card";
 import { CompletenessCard } from "@/components/professionals/completeness-card";
 import { InquiryStatusBadge } from "@/components/inquiries/inquiry-status-badge";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { requireActor } from "@/lib/session";
 import { formatDateFr } from "@/lib/utils";
 import { listInquiriesForProfessional } from "@/modules/inquiries/application/inquiry-service";
+import { getDraft, getPublishedPage } from "@/modules/pages/application/page-service";
 import { getDashboardData } from "@/modules/professionals/application/professional-service";
 import { EVENT_ROLE_LABELS } from "@/modules/authorization";
 import { canTransition, describeStatus } from "@/modules/professionals/domain/status";
@@ -29,8 +32,11 @@ export default async function ProDashboardPage({ params, searchParams }: { param
   const status = describeStatus(listing.status, listing.statusReason);
   const canSubmit = canTransition(listing.status, "pending_review", "owner");
   const base = `/app/pro/${id}`;
+  const preview = await loadPreview(actor, id, listing.slug, listing.status === "published");
+  const firstName = actor.name.split(/\s+/)[0] ?? actor.name;
   return (
     <div className="space-y-6">
+      <WelcomeCard firstName={firstName} listingName={listing.displayName || "Fiche sans nom"} status={listing.status} slug={listing.slug} baseHref={base} preview={preview} />
       {sp.submitted === "1" && (
         <Alert>
           <Send className="size-4" aria-hidden="true" />
@@ -80,7 +86,7 @@ export default async function ProDashboardPage({ params, searchParams }: { param
           </CardHeader>
           <CardContent>
             {recent.length === 0 ? (
-              <EmptyState icon={Inbox} title="Aucune demande" description="Les demandes envoyées depuis votre page publique apparaîtront ici." className="py-8" />
+              <IllustratedEmpty title="Aucune demande pour l'instant" description="Les demandes envoyées depuis votre page publique arrivent ici, avec une notification. Une page complète, avec photos et prestations chiffrées, en reçoit davantage." className="border-0 bg-transparent p-0 sm:p-0" />
             ) : (
               <ul className="divide-y">
                 {recent.map((i) => (
@@ -112,7 +118,7 @@ export default async function ProDashboardPage({ params, searchParams }: { param
           </CardHeader>
           <CardContent>
             {data.upcoming.length === 0 ? (
-              <EmptyState icon={CalendarDays} title="Aucun évènement planifié" description="Quand un organisateur vous ajoute à son équipe, l'évènement apparaît ici." className="py-8" />
+              <IllustratedEmpty title="Aucun évènement planifié" description="Quand un organisateur vous ajoute à son équipe, l'évènement apparaît ici avec son planning et ses documents." className="border-0 bg-transparent p-0 sm:p-0" />
             ) : (
               <ul className="divide-y">
                 {data.upcoming.map((e) => (
@@ -134,6 +140,24 @@ export default async function ProDashboardPage({ params, searchParams }: { param
           </CardContent>
         </Card>
       </div>
+      {data.completeness.score < 90 && <DescriptionExample />}
     </div>
   );
+}
+
+/** Miniature source: the published page when online, otherwise the professional's draft. Never blocks the dashboard. */
+async function loadPreview(actor: Parameters<typeof getDraft>[0], id: string, slug: string, published: boolean) {
+  try {
+    if (published) {
+      const page = await getPublishedPage(slug);
+      if (page) {
+        const draft = await getDraft(actor, id);
+        return { data: page.data, kind: "published" as const, versionNumber: draft.published?.versionNumber ?? 1 };
+      }
+    }
+    const draft = await getDraft(actor, id);
+    return { data: draft.renderData, kind: "draft" as const, versionNumber: draft.draft.versionNumber };
+  } catch {
+    return null;
+  }
 }

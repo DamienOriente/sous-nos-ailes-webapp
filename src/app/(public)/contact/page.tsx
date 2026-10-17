@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LetterScene } from "@/components/illustrations/public-scenes";
 import { ContactForm } from "@/components/legal/contact-form";
 import { Container, Section } from "@/components/shared/section";
 import { getActor } from "@/lib/session";
@@ -20,8 +21,11 @@ export default async function ContactPage() {
       <Section>
         <Container className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
           <div>
-            <h1 className="text-4xl font-semibold text-balance">Nous écrire</h1>
-            <p className="mt-4 leading-7 text-muted-foreground text-pretty">Une question sur le service, un partenariat, un obstacle d'accessibilité : ce formulaire arrive directement à l'équipe.</p>
+            <div className="rounded-[1.75rem] rounded-tr-[3.5rem] bg-ivory-deep/70 p-4 dark:bg-ivory-deep/50">
+              <LetterScene className="mx-auto max-w-[15rem]" />
+            </div>
+            <h1 className="mt-6 text-4xl font-semibold text-balance">Nous écrire</h1>
+            <p className="mt-4 leading-7 text-muted-foreground text-pretty">Une question sur le service, un partenariat, un obstacle d'accessibilité : ce formulaire arrive directement à l'équipe. Nous répondons par e-mail, généralement sous deux jours ouvrés.</p>
             <dl className="mt-8 space-y-4 text-sm">
               <div>
                 <dt className="font-semibold">Vos données personnelles</dt>
@@ -53,7 +57,7 @@ export default async function ContactPage() {
               </div>
             </dl>
           </div>
-          <div>
+          <div className="lg:pt-8">
             {contactEmail ? (
               <ContactForm defaultEmail={actor?.email} defaultName={actor?.name} />
             ) : (

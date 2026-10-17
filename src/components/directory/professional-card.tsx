@@ -3,8 +3,10 @@ import { Baby, MapPin, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { DemoPhoto } from "@/components/shared/demo-photo";
 import { formatEuros } from "@/lib/utils";
 import { publicImageHref } from "@/modules/files/application/file-urls";
+import { categoryPhoto } from "@/modules/media/demo-photos";
 import { labelFor, PRICE_UNITS } from "@/modules/professionals/domain/listing-schema";
 import type { DirectoryCard } from "@/modules/directory/application/directory-search";
 import { FavoriteButton } from "./favorite-button";
@@ -26,20 +28,26 @@ export function priceLabel(p: { priceFromCents: number | null; priceToCents: num
   return `À partir de ${formatEuros(v)}${unit ? ` ${unit}` : ""}`;
 }
 
-/** Directory result card. Also used on category pages and in the organiser's favourites. */
+/** Stable 0..n index from a slug so a listing without cover always gets the same illustration. */
+function slugIndex(slug: string): number {
+  let h = 0;
+  for (const ch of slug) h = (h * 31 + ch.charCodeAt(0)) % 1_000_003;
+  return h;
+}
+
+/** Directory result card. Also used on category pages, the home page and in the organiser's favourites. */
 export function ProfessionalCard({ professional: p, signedIn = false, sponsored = false, hideFavorite = false }: ProfessionalCardProps) {
   const href = `/pro/${p.slug}`;
   const price = priceLabel(p);
+  const fallback = p.coverFileId ? null : categoryPhoto(p.categorySlug, slugIndex(p.slug));
   return (
     <Card className="group relative flex h-full flex-col gap-0 overflow-hidden p-0" data-testid="professional-card" data-slug={p.slug}>
       <div className="relative aspect-[16/10] w-full bg-muted">
-        {p.coverFileId ? (
-          // eslint-disable-next-line @next/next/no-img-element -- served by our own signed/public image route
-          <img src={publicImageHref(p.coverFileId, "medium")} alt="" className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" loading="lazy" />
+        {fallback ? (
+          <DemoPhoto photo={fallback} width={800} height={500} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="size-full" imgClassName="transition-transform duration-300 group-hover:scale-[1.02]" alt="" />
         ) : (
-          <div className="flex size-full items-center justify-center bg-gradient-to-br from-sage-soft/60 via-ivory to-blush/50 text-4xl font-heading text-primary/70" aria-hidden="true">
-            {p.displayName.slice(0, 1).toUpperCase()}
-          </div>
+          // eslint-disable-next-line @next/next/no-img-element -- served by our own signed/public image route
+          <img src={publicImageHref(p.coverFileId ?? "", "medium")} alt="" className="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" loading="lazy" />
         )}
         <div className="absolute top-2 left-2 flex flex-wrap gap-1">
           {sponsored && (
@@ -49,6 +57,7 @@ export function ProfessionalCard({ professional: p, signedIn = false, sponsored 
           )}
           {p.isDemo && <Badge variant="outline" className="bg-background/90">Démo</Badge>}
         </div>
+        {fallback && <span className="absolute right-2 bottom-2 rounded-full bg-background/85 px-2 py-0.5 text-[11px] text-muted-foreground">Photo d'illustration</span>}
         {!hideFavorite && (
           <div className="absolute top-1.5 right-1.5">
             <FavoriteButton professionalId={p.id} isFavorite={p.isFavorite} signedIn={signedIn} className="bg-background/80 hover:bg-background" />
@@ -57,7 +66,7 @@ export function ProfessionalCard({ professional: p, signedIn = false, sponsored 
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="space-y-1">
-          <p className="text-xs font-semibold tracking-wide text-primary uppercase">{p.categoryName}</p>
+          <p className="text-xs font-semibold text-primary">{p.categoryName}</p>
           <h3 className="font-heading text-lg leading-tight font-semibold">
             <Link href={href} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
               {p.displayName}

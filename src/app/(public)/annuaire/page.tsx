@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Container, Section } from "@/components/shared/section";
+import { DemoPhoto } from "@/components/shared/demo-photo";
+import { DirectoryHeader } from "@/components/directory/directory-header";
 import { DirectoryResults } from "@/components/directory/directory-results";
 import { SearchFilters } from "@/components/directory/search-filters";
+import { InquiryExample } from "@/components/marketing/mockups";
 import { CategoryIcon } from "@/components/professionals/category-icons";
 import { env } from "@/lib/env";
 import { getActor } from "@/lib/session";
 import { emptyStateSuggestions, searchDirectory } from "@/modules/directory/application/directory-search";
 import { parseSearchParams, toQueryString } from "@/modules/directory/domain/search-params";
+import { categoryPhoto, demoPhoto } from "@/modules/media/demo-photos";
 import { listActiveCategories } from "@/modules/professionals/application/professional-service";
 
 export const metadata: Metadata = {
@@ -26,11 +30,9 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
   return (
     <Section className="py-8 sm:py-12">
       <Container size="wide" className="space-y-8">
-        <header className="max-w-3xl space-y-3">
-          <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">Annuaire</p>
-          <h1 className="font-heading text-3xl font-semibold text-balance sm:text-4xl">Des professionnels vérifiés pour votre évènement</h1>
-          <p className="text-muted-foreground text-pretty">Garde d'enfants et animation en priorité, puis tous les métiers de la réception. Chaque fiche est relue avant publication ; les vérifications affichées décrivent exactement ce que nous avons contrôlé.</p>
-        </header>
+        <DirectoryHeader eyebrow="Annuaire" title="Des professionnels vérifiés pour votre évènement" photos={hasQuery ? [] : [demoPhoto("kids", 3), demoPhoto("reception", 1), demoPhoto("dj", 0)]}>
+          <p className="max-w-2xl text-muted-foreground text-pretty">Garde d'enfants et animation en priorité, puis tous les métiers de la réception. Chaque fiche est relue avant publication ; les vérifications affichées décrivent exactement ce que nous avons contrôlé.</p>
+        </DirectoryHeader>
         <SearchFilters filters={filters} categories={categories.map((c) => ({ slug: c.slug, name: c.name, group: c.group }))} signedIn={Boolean(actor)} />
         {!hasQuery && (
           <nav aria-label="Métiers de la garde d'enfants" className="flex flex-wrap gap-2">
@@ -50,19 +52,32 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
           <h2 id="metiers-title" className="font-heading text-xl font-semibold">
             Parcourir par métier
           </h2>
-          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map((c) => (
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {categories.map((c, i) => (
               <li key={c.slug}>
-                <Link href={`/annuaire/${c.slug}`} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-sm hover:bg-muted">
-                  <CategoryIcon icon={c.icon} className="size-4 shrink-0 text-primary" />
-                  <span>
-                    <span className="block font-medium">{c.name}</span>
+                <Link href={`/annuaire/${c.slug}`} className="group flex items-center gap-3 rounded-2xl border bg-card p-2 pr-4 text-sm transition-colors hover:border-primary/60">
+                  <DemoPhoto photo={categoryPhoto(c.slug, i % 2)} width={240} height={240} sizes="56px" className="size-14 shrink-0 rounded-xl" alt="" />
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <CategoryIcon icon={c.icon} className="size-3.5 shrink-0 text-primary" />
+                      <span className="truncate">{c.name}</span>
+                    </span>
                     <span className="block text-xs text-muted-foreground">{c.group}</span>
                   </span>
                 </Link>
               </li>
             ))}
           </ul>
+          <p className="font-heading text-sm text-muted-foreground italic">Vignettes d'illustration.</p>
+        </section>
+        <section aria-labelledby="demande-title" className="grid gap-6 border-t pt-8 lg:grid-cols-2 lg:gap-10">
+          <div>
+            <h2 id="demande-title" className="font-heading text-xl font-semibold">
+              À quoi ressemble une demande
+            </h2>
+            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground text-pretty">Depuis chaque fiche, le bouton « Contacter » ouvre un formulaire court. Le professionnel reçoit la date, le lieu, le nombre d'invités et d'enfants : de quoi répondre vite et juste. Aucune donnée de santé n'y transite.</p>
+          </div>
+          <InquiryExample />
         </section>
       </Container>
     </Section>

@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { PageRenderer } from "@/components/pages/renderer";
 import { Button } from "@/components/ui/button";
 import { FONT_PAIRINGS, getTemplate, TEMPLATES } from "@/modules/pages/templates/registry";
-import { sampleRenderData, withSampleGallery } from "@/modules/pages/domain/sample-content";
+import { sampleRenderData, withSamplePhotos } from "@/modules/pages/domain/sample-content";
 
 type Params = { key: string };
 
@@ -28,7 +28,7 @@ export default async function TemplatePreviewPage({ params, searchParams }: { pa
   if (!template) notFound();
   const paletteKey = template.palettes.some((p) => p.key === palette) ? palette : template.palettes[0]?.key;
   const base = sampleRenderData(template.key, paletteKey);
-  const data = { ...base, content: withSampleGallery(base.content) };
+  const data = { ...base, content: withSamplePhotos(base.content, template.key) };
   return (
     <>
       <div className="border-b bg-background">

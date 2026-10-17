@@ -151,7 +151,7 @@ test("organiser journey: onboarding → provider invitation → coordination", a
     await expect(marie.page.getByRole("heading", { name: "Mariage de Louise et Lisa" })).toBeVisible();
     // A provider never sees the budget tab.
     await expect(marie.page.getByRole("link", { name: "Budget" })).toHaveCount(0);
-    await expect(marie.page.getByRole("link", { name: "Planning" })).toBeVisible();
+    await expect(marie.page.getByRole("link", { name: "Planning", exact: true })).toBeVisible();
     // The link is single use.
     const again = await marie.context.request.get(`${base}${new URL(inviteUrl).pathname}`);
     expect(await again.text()).toContain("Invitation indisponible");

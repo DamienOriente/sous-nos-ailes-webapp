@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Baby, CalendarDays, ClipboardList, LifeBuoy, Plus, ScrollText, Users } from "lucide-react";
+import { Baby, CalendarDays, LifeBuoy, Plus, ScrollText, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/shared/empty-state";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { KidsCornerScene } from "@/components/illustrations";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { ActionDialog } from "@/components/childcare/action-form";
@@ -69,7 +70,7 @@ export default async function ChildrenPage({ params }: { params: Promise<{ id: s
                 </Link>
               </Button>
             )}
-            {canManage && (
+            {canManage && children.length > 0 && (
               <ActionDialog
                 trigger={
                   <Button size="sm">
@@ -98,10 +99,13 @@ export default async function ChildrenPage({ params }: { params: Promise<{ id: s
       </div>
 
       {children.length === 0 ? (
-        <EmptyState
-          icon={ClipboardList}
-          title={scoped ? "Aucun enfant ne vous est affecté" : "Aucun enfant enregistré"}
-          description={scoped ? "L'organisateur vous affectera les enfants dont vous aurez la charge." : "Ajoutez les enfants attendus pour préparer la garde : équipe, présences, remises sécurisées."}
+        <IllustratedEmpty
+          scene={KidsCornerScene}
+          title={scoped ? "Aucun enfant ne vous est affecté" : "Aucun enfant inscrit pour l'instant"}
+          description={scoped ? "L'organisateur ou le responsable de la garde vous affectera les enfants dont vous aurez la charge ; vous verrez alors leurs consignes et pourrez pointer les arrivées." : "Inscrivez les enfants attendus avec ce qui est nécessaire à la garde : âge, responsable légal, consignes, personnes autorisées à les récupérer. Les informations de santé restent chiffrées et chaque consultation est journalisée."}
+          example="Léa, 6 ans — arrivée 15:30, départ 23:00, récupérée par sa mère ou son père"
+          action={canManage ? <ActionDialog trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter un enfant</Button>} title="Nouvel enfant" description="Renseignez uniquement ce qui est nécessaire à la garde. Pensez à informer le responsable légal (texte prêt à envoyer sur la fiche de l'enfant)." action={createAction} submitLabel="Ajouter" successMessage="Enfant ajouté." wide><ChildFormFields timezone={timezone} /></ActionDialog> : undefined}
+          testId="children-empty"
         />
       ) : (
         <RosterTable eventId={eventId} rows={children} timezone={timezone} canRecordAttendance={canRecord} onCheckIn={canRecord ? checkIn : undefined} />

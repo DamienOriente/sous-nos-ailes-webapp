@@ -3,7 +3,7 @@ import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { requireActor } from "@/lib/session";
 
-/** Lightweight shell for the first steps after sign-up (no sidebar yet). */
+/** Lightweight shell for the first steps after sign-up (no sidebar yet). Wide enough for a form + its live preview column. */
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   await requireActor("/onboarding");
   return (
@@ -14,7 +14,7 @@ export default async function OnboardingLayout({ children }: { children: React.R
         <ThemeToggle />
       </header>
       <main id="contenu" className="flex flex-1 items-start justify-center px-4 pb-16 pt-6 sm:pt-10">
-        <div className="w-full max-w-3xl">{children}</div>
+        <div className="w-full max-w-5xl">{children}</div>
       </main>
     </div>
   );

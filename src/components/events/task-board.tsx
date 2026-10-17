@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, MessageSquare, Pencil, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, MessageSquare, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { ChecklistScene } from "@/components/illustrations/event-scenes";
+import { EmptyNestScene } from "@/components/illustrations";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { EmptyState } from "@/components/shared/empty-state";
 import { FormMessage } from "@/components/shared/form-message";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ActionResult } from "@/lib/errors";
 import { cn, formatDateFr } from "@/lib/utils";
 import { isTaskOverdue } from "@/modules/events/domain/checklist";
+import { TASK_EXAMPLES, TASK_SECTIONS } from "@/modules/events/domain/suggestions";
 import { TASK_PRIORITIES, TASK_PRIORITY_LABELS, TASK_STATUS_LABELS, TASK_STATUSES } from "@/modules/events/domain/task-labels";
 import type { TaskComment } from "@/app/app/evenements/[id]/taches/actions";
 
@@ -43,11 +46,13 @@ type Actions = {
   remove: (eventId: string, taskId: string) => Promise<ActionResult>;
   listComments: (eventId: string, taskId: string) => Promise<ActionResult<TaskComment[]>>;
   addComment: (eventId: string, taskId: string, body: string) => Promise<ActionResult>;
+  /** Creates the tasks organisers often forget for this event type (titles already present are skipped). */
+  addSuggested?: (eventId: string) => Promise<ActionResult<{ created: number }>>;
 };
 
 const PRIORITY_TONE = { low: "neutral", normal: "info", high: "warning", urgent: "danger" } as const;
 
-export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, today, initialFilter, highlightTaskId, actions }: { eventId: string; tasks: TaskItem[]; members: MemberOption[]; canManage: boolean; isOrganizer: boolean; today: string; initialFilter?: string; highlightTaskId?: string; actions: Actions }) {
+export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, today, initialFilter, highlightTaskId, suggestionCount = 0, actions }: { eventId: string; tasks: TaskItem[]; members: MemberOption[]; canManage: boolean; isOrganizer: boolean; today: string; initialFilter?: string; highlightTaskId?: string; /** Number of quick-add suggestions not yet in the list. */ suggestionCount?: number; actions: Actions }) {
   const router = useRouter();
   const [status, setStatus] = useState<string>(initialFilter === "retard" ? "open" : "open");
   const [onlyOverdue, setOnlyOverdue] = useState(initialFilter === "retard");
@@ -87,6 +92,23 @@ export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, tod
 
   const doneCount = tasks.filter((t) => t.status === "done").length;
   const pct = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
+  function addSuggested() {
+    if (!actions.addSuggested) return;
+    start(async () => {
+      const res = await actions.addSuggested!(eventId);
+      if (!res.ok) toast.error(res.error);
+      else {
+        toast.success(res.data.created ? `${res.data.created} tâche${res.data.created > 1 ? "s" : ""} ajoutée${res.data.created > 1 ? "s" : ""}.` : "Ces tâches sont déjà dans votre liste.");
+        router.refresh();
+      }
+    });
+  }
+  const suggestChip = canManage && actions.addSuggested && suggestionCount > 0 && (
+    <Button variant="outline" size="sm" onClick={addSuggested} disabled={pending} data-testid="add-suggested-tasks">
+      <Sparkles className="size-3.5" aria-hidden="true" />
+      Ajouter {suggestionCount} tâche{suggestionCount > 1 ? "s" : ""} souvent oubliée{suggestionCount > 1 ? "s" : ""}
+    </Button>
+  );
 
   return (
     <div className="space-y-5">
@@ -102,11 +124,14 @@ export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, tod
             <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${pct}%` }} />
           </div>
         </div>
-        {canManage && (
-          <Button onClick={() => setEditing("new")}>
-            <Plus className="size-4" aria-hidden="true" />
-            Nouvelle tâche
-          </Button>
+        {canManage && tasks.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {suggestChip}
+            <Button onClick={() => setEditing("new")}>
+              <Plus className="size-4" aria-hidden="true" />
+              Nouvelle tâche
+            </Button>
+          </div>
         )}
       </div>
 
@@ -169,8 +194,17 @@ export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, tod
         </label>
       </div>
 
-      {filtered.length === 0 ? (
-        <EmptyState title="Aucune tâche ne correspond" description={tasks.length === 0 ? "Ajoutez votre première tâche." : "Modifiez les filtres pour en voir davantage."} />
+      {tasks.length === 0 ? (
+        <IllustratedEmpty
+          scene={ChecklistScene}
+          title="Votre liste de préparation est vide"
+          description="Les tâches se rangent par section (Lieu, Prestataires, Enfants, Invités…), avec une échéance, un responsable et des commentaires. Les tâches « Équipe » sont visibles des prestataires."
+          example="Réserver le traiteur — avant le 12 mars"
+          action={canManage ? <>{suggestChip}<Button onClick={() => setEditing("new")}><Plus className="size-4" aria-hidden="true" />Nouvelle tâche</Button></> : undefined}
+          testId="tasks-empty"
+        />
+      ) : filtered.length === 0 ? (
+        <IllustratedEmpty scene={EmptyNestScene} compact title="Aucune tâche ne correspond" description="Modifiez les filtres pour en voir davantage." action={<Button variant="outline" size="sm" onClick={() => { setStatus("open"); setOnlyOverdue(false); setAssignee("all"); }}>Réinitialiser les filtres</Button>} />
       ) : (
         <div className="space-y-6">
           {sections.map(([section, list]) => (
@@ -252,11 +286,21 @@ function TaskDialog({ eventId, task, members, isOrganizer, onClose, actions }: {
   const [error, setError] = useState<string | null>(null);
   const open = task !== null;
   const t = task === "new" ? null : task;
+  const [title, setTitle] = useState("");
+  const [section, setSection] = useState("");
+  const [forKey, setForKey] = useState<string | null>(null);
+  const key = t?.id ?? (task === "new" ? "new" : null);
+  if (key !== forKey) {
+    setForKey(key);
+    setTitle(t?.title ?? "");
+    setSection(t?.section ?? "");
+  }
+  const examples = TASK_EXAMPLES[section] ?? TASK_EXAMPLES.Autres ?? [];
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const input = {
-      title: String(fd.get("title") ?? ""),
+      title,
       description: String(fd.get("description") ?? "") || null,
       section: String(fd.get("section") ?? "") || null,
       status: String(fd.get("status") ?? "todo"),
@@ -287,7 +331,16 @@ function TaskDialog({ eventId, task, members, isOrganizer, onClose, actions }: {
         <form key={t?.id ?? "new"} onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="t-title">Titre</Label>
-            <Input id="t-title" name="title" defaultValue={t?.title ?? ""} required minLength={2} maxLength={200} autoFocus />
+            <Input id="t-title" name="title" value={title} onChange={(e) => setTitle(e.target.value)} required minLength={2} maxLength={200} autoFocus placeholder={examples[0] ?? "Réserver le traiteur — avant le 12 mars"} />
+            {!t && (
+              <div className="flex flex-wrap gap-1.5 pt-1" aria-label="Exemples de tâches">
+                {examples.map((ex) => (
+                  <button key={ex} type="button" onClick={() => setTitle(ex)} className="rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground">
+                    {ex}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="t-desc">Description</Label>
@@ -296,11 +349,17 @@ function TaskDialog({ eventId, task, members, isOrganizer, onClose, actions }: {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="t-section">Section</Label>
-              <Input id="t-section" name="section" defaultValue={t?.section ?? ""} placeholder="Lieu, Enfants, Invités…" maxLength={80} list="sections" />
+              <Input id="t-section" name="section" value={section} onChange={(e) => setSection(e.target.value)} placeholder="Lieu, Enfants, Invités…" maxLength={80} list="task-sections" />
+              <datalist id="task-sections">
+                {TASK_SECTIONS.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="t-due">Échéance</Label>
-              <Input id="t-due" name="dueDate" type="date" defaultValue={t?.dueDate ?? ""} />
+              <Input id="t-due" name="dueDate" type="date" defaultValue={t?.dueDate ?? ""} aria-describedby="t-due-hint" />
+              <p id="t-due-hint" className="text-xs text-muted-foreground">Les tâches datées remontent dans « Prochaines échéances ».</p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="t-status">Statut</Label>

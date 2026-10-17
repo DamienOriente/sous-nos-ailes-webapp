@@ -7,7 +7,7 @@ import { requireActor } from "@/lib/session";
 import { listMilestones } from "@/modules/events/application/milestone-service";
 import { getCategoryOptions } from "@/modules/events/application/categories";
 import { guardPage } from "../_guards";
-import { createMilestoneAction, deleteMilestoneAction, updateMilestoneAction } from "./actions";
+import { addSuggestedMilestonesAction, createMilestoneAction, deleteMilestoneAction, updateMilestoneAction } from "./actions";
 
 export default async function PlanningPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -31,13 +31,14 @@ export default async function PlanningPage({ params }: { params: Promise<{ id: s
       />
       <Timeline
         eventId={id}
+        eventType={event.type}
         eventDate={event.eventDate}
         timezone={event.timezone}
         milestones={milestones.map((m) => ({ id: m.id, title: m.title, description: m.description, startsAt: m.startsAt.toISOString(), endsAt: m.endsAt?.toISOString() ?? null, location: m.location, categorySlugs: m.categorySlugs }))}
         categories={categories}
         canManage={canManage}
         memberCategory={event.access.categorySlug}
-        actions={{ create: createMilestoneAction, update: updateMilestoneAction, remove: deleteMilestoneAction }}
+        actions={{ create: createMilestoneAction, update: updateMilestoneAction, remove: deleteMilestoneAction, addSuggested: addSuggestedMilestonesAction }}
       />
     </div>
   );

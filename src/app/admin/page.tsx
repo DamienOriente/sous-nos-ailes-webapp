@@ -1,32 +1,52 @@
 import Link from "next/link";
-import { Activity, AlertTriangle, CalendarCheck, CreditCard, Flag, Inbox, Mail, ShieldAlert, Store, Users } from "lucide-react";
+import { Activity, AlertTriangle, CalendarCheck, CreditCard, Flag, Inbox, Mail, ShieldAlert, Store, Users, type LucideIcon } from "lucide-react";
 import { Bars } from "@/components/admin/bars";
+import { Sparkline } from "@/components/admin/sparkline";
 import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
 import { dateTime } from "@/components/admin/admin-table";
+import { ChartScene, ShieldScene, StorefrontScene } from "@/components/illustrations/app-scenes";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card } from "@/components/ui/card";
-import { formatEuros } from "@/lib/utils";
+import { cn, formatEuros } from "@/lib/utils";
 import { getDashboardData } from "@/modules/admin/application/dashboard";
-import { STATUS_LABELS, type ProfessionalStatus } from "@/modules/professionals/domain/status";
+import { STATUS_LABELS, STATUS_TONES, type ProfessionalStatus } from "@/modules/professionals/domain/status";
 import { requireAdminPage } from "./_lib/admin-page";
+import { getDashboardSeries, type DailySeries } from "./_lib/series";
 
 export const dynamic = "force-dynamic";
 
+/** Stat card with its 30-day sparkline underneath. */
+function TrendCard({ label, value, series, icon: Icon, tone = "primary", warning = false, hint }: { label: string; value: React.ReactNode; series: DailySeries; icon: LucideIcon; tone?: "primary" | "warning" | "sky" | "blush"; warning?: boolean; hint?: React.ReactNode }) {
+  return (
+    <Card className={cn("gap-2 px-5 py-4", warning && "border-warning/50")}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <Icon className={cn("size-4", warning ? "text-warning-foreground" : "text-muted-foreground")} aria-hidden="true" />
+      </div>
+      <p className="font-heading text-2xl font-semibold tabular-nums">{value}</p>
+      <Sparkline data={series} label={label} tone={warning ? "warning" : tone} />
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+    </Card>
+  );
+}
+
 export default async function AdminHome() {
   const { actor, twoFactorWarning } = await requireAdminPage("admin.dashboard", "/admin");
-  const d = await getDashboardData(actor);
+  const [d, series] = await Promise.all([getDashboardData(actor), getDashboardSeries()]);
   const demoLabel = d.users.demo > 0 ? ` (dont ${d.users.demo} démo)` : "";
+  const proTotal = Object.values(d.professionals).reduce((s, n) => s + n, 0);
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Administration" title="Tableau de bord" description="Chiffres issus de la base de données. Les séries de démonstration sont étiquetées." />
+      <PageHeader eyebrow="Administration" title="Tableau de bord" description="Chiffres issus de la base de données, tendances sur 30 jours. Les séries de démonstration sont étiquetées." />
       <TwoFactorBanner show={twoFactorWarning} />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Utilisateurs" value={d.users.total} hint={`${Object.entries(d.users.byRole).map(([r, n]) => `${n} ${r}`).join(" · ")}${demoLabel}`} icon={Users} />
-        <StatCard label="En attente de modération" value={d.pendingModeration} hint={<Link href="/admin/moderation" className="underline">Ouvrir la file</Link>} icon={Inbox} tone={d.pendingModeration > 0 ? "warning" : "default"} />
-        <StatCard label="Évènements actifs" value={d.activeEvents} hint="planification, confirmés, en cours" icon={CalendarCheck} />
-        <StatCard label="Demandes commerciales (30 j)" value={d.inquiries30d} icon={Activity} />
+        <TrendCard label="Utilisateurs" value={d.users.total} series={series.signups} icon={Users} hint={`${Object.entries(d.users.byRole).map(([r, n]) => `${n} ${r}`).join(" · ")}${demoLabel}`} />
+        <TrendCard label="En attente de modération" value={d.pendingModeration} series={series.moderationCases} icon={Inbox} warning={d.pendingModeration > 0} hint={<Link href="/admin/moderation" className="underline">Ouvrir la file</Link>} />
+        <TrendCard label="Évènements actifs" value={d.activeEvents} series={series.eventsCreated} icon={CalendarCheck} tone="sky" hint="planification, confirmés, en cours · courbe : créations" />
+        <TrendCard label="Demandes commerciales (30 j)" value={d.inquiries30d} series={series.inquiries} icon={Activity} tone="blush" />
         <StatCard label="Signalements ouverts" value={d.openReports} hint={<Link href="/admin/signalements" className="underline">Traiter</Link>} icon={Flag} tone={d.openReports > 0 ? "warning" : "default"} />
         {d.billingVisible && <StatCard label={d.mrr.isDemoOnly ? "MRR (démo)" : "MRR"} value={formatEuros(d.mrr.totalCents)} hint={d.mrr.demoCents > 0 && !d.mrr.isDemoOnly ? `dont ${formatEuros(d.mrr.demoCents)} de démo` : d.mrr.isDemoOnly ? "abonnements simulés uniquement" : "abonnements actifs × prix"} icon={CreditCard} />}
         <StatCard label="E-mails en attente" value={d.outbox.pending} hint={`${d.outbox.failed} en échec · ${d.outbox.sent} envoyés`} icon={Mail} tone={d.outbox.failed > 0 ? "warning" : "default"} />
@@ -34,25 +54,37 @@ export default async function AdminHome() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="gap-4 p-6">
+        <Card className="relative gap-4 overflow-hidden p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">Inscriptions par jour (30 j)</h2>
             {d.users.demo > 0 && <StatusBadge tone="warning">contient des comptes démo</StatusBadge>}
           </div>
           <Bars label="Inscriptions par jour" data={d.signupsPerDay.map((s) => ({ label: s.day.slice(5), value: s.count }))} />
+          <ChartScene className="pointer-events-none absolute -bottom-4 -right-6 w-32 opacity-30" />
         </Card>
-        <Card className="gap-4 p-6">
+        <Card className="relative gap-4 overflow-hidden p-6">
           <h2 className="flex items-center gap-2 font-semibold">
             <Store className="size-4" aria-hidden="true" /> Professionnels par statut
           </h2>
+          {proTotal > 0 && (
+            <div className="flex h-2 overflow-hidden rounded-full bg-muted" role="img" aria-label={`Répartition des ${proTotal} fiches par statut`}>
+              {Object.entries(d.professionals).map(([status, n]) => (
+                <span key={status} className={cn("h-full", statusBar(status as ProfessionalStatus))} style={{ width: `${(n / proTotal) * 100}%` }} title={`${STATUS_LABELS[status as ProfessionalStatus] ?? status} : ${n}`} />
+              ))}
+            </div>
+          )}
           <ul className="grid grid-cols-2 gap-2 text-sm">
             {Object.entries(d.professionals).map(([status, n]) => (
-              <li key={status} className="flex justify-between rounded-lg bg-muted/50 px-3 py-2">
-                <span>{STATUS_LABELS[status as ProfessionalStatus] ?? status}</span>
+              <li key={status} className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2">
+                <StatusBadge tone={STATUS_TONES[status as ProfessionalStatus] ?? "neutral"}>{STATUS_LABELS[status as ProfessionalStatus] ?? status}</StatusBadge>
                 <span className="font-semibold tabular-nums">{n}</span>
               </li>
             ))}
-            {Object.keys(d.professionals).length === 0 && <li className="text-muted-foreground">Aucune fiche.</li>}
+            {Object.keys(d.professionals).length === 0 && (
+              <li className="col-span-2 flex items-center gap-3 text-muted-foreground">
+                <StorefrontScene className="w-20" /> Aucune fiche pour l'instant.
+              </li>
+            )}
           </ul>
           <h2 className="pt-2 font-semibold">Abonnements actifs par offre</h2>
           <ul className="space-y-1 text-sm">
@@ -76,7 +108,10 @@ export default async function AdminHome() {
             <AlertTriangle className="size-4" aria-hidden="true" /> Alertes de sécurité récentes
           </h2>
           {d.securityAlerts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune alerte de sévérité moyenne ou plus sur 30 jours.</p>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <ShieldScene className="w-24 shrink-0" />
+              <p>Aucune alerte de sévérité moyenne ou plus sur 30 jours.</p>
+            </div>
           ) : (
             <ul className="divide-y text-sm">
               {d.securityAlerts.map((a) => (
@@ -104,7 +139,7 @@ export default async function AdminHome() {
               {Object.entries(d.queues.queues).map(([name, q]) => (
                 <li key={name} className="flex justify-between rounded-lg bg-muted/50 px-3 py-2">
                   <span>{name}</span>
-                  <span className="tabular-nums text-muted-foreground">
+                  <span className="text-muted-foreground tabular-nums">
                     {q.waiting} att. · {q.active} actifs · <span className={q.failed > 0 ? "text-destructive" : ""}>{q.failed} échecs</span>
                   </span>
                 </li>
@@ -116,4 +151,20 @@ export default async function AdminHome() {
       </div>
     </div>
   );
+}
+
+function statusBar(status: ProfessionalStatus): string {
+  switch (status) {
+    case "published":
+    case "approved":
+      return "bg-success";
+    case "pending_review":
+    case "changes_requested":
+      return "bg-warning";
+    case "suspended":
+    case "rejected":
+      return "bg-destructive";
+    default:
+      return "bg-muted-foreground/40";
+  }
 }

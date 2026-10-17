@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Categories, Cities, Faq, FinalCta, Hero, HOME_FAQ, HowItWorks, PricingSummary, Tools, Trust, ValueProposition } from "@/components/marketing/home-sections";
+import { Categories, Cities, EventShowcaseSection, Faq, FeaturedProfessionals, FinalCta, Hero, HOME_FAQ, HowItWorks, Journeys, PricingSummary, Reviews, Tools, Trust, ValueProposition } from "@/components/marketing/home-sections";
 import { env, isDemo } from "@/lib/env";
 import { getActiveCategories, getPublicCounters } from "@/modules/analytics/application/public-counters";
+import { getDemoEventShowcase, listFeaturedProfessionals, listPublishedReviews } from "@/modules/directory/application/public-showcase";
 
 export const metadata: Metadata = {
   title: { absolute: "Sous Nos Ailes — Garde d'enfants et professionnels pour vos évènements" },
@@ -49,7 +50,14 @@ function structuredData() {
 }
 
 export default async function HomePage() {
-  const [categories, counters] = await Promise.all([getActiveCategories(), getPublicCounters()]);
+  // The showcase sections are examples, never a reason to break the page: each one degrades to "hidden".
+  const [categories, counters, featured, showcase, reviews] = await Promise.all([
+    getActiveCategories(),
+    getPublicCounters(),
+    listFeaturedProfessionals(3).catch(() => []),
+    getDemoEventShowcase().catch(() => null),
+    listPublishedReviews(3).catch(() => []),
+  ]);
   return (
     <>
       {/* JSON-LD is a data block, not executable: CSP does not apply to it. */}
@@ -58,8 +66,12 @@ export default async function HomePage() {
       <ValueProposition />
       <HowItWorks />
       <Categories categories={categories} />
+      <FeaturedProfessionals professionals={featured} />
+      <EventShowcaseSection event={showcase} />
+      <Journeys />
       <Trust />
       <Tools />
+      <Reviews reviews={reviews} />
       <Cities cities={counters.cities} isDemo={isDemo} />
       <PricingSummary />
       <Faq />

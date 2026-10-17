@@ -7,7 +7,31 @@ import type { Actor } from "@/lib/session";
 import { requireEventPermission } from "@/modules/authorization";
 import { getEventWithPermission, zonedDateTimeToUtc } from "@/modules/events/application/event-service";
 import { buildIcsCalendar, type IcsEvent } from "@/modules/events/infrastructure/ics";
+import { MILESTONE_TEMPLATES } from "@/modules/events/domain/suggestions";
 import { notify } from "@/modules/notifications/application/notification-service";
+
+/**
+ * Adds the classic moments of the event type (real rows), skipping titles that
+ * already exist. Requires a known date; providers of the concerned trades are
+ * notified once.
+ */
+export async function addSuggestedMilestones(actor: Actor, eventId: string, executor: DbExecutor = db): Promise<{ created: number }> {
+  const event = await getEventWithPermission(actor, eventId, "event.milestones.manage", executor);
+  if (!event.eventDate) throw new ValidationError("Fixez d'abord la date de l'évènement dans les paramètres.");
+  const existing = await executor.select({ title: eventMilestones.title }).from(eventMilestones).where(eq(eventMilestones.eventId, eventId));
+  const titles = new Set(existing.map((m) => m.title.trim().toLowerCase()));
+  const rows = MILESTONE_TEMPLATES[event.type]
+    .filter((t) => !titles.has(t.title.toLowerCase()))
+    .map((t, i) => {
+      const { startsAt, endsAt } = toUtc({ title: t.title, date: event.eventDate!, startTime: t.start, endTime: t.end ?? null, categorySlugs: t.categorySlugs }, event.timezone);
+      return { eventId, title: t.title, description: t.description ?? null, startsAt, endsAt, location: t.location ?? null, categorySlugs: t.categorySlugs, sortOrder: existing.length + i };
+    });
+  if (rows.length === 0) return { created: 0 };
+  await executor.insert(eventMilestones).values(rows);
+  const slugs = [...new Set(rows.flatMap((r) => r.categorySlugs))];
+  await notifyConcernedProviders(actor, eventId, { id: eventId, title: `${rows.length} étapes du jour J`, categorySlugs: slugs }, "created", executor);
+  return { created: rows.length };
+}
 
 export const milestoneSchema = z.object({
   title: z.string().trim().min(2, "Titre trop court.").max(160),

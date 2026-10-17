@@ -1,7 +1,7 @@
-import { BellOff } from "lucide-react";
 import Link from "next/link";
-import { EmptyState, PageHeader } from "@/components/shared";
+import { PageHeader } from "@/components/shared";
 import { MarkAllReadButton } from "@/components/notifications/mark-all-read-button";
+import { NotificationEmptyState } from "@/components/notifications/notification-examples";
 import { NotificationList } from "@/components/notifications/notification-list";
 import { Button } from "@/components/ui/button";
 import { requireActor } from "@/lib/session";
@@ -71,7 +71,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
       </nav>
 
       {page.items.length === 0 ? (
-        <EmptyState icon={BellOff} title={unreadOnly ? "Aucune notification non lue" : "Aucune notification"} description={type ? "Aucune notification de ce type pour le moment." : "Les invitations, messages et mises à jour de vos évènements apparaîtront ici."} />
+        <NotificationEmptyState title={unreadOnly ? "Aucune notification non lue" : "Aucune notification"} description={type ? "Aucune notification de ce type pour le moment." : "Les invitations, messages et mises à jour de vos évènements apparaîtront ici, et par e-mail selon vos préférences."} />
       ) : (
         <NotificationList key={`${type ?? "all"}:${unreadOnly}`} initialItems={page.items.map(toNotificationItem)} initialNextOffset={page.nextOffset} loadMore={loadMore} markRead={markNotificationReadAction} />
       )}

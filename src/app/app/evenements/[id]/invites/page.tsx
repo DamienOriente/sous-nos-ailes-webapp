@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { Baby, Check, Clock, Download, Plus, Upload, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EmptyState } from "@/components/shared/empty-state";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { TableScene } from "@/components/illustrations";
+import { EmptyNestScene } from "@/components/illustrations";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { AddFromContactsDialog } from "@/components/guests/add-from-contacts-dialog";
@@ -63,16 +65,18 @@ export default async function GuestsPage({ params, searchParams }: { params: Pro
                 </Link>
               </Button>
               <AddFromContactsDialog eventId={id} contacts={addable} groups={groupOptions} onAdd={addFromContactsAction} />
-              <GuestFormDialog
-                eventId={id}
-                groups={groupOptions}
-                onSubmit={createGuestAction.bind(null, id)}
-                trigger={
-                  <Button size="sm">
-                    <Plus className="size-4" aria-hidden="true" /> Ajouter un invité
-                  </Button>
-                }
-              />
+              {(guests.length > 0 || hasFilters) && (
+                <GuestFormDialog
+                  eventId={id}
+                  groups={groupOptions}
+                  onSubmit={createGuestAction.bind(null, id)}
+                  trigger={
+                    <Button size="sm">
+                      <Plus className="size-4" aria-hidden="true" /> Ajouter un invité
+                    </Button>
+                  }
+                />
+              )}
             </>
           ) : undefined
         }
@@ -119,12 +123,18 @@ export default async function GuestsPage({ params, searchParams }: { params: Pro
             </Button>
           </form>
           {guests.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title={hasFilters ? "Aucun invité ne correspond" : "Aucun invité pour le moment"}
-              description={hasFilters ? "Modifiez les filtres." : "Ajoutez vos invités un par un, depuis vos contacts ou par import CSV."}
-              action={hasFilters ? <Button asChild variant="outline"><Link href={`/app/evenements/${id}/invites`}>Réinitialiser</Link></Button> : undefined}
-            />
+            hasFilters ? (
+              <IllustratedEmpty scene={EmptyNestScene} compact title="Aucun invité ne correspond" description="Modifiez les filtres ou la recherche." action={<Button asChild variant="outline" size="sm"><Link href={`/app/evenements/${id}/invites`}>Réinitialiser</Link></Button>} />
+            ) : (
+              <IllustratedEmpty
+                scene={TableScene}
+                title="Votre liste d'invités est vide"
+                description="Ajoutez vos invités un par un, depuis votre carnet de contacts ou par import CSV. Les groupes (famille, amis, collègues) servent ensuite aux invitations et au plan de table ; les enfants peuvent être inscrits à la garde."
+                example="Claire Dubois — Famille Marchand, végétarienne, +1 accompagnant"
+                action={canManage ? <><Button asChild variant="outline" size="sm"><Link href={`/app/evenements/${id}/invites/import`}><Upload className="size-4" aria-hidden="true" /> Importer un CSV</Link></Button><GuestFormDialog eventId={id} groups={groupOptions} onSubmit={createGuestAction.bind(null, id)} trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter un invité</Button>} /></> : undefined}
+                testId="guests-empty"
+              />
+            )
           ) : (
             <>
               <p className="text-sm text-muted-foreground">{guests.length} invité(s) affiché(s)</p>

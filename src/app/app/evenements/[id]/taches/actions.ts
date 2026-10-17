@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { toActionError, type ActionResult } from "@/lib/errors";
 import { requireActorOrThrow } from "@/lib/session";
-import { addTaskComment, createTask, deleteTask, listTaskComments, toggleTask, updateTask } from "@/modules/events/application/task-service";
+import { addSuggestedTasks, addTaskComment, createTask, deleteTask, listTaskComments, toggleTask, updateTask } from "@/modules/events/application/task-service";
 
 const ids = z.object({ eventId: z.uuid(), taskId: z.uuid() });
 
@@ -79,6 +79,17 @@ export async function addTaskCommentAction(eventId: string, taskId: string, body
     await addTaskComment(actor, p.eventId, p.taskId, String(body ?? ""));
     revalidate(eventId);
     return { ok: true, data: undefined };
+  } catch (e) {
+    return toActionError(e);
+  }
+}
+
+export async function addSuggestedTasksAction(eventId: string): Promise<ActionResult<{ created: number }>> {
+  try {
+    const actor = await requireActorOrThrow();
+    const res = await addSuggestedTasks(actor, z.uuid().parse(eventId));
+    revalidate(eventId);
+    return { ok: true, data: res };
   } catch (e) {
     return toActionError(e);
   }

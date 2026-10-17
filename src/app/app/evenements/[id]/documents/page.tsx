@@ -1,6 +1,8 @@
 import { Download, FileText, Trash2 } from "lucide-react";
 import { AddDocumentDialog, DeleteDocumentButton } from "@/components/events/document-forms";
-import { EmptyState, PageHeader, StatusBadge } from "@/components/shared";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { DocumentsScene } from "@/components/illustrations/event-scenes";
+import { PageHeader, StatusBadge } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { requireActor } from "@/lib/session";
 import { formatDateFr } from "@/lib/utils";
@@ -28,10 +30,17 @@ export default async function DocumentsPage({ params }: { params: Promise<{ id: 
       <PageHeader
         title="Documents"
         description={canManage ? "Contrats, devis, briefs et plans. Choisissez qui peut voir chaque document." : "Les documents que l'organisateur partage avec vous."}
-        actions={canManage ? <AddDocumentDialog eventId={id} providers={providers} action={addDocumentAction} /> : undefined}
+        actions={canManage && documents.length > 0 ? <AddDocumentDialog eventId={id} providers={providers} action={addDocumentAction} /> : undefined}
       />
       {documents.length === 0 ? (
-        <EmptyState icon={FileText} title="Aucun document" description={canManage ? "Ajoutez un premier document : il sera analysé (antivirus) avant d'être téléchargeable." : "Rien n'a encore été partagé avec vous."} />
+        <IllustratedEmpty
+          scene={DocumentsScene}
+          title="Aucun document"
+          description={canManage ? "Contrats, devis, briefs, plans de salle : chaque fichier est analysé (antivirus) avant d'être téléchargeable, et vous choisissez qui le voit — organisateurs, toute l'équipe ou un prestataire précis." : "Rien n'a encore été partagé avec vous. Les documents que l'organisateur vous destine apparaîtront ici."}
+          example="Contrat traiteur — Julien Rossi (PDF, visible des organisateurs)"
+          action={canManage ? <AddDocumentDialog eventId={id} providers={providers} action={addDocumentAction} /> : undefined}
+          testId="documents-empty"
+        />
       ) : (
         <ul className="divide-y rounded-2xl border bg-card">
           {documents.map((d) => (

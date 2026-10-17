@@ -11,6 +11,7 @@ import {
   eventProfessionals,
   eventTasks,
   events,
+  files,
   professionalCategories,
   professionals,
   userProfiles,
@@ -21,6 +22,7 @@ import { getEventAccess, requireEventMember, requireEventPermission, type EventA
 import { getEffectivePlan, planFeatureLimit } from "@/modules/billing/application/entitlements";
 import { recordAudit } from "@/modules/events/application/audit";
 import { buildChecklist } from "@/modules/events/domain/checklist";
+import { defaultCoverPhotoId, isCatalogPhotoId } from "@/modules/events/domain/cover";
 import { canTransitionEventStatus, type EventStatus } from "@/modules/events/domain/event-status";
 import { EVENT_TYPES, type EventType } from "@/modules/events/domain/event-types";
 import { departmentFromPostalCode } from "@/modules/events/domain/event-naming";
@@ -128,6 +130,8 @@ export async function createEvent(actor: Actor, raw: unknown, executor: DbExecut
         expectedChildren: input.expectedChildren ?? null,
         budgetCents: input.budgetCents ?? null,
         preferences: input.preferences ?? null,
+        // Ambience picture picked from the catalogue of the event type; the organiser can change it in the settings.
+        coverPhotoId: defaultCoverPhotoId(input.type, `${actor.userId}:${input.name}`),
         isDemo: actor.isDemo,
       })
       .returning({ id: events.id, name: events.name });
@@ -204,8 +208,14 @@ export type EventListItem = {
   expectedGuests: number | null;
   role: string;
   openTasks: number;
+  doneTasks: number;
+  totalTasks: number;
   confirmedProviders: number;
   members: number;
+  /** Up to six member names for the avatar stack (alphabetical). */
+  memberNames: string[];
+  coverPhotoId: string | null;
+  coverFileId: string | null;
 };
 
 export async function listEventsForActor(actor: Actor, executor: DbExecutor = db): Promise<EventListItem[]> {
@@ -220,10 +230,15 @@ export async function listEventsForActor(actor: Actor, executor: DbExecutor = db
       city: events.city,
       venueName: events.venueName,
       expectedGuests: events.expectedGuests,
+      coverPhotoId: events.coverPhotoId,
+      coverFileId: events.coverFileId,
       role: eventMembers.role,
       openTasks: sql<number>`(select count(*) from event_tasks t where t.event_id = ${events.id} and t.status in ('todo','in_progress'))::int`,
+      doneTasks: sql<number>`(select count(*) from event_tasks t where t.event_id = ${events.id} and t.status = 'done')::int`,
+      totalTasks: sql<number>`(select count(*) from event_tasks t where t.event_id = ${events.id} and t.status <> 'cancelled')::int`,
       confirmedProviders: sql<number>`(select count(*) from event_professionals p where p.event_id = ${events.id} and p.status = 'confirmed')::int`,
       members: sql<number>`(select count(*) from event_members m where m.event_id = ${events.id} and m.status = 'active')::int`,
+      memberNames: sql<string[]>`coalesce((select array_agg(u.name order by (m.role = 'owner') desc, u.name) from event_members m join users u on u.id = m.user_id where m.event_id = ${events.id} and m.status = 'active'), '{}')`,
     })
     .from(eventMembers)
     .innerJoin(events, eq(events.id, eventMembers.eventId))
@@ -296,6 +311,38 @@ export async function changeEventStatus(actor: Actor, eventId: string, to: Event
   if (!canTransitionEventStatus(ev.status, to)) throw new ConflictError(`Impossible de passer de « ${ev.status} » à « ${to} ».`);
   await executor.update(events).set({ status: to }).where(eq(events.id, eventId));
   await recordAudit({ actorUserId: actor.userId, action: "event.status_changed", resourceType: "event", resourceId: eventId, eventId, metadata: { from: ev.status, to }, reason: reason ?? null }, executor);
+}
+
+export const coverSchema = z
+  .object({
+    /** Catalogue photo id (modules/media/demo-photos). */
+    coverPhotoId: z.string().trim().min(1).max(64).nullable().optional(),
+    /** Uploaded file id (scope event, purpose cover). */
+    coverFileId: z.uuid().nullable().optional(),
+  })
+  .refine((v) => v.coverPhotoId !== undefined || v.coverFileId !== undefined, "Choisissez une photo.");
+
+/**
+ * Changes the ambience picture: either a catalogue photo (clears the uploaded
+ * file) or an uploaded file that must belong to this event with purpose cover.
+ */
+export async function updateEventCover(actor: Actor, eventId: string, raw: unknown, executor: DbExecutor = db): Promise<void> {
+  await requireEventPermission(actor, eventId, "event.edit", executor);
+  const parsed = coverSchema.safeParse(raw);
+  if (!parsed.success) throw new ValidationError("Photo invalide.", { issues: parsed.error.issues });
+  const { coverPhotoId, coverFileId } = parsed.data;
+  if (coverFileId) {
+    const [f] = await executor
+      .select({ id: files.id })
+      .from(files)
+      .where(and(eq(files.id, coverFileId), eq(files.scope, "event"), eq(files.scopeId, eventId), eq(files.purpose, "cover"), inArray(files.status, ["quarantined", "scanning", "clean"])))
+      .limit(1);
+    if (!f) throw new ValidationError("Photo introuvable ou refusée.");
+    await executor.update(events).set({ coverFileId }).where(eq(events.id, eventId));
+    return;
+  }
+  if (coverPhotoId && !isCatalogPhotoId(coverPhotoId)) throw new ValidationError("Photo inconnue du catalogue.");
+  await executor.update(events).set({ coverPhotoId: coverPhotoId ?? null, coverFileId: null }).where(eq(events.id, eventId));
 }
 
 /** Soft delete. Owner only, name must be typed exactly. */

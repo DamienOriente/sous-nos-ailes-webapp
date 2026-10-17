@@ -21,7 +21,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["pino", "pino-pretty", "sharp", "bullmq", "ioredis", "pg"],
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: [],
+    // Demo photography (Unsplash licence) used only for fictitious profiles and marketing pages.
+    remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
   },
   experimental: {
     serverActions: {

@@ -304,10 +304,11 @@ async function seedLouisLisa(ctx: SeedContext, eventId: string): Promise<void> {
   const roux = created[6]!;
   await db.insert(invitationResponses).values({ invitationId: roux.id, status: "declined", guestsCount: 0, message: "Nous serons malheureusement à l'étranger.", perGuest: Object.fromEntries(roux.guestIds.map((g) => [g, "declined" as const])) });
 
-  // QR codes for the first two families; 3 check-ins (2 accepted + 1 duplicate on the first).
+  // QR codes generated for the first ten invitations (answered ones); 3 check-ins (2 accepted + 1 duplicate on the first).
   const scannedAt = new Date("2027-06-12T15:05:00Z");
   const t1 = await newToken(ctx, created[0]!.id, "checkin", expiresAt, 1, 1, scannedAt);
   const t2 = await newToken(ctx, created[1]!.id, "checkin", expiresAt, 1, 1, new Date(scannedAt.getTime() + 4 * 60_000));
+  for (const inv of created.slice(2, 10)) await newToken(ctx, inv.id, "checkin", expiresAt, 1, 0);
   const staff = ctx.users.nora ?? ctx.users.louis ?? null;
   await db.insert(invitationCheckins).values([
     { eventId, invitationId: created[0]!.id, tokenId: t1, result: "accepted", scannedByUserId: staff, scannedAt },
@@ -315,16 +316,18 @@ async function seedLouisLisa(ctx: SeedContext, eventId: string): Promise<void> {
     { eventId, invitationId: created[0]!.id, tokenId: t1, result: "duplicate", scannedByUserId: staff, scannedAt: new Date(scannedAt.getTime() + 25 * 60_000) },
   ]);
 
-  // 8 tables, partially filled.
+  // 10 tables, about 70 % of the guests seated (the "maybe" and pending ones wait).
   const tables: Array<{ name: string; shape: "round" | "rectangle" | "square" | "oval"; capacity: number; x: number; y: number; guests: Array<[string, string]> }> = [
-    { name: "Table d'honneur", shape: "rectangle", capacity: 10, x: 500, y: 100, guests: [["Bernard", "Marchand"], ["Monique", "Marchand"], ["Alain", "Bertrand"], ["Nathalie", "Bertrand"], ["Maxime", "Girard"], ["Chloé", "Girard"]] },
-    { name: "Marchand", shape: "round", capacity: 8, x: 180, y: 280, guests: [["Julie", "Marchand"], ["Thomas", "Marchand"], ["Claire", "Dubois"], ["Marc", "Dubois"], ["Antoine", "Perrin"], ["Sophie", "Perrin"]] },
-    { name: "Bertrand", shape: "round", capacity: 8, x: 400, y: 300, guests: [["Camille", "Bertrand"], ["Hugo", "Bertrand"], ["Sarah", "Lemoine"], ["Karim", "Lemoine"], ["Christine", "Bertrand"], ["Gérard", "Bertrand"]] },
-    { name: "Amis", shape: "oval", capacity: 10, x: 640, y: 300, guests: [["Romain", "Blanc"], ["Manon", "Blanc"], ["Aurélie", "Fontaine"], ["Nicolas", "Fontaine"], ["Élodie", "Renard"], ["Margaux", "Leroy"], ["Baptiste", "Caron"]] },
-    { name: "Collègues 1", shape: "round", capacity: 8, x: 860, y: 290, guests: [["Stéphane", "Garnier"], ["Valérie", "Garnier"], ["Céline", "Petit"], ["Quentin", "Rousseau"], ["Fatou", "Diallo"]] },
-    { name: "Collègues 2", shape: "square", capacity: 6, x: 860, y: 520, guests: [["Isabelle", "Chevalier"], ["Nadia", "Guérin"], ["Amandine", "Lambert"]] },
-    { name: "Enfants", shape: "round", capacity: 10, x: 300, y: 540, guests: [["Léa", "Marchand"], ["Emma", "Dubois"], ["Louise", "Perrin"], ["Zoé", "Bertrand"], ["Inès", "Lemoine"], ["Lucas", "Fontaine"], ["Paul", "Chevalier"]] },
-    { name: "Cousins", shape: "round", capacity: 8, x: 580, y: 540, guests: [["Laura", "Costa"], ["Diego", "Costa"]] },
+    { name: "Table d'honneur", shape: "rectangle", capacity: 10, x: 500, y: 90, guests: [["Bernard", "Marchand"], ["Monique", "Marchand"], ["Alain", "Bertrand"], ["Nathalie", "Bertrand"], ["Maxime", "Girard"], ["Chloé", "Girard"]] },
+    { name: "Marchand", shape: "round", capacity: 8, x: 150, y: 260, guests: [["Julie", "Marchand"], ["Thomas", "Marchand"], ["Claire", "Dubois"], ["Marc", "Dubois"], ["Antoine", "Perrin"], ["Sophie", "Perrin"]] },
+    { name: "Bertrand", shape: "round", capacity: 8, x: 380, y: 280, guests: [["Camille", "Bertrand"], ["Hugo", "Bertrand"], ["Sarah", "Lemoine"], ["Karim", "Lemoine"], ["Christine", "Bertrand"], ["Gérard", "Bertrand"]] },
+    { name: "Amis d'enfance", shape: "oval", capacity: 10, x: 630, y: 280, guests: [["Romain", "Blanc"], ["Manon", "Blanc"], ["Aurélie", "Fontaine"], ["Nicolas", "Fontaine"], ["Élodie", "Renard"], ["Margaux", "Leroy"], ["Baptiste", "Caron"]] },
+    { name: "Collègues de Louis", shape: "round", capacity: 8, x: 860, y: 270, guests: [["Stéphane", "Garnier"], ["Valérie", "Garnier"], ["Céline", "Petit"], ["Quentin", "Rousseau"], ["Fatou", "Diallo"]] },
+    { name: "Collègues de Lisa", shape: "square", capacity: 6, x: 860, y: 500, guests: [["Isabelle", "Chevalier"], ["Nadia", "Guérin"], ["Amandine", "Lambert"], ["Matthieu", "Vincent"]] },
+    { name: "Enfants", shape: "round", capacity: 10, x: 150, y: 520, guests: [["Léa", "Marchand"], ["Emma", "Dubois"], ["Louise", "Perrin"], ["Zoé", "Bertrand"], ["Inès", "Lemoine"], ["Lucas", "Fontaine"], ["Paul", "Chevalier"]] },
+    { name: "Cousins", shape: "round", capacity: 8, x: 380, y: 530, guests: [["Laura", "Costa"], ["Diego", "Costa"], ["Océane", "Fabre"]] },
+    { name: "Témoins & amis", shape: "round", capacity: 8, x: 630, y: 530, guests: [["Mehdi", "Benali"], ["Franck", "Barbier"]] },
+    { name: "Famille élargie", shape: "round", capacity: 8, x: 500, y: 650, guests: [["Jacques", "Marchand"], ["Françoise", "Marchand"]] },
   ];
   let order = 0;
   for (const t of tables) {

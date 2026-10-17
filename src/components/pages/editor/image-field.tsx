@@ -34,7 +34,7 @@ export function ImageField({
       {fileId ? (
         <div className="flex items-start gap-3">
           <div className="relative size-20 shrink-0 overflow-hidden rounded-md bg-muted">
-            <Image src={publicImageHref(fileId, "thumb")} alt={alt || ""} fill sizes="80px" className="object-cover" />
+            <Image src={publicImageHref(fileId, "thumb")} alt={alt || ""} fill sizes="80px" unoptimized className="object-cover" />
           </div>
           <div className="flex-1 space-y-2">
             <div className="space-y-1">

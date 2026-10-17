@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { Download } from "lucide-react";
+import { CoverPicker } from "@/components/events/cover-picker";
 import { EventSettingsForm, EventStatusPanel, DeleteEventPanel } from "@/components/events/settings-forms";
 import { PageHeader } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireActor } from "@/lib/session";
 import { getEventWithPermission } from "@/modules/events/application/event-service";
+import { coverCatalog } from "@/modules/events/domain/cover";
 import { guardPage } from "../_guards";
-import { changeStatusAction, deleteEventAction, updateEventAction } from "./actions";
+import { changeStatusAction, deleteEventAction, updateEventAction, updateEventCoverAction } from "./actions";
 
 function localTime(d: Date | null, timeZone: string): string | null {
   if (!d) return null;
@@ -44,6 +46,15 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
           </CardContent>
         </Card>
       )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Photo de couverture</CardTitle>
+          <CardDescription>L'image d'ambiance de l'en-tête, de la liste des évènements et du tableau de bord. Choisissez une photo du catalogue adaptée au type d'évènement ou téléversez la vôtre.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CoverPicker eventId={id} catalog={coverCatalog(event.type)} currentPhotoId={event.coverPhotoId} currentFileId={event.coverFileId} action={updateEventCoverAction} />
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>Informations</CardTitle>

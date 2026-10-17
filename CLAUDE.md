@@ -53,6 +53,8 @@ Règles :
 
 - 2026-10-17 — Documents juridiques = gabarits à variables (`{{legal.*}}`) en brouillon par défaut, jamais de fait inventé ; bannière cookies sans traceur avec preuve en base ; analytique produit interne à catalogue fermé (`modules/analytics`).
 
+- 2026-10-17 — Chantier « vitalité » : photos de démonstration Unsplash (catalogue vérifié `modules/media/demo-photos.ts`, réservé aux profils fictifs et pages marketing, à remplacer avant commercialisation, cf. docs/assets.md) + illustrations SVG originales (`components/illustrations/*`) ; états vides illustrés (`IllustratedEmpty`), exemples intégrés réels (`modules/events/domain/suggestions.ts`, `modules/tools/domain/tool-examples.ts`, `components/professionals/listing-examples.ts`, `modules/identity/domain/next-actions.ts`) ; couverture d'évènement (`events.cover_photo_id` / `cover_file_id`, migration 0001).
+
 ## Pièges rencontrés
 
 - pnpm 12 applique `minimumReleaseAge` (24 h) : un paquet publié le jour même est refusé → reculer d'une version, ne pas désactiver la politique.
@@ -63,6 +65,8 @@ Règles :
 - BullMQ 6 : un `jobId` ne doit pas contenir `:`.
 - better-auth rate-limit `/sign-in/email` 5/min/IP compte aussi les connexions réussies : derrière un NAT, à revoir avant prod (clé e-mail+IP ou max plus élevé).
 - `DemoBanner` (lit `@/lib/env` → `node:fs`) n'est pas exporté par le barrel `@/components/shared` : l'importer depuis `@/components/shared/demo-banner` (serveur seulement). Un composant client qui tirerait `env` via un barrel fait planter Turbopack.
+- Drizzle : dans une sous-requête `sql`…`` corrélée, référencer la table externe par `${table}.col`, pas `${table.col}` (rendu non qualifié dans un select mono-table, donc masqué par l'alias interne → compteur à 0).
+- Next 16 `next/image` : une URL locale avec query string (`/api/files/<id>/public?v=medium`) exige `images.localPatterns`, sinon 500 ; les images du pipeline fichiers sont rendues `unoptimized` (variantes WebP déjà produites côté serveur).
 - Images Docker : `minio/minio` doit être pré-tiré (quay.io inaccessible depuis ce poste) ; `clamav/clamav-debian:stable` pour arm64.
 
 ## État d'avancement

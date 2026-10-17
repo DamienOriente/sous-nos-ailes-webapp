@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { Handshake, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { ExternalProviderDialog } from "@/components/events/provider-forms";
-import { EmptyState, PageHeader, StatusBadge } from "@/components/shared";
+import { HandshakeScene } from "@/components/illustrations/event-scenes";
+import { PageHeader, StatusBadge } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { requireActor } from "@/lib/session";
 import { formatEuros } from "@/lib/utils";
@@ -34,7 +36,7 @@ export default async function ProvidersPage({ params }: { params: Promise<{ id: 
         title="Prestataires"
         description={canManage ? "Vos professionnels par catégorie : de la présélection à la confirmation, avec devis et contrats." : "Les professionnels qui interviennent sur cet évènement."}
         actions={
-          canManage ? (
+          canManage && providers.length > 0 ? (
             <>
               <Button asChild variant="outline">
                 <Link href={`/annuaire?event=${id}&department=${encodeURIComponent(event.department ?? "")}`}>
@@ -48,7 +50,14 @@ export default async function ProvidersPage({ params }: { params: Promise<{ id: 
         }
       />
       {providers.length === 0 ? (
-        <EmptyState icon={Handshake} title="Aucun prestataire pour l'instant" description="Cherchez des professionnels vérifiés dans l'annuaire ou ajoutez un prestataire externe que vous connaissez déjà." />
+        <IllustratedEmpty
+          scene={HandshakeScene}
+          title="Aucun prestataire pour l'instant"
+          description={canManage ? "Un prestataire suit un parcours : présélectionné → demande envoyée → devis reçu → confirmé. Depuis l'annuaire, un professionnel vérifié rejoint votre présélection en un clic ; vous pouvez aussi noter un prestataire que vous connaissez déjà." : "Les professionnels confirmés par l'organisateur apparaîtront ici."}
+          example="Domaine des Tilleuls — lieu de réception, devis reçu : 8 500 €"
+          action={canManage ? <><Button asChild variant="outline"><Link href={`/annuaire?event=${id}&department=${encodeURIComponent(event.department ?? "")}`}><Search className="size-4" aria-hidden="true" />Rechercher dans l'annuaire</Link></Button><ExternalProviderDialog eventId={id} categories={categories} action={createExternalProviderAction} /></> : undefined}
+          testId="providers-empty"
+        />
       ) : (
         <div className="space-y-6">
           {[...groups.entries()].map(([category, list]) => (

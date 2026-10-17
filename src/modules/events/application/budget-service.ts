@@ -1,11 +1,39 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, type DbExecutor } from "@/db/client";
-import { eventBudgetLines, eventExpenses, eventProfessionals, professionals } from "@/db/schema";
+import { eventBudgetLines, eventExpenses, eventProfessionals, professionalCategories, professionals } from "@/db/schema";
 import { NotFoundError, ValidationError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
 import { requireEventPermission } from "@/modules/authorization";
 import { computeBudgetSummary, toCsv, type BudgetSummary } from "@/modules/events/domain/budget";
+import { buildBudgetTemplate, type BudgetTemplateLine } from "@/modules/events/domain/suggestions";
+import { getEventWithPermission } from "@/modules/events/application/event-service";
+
+/** Indicative lines the "budget type" chip would create (preview + creation share the same computation). */
+export async function previewBudgetTemplate(actor: Actor, eventId: string, executor: DbExecutor = db): Promise<BudgetTemplateLine[]> {
+  const event = await getEventWithPermission(actor, eventId, "event.budget.view", executor);
+  const slots = await executor
+    .select({ id: eventProfessionals.id, categorySlug: professionalCategories.slug, categoryName: professionalCategories.name, quoteCents: eventProfessionals.quoteCents, status: eventProfessionals.status })
+    .from(eventProfessionals)
+    .leftJoin(professionalCategories, eq(professionalCategories.id, eventProfessionals.categoryId))
+    .where(eq(eventProfessionals.eventId, eventId));
+  const lines = await executor.select({ category: eventBudgetLines.category, plannedCents: eventBudgetLines.plannedCents }).from(eventBudgetLines).where(eq(eventBudgetLines.eventId, eventId));
+  // A category is "existing" only when its line carries an amount: the empty lines created at onboarding get replaced.
+  const existing = new Set(lines.filter((l) => l.plannedCents > 0).map((l) => l.category));
+  return buildBudgetTemplate({ type: event.type, expectedGuests: event.expectedGuests, expectedChildren: event.expectedChildren, slots, existingCategories: existing });
+}
+
+/** Creates the template lines for real (and removes the empty placeholder lines of the same categories). */
+export async function applyBudgetTemplate(actor: Actor, eventId: string, executor: DbExecutor = db): Promise<{ created: number }> {
+  await requireEventPermission(actor, eventId, "event.budget.manage", executor);
+  const template = await previewBudgetTemplate(actor, eventId, executor);
+  if (template.length === 0) return { created: 0 };
+  const categories = [...new Set(template.map((l) => l.category))];
+  await executor.delete(eventBudgetLines).where(and(eq(eventBudgetLines.eventId, eventId), eq(eventBudgetLines.plannedCents, 0), inArray(eventBudgetLines.category, categories)));
+  const [maxRow] = await executor.select({ m: sql<number>`coalesce(max(sort_order),0)::int` }).from(eventBudgetLines).where(eq(eventBudgetLines.eventId, eventId));
+  await executor.insert(eventBudgetLines).values(template.map((l, i) => ({ eventId, category: l.category, label: l.label, plannedCents: l.plannedCents, eventProfessionalId: l.eventProfessionalId, sortOrder: (maxRow?.m ?? 0) + 10 + i })));
+  return { created: template.length };
+}
 
 export const budgetLineSchema = z.object({
   category: z.string().trim().min(1, "Catégorie requise.").max(80),

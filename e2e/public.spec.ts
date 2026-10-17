@@ -20,6 +20,38 @@ test.describe("Accueil", () => {
     expect(ld).toContain("SearchAction");
   });
 
+  test("montre des exemples réels de la base, étiquetés démonstration", async ({ page }) => {
+    await page.goto("/");
+    // Only the hero photograph is loaded eagerly (LCP, preloaded); every other photo is lazy.
+    const eager = page.locator('main img:not([loading="lazy"])');
+    expect(await eager.count()).toBe(1);
+    await expect(page.locator('link[rel="preload"][as="image"]')).toHaveCount(1);
+    expect(await page.locator("main img").count()).toBeGreaterThan(10);
+    // Illustrated steps.
+    await expect(page.getByRole("heading", { name: "Trois étapes, un seul espace" })).toBeVisible();
+    // Featured listings come from the directory ranking; demo rows are labelled.
+    const featured = page.getByTestId("featured-professionals");
+    if ((await featured.count()) > 0) {
+      const cards = featured.locator('[data-testid="professional-card"]');
+      expect(await cards.count()).toBeGreaterThanOrEqual(1);
+      expect(await cards.count()).toBeLessThanOrEqual(3);
+      const demoBadges = await cards.getByText("Démo", { exact: true }).count();
+      if (demoBadges > 0) await expect(page.getByText("Fiches de démonstration — professionnels fictifs")).toBeVisible();
+    }
+    // Demo event snapshot: real counters, explicit demo label, never a health detail.
+    const showcase = page.locator("#exemple-evenement");
+    if ((await showcase.count()) > 0) {
+      await expect(showcase.getByText("Tour de contrôle")).toBeVisible();
+      await expect(showcase.getByText("Évènement fictif, personnes fictives")).toBeVisible();
+      // First name + age only: no medical detail ever reaches a public page.
+      await expect(showcase).not.toContainText(/allergique|asthm|épilep|médicament|traitement :/i);
+    }
+    // Journeys and FAQ about demo data.
+    await expect(page.getByRole("heading", { name: /Trois parcours/ })).toBeVisible();
+    await page.getByRole("button", { name: "Les photos et les fiches que je vois sont-elles réelles ?" }).click();
+    await expect(page.getByText(/photographies sont des illustrations libres de droits/)).toBeVisible();
+  });
+
   test("la recherche redirige vers l'annuaire du métier avec la ville", async ({ page }) => {
     await page.goto("/");
     const search = page.getByRole("search", { name: "Rechercher un professionnel" });
@@ -35,6 +67,58 @@ test.describe("Accueil", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Préparer un évènement");
     await page.getByRole("contentinfo").getByRole("link", { name: "À propos" }).click();
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Des ailes");
+  });
+});
+
+test.describe("Pages marketing", () => {
+  test("/organiser montre les écrans de l'évènement de démonstration et un exemple de demande", async ({ page }) => {
+    await page.goto("/organiser");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Préparer un évènement");
+    await expect(page.getByText("Étape 1", { exact: true })).toBeVisible();
+    const space = page.locator("#espace-organisateur");
+    if ((await space.count()) > 0) {
+      await expect(space.getByText("Tour de contrôle")).toBeVisible();
+      await expect(space.getByText("Plan de table", { exact: true })).toBeVisible();
+      await expect(space.getByText("Espace enfants")).toBeVisible();
+      await expect(space.getByRole("img", { name: /Plan de table avec \d+ tables/ })).toBeVisible();
+    }
+    await expect(page.getByText("Demande de devis", { exact: false }).first()).toBeVisible();
+    await expect(page.getByText("Exemple", { exact: true }).first()).toBeVisible();
+  });
+
+  test("/professionnels explique les cinq étapes et montre des fiches réelles", async ({ page }) => {
+    await page.goto("/professionnels");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Soyez trouvé");
+    await expect(page.getByRole("heading", { name: "Votre fiche en cinq étapes, dix minutes" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Les demandes que vous recevez" })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/certifié/i);
+  });
+
+  test("/a-propos, /contact et /accessibilite ont une illustration ou une photo", async ({ page }) => {
+    await page.goto("/a-propos");
+    await expect(page.locator("main img").first()).toBeVisible();
+    await page.goto("/contact");
+    await expect(page.locator("main svg").first()).toBeAttached();
+    await page.goto("/accessibilite");
+    await expect(page.locator("main svg").first()).toBeAttached();
+  });
+});
+
+test.describe("Annuaire", () => {
+  test("cartes illustrées, filtres rapides et état vide illustré", async ({ page }) => {
+    await page.goto("/annuaire");
+    await expect(page.locator("main img").first()).toBeVisible();
+    const chip = page.getByRole("search", { name: "Rechercher un professionnel" }).getByRole("link", { name: "Enfants bienvenus" });
+    await expect(chip).toHaveAttribute("href", /children=1/);
+    await chip.click();
+    await expect(page).toHaveURL(/children=1/);
+    await expect(page.getByRole("link", { name: "Enfants bienvenus" })).toHaveAttribute("aria-current", "true");
+    await expect(page.getByText("À quoi ressemble une demande")).toBeVisible();
+
+    await page.goto("/annuaire/dj?city=Paris&radius=10");
+    await expect(page.getByText("Le nid est vide pour cette recherche")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Réinitialiser les filtres" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Exemple de demande de devis" })).toBeVisible();
   });
 });
 

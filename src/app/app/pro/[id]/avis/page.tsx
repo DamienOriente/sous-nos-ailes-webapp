@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { MessageSquare, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { IllustratedEmpty } from "@/components/pages/workspace/illustrated-empty";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ActionForm, FieldErrorText } from "@/components/professionals/action-form";
 import { requireActor } from "@/lib/session";
@@ -24,7 +24,9 @@ export default async function ReviewsPage({ params }: { params: Promise<{ id: st
     <div className="space-y-6">
       <PageHeader title="Avis" description="Les avis proviennent d'organisateurs ayant échangé avec vous via la plateforme. Vous pouvez répondre une fois à chaque avis publié, ou le signaler à la modération." />
       {reviews.length === 0 ? (
-        <EmptyState icon={MessageSquare} title="Aucun avis pour le moment" description="Après une prestation, l'organisateur peut laisser un avis depuis son évènement. Il est relu avant publication." />
+        <IllustratedEmpty title="Aucun avis pour le moment" description="Après une prestation confirmée via la plateforme, l'organisateur peut laisser un avis depuis son évènement ; il est relu avant publication. Les avis ne peuvent pas être saisis à la main, c'est ce qui leur donne leur valeur.">
+          <p className="mt-3 text-sm text-muted-foreground">Un bon réflexe : à la fin de chaque prestation, dites à l'organisateur qu'il peut laisser un avis depuis son espace « Prestataires ».</p>
+        </IllustratedEmpty>
       ) : (
         <ul className="space-y-4">
           {reviews.map((r) => {

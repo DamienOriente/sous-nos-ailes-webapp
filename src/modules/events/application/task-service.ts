@@ -5,7 +5,10 @@ import { eventMembers, eventTaskComments, eventTasks, users } from "@/db/schema"
 import { NotFoundError, ValidationError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
 import { requireEventPermission, type EventAccess } from "@/modules/authorization";
+import { addDays } from "@/modules/events/domain/checklist";
+import { TASK_SUGGESTIONS } from "@/modules/events/domain/suggestions";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/modules/events/domain/task-labels";
+import { getEventWithPermission } from "@/modules/events/application/event-service";
 import { notify } from "@/modules/notifications/application/notification-service";
 
 export { TASK_PRIORITIES, TASK_PRIORITY_LABELS, TASK_STATUS_LABELS, TASK_STATUSES } from "@/modules/events/domain/task-labels";
@@ -165,6 +168,27 @@ export async function addTaskComment(actor: Actor, eventId: string, taskId: stri
   if (text.length < 1 || text.length > 2000) throw new ValidationError("Commentaire vide ou trop long.");
   await executor.insert(eventTaskComments).values({ taskId, authorUserId: actor.userId, body: text });
   if (task.assigneeMemberId) await notifyAssignee(eventId, task.assigneeMemberId, actor, `Nouveau commentaire : ${task.title}`, taskId, executor);
+}
+
+/** Quick-add of the suggested tasks of the event type (titles already present are skipped). */
+export async function addSuggestedTasks(actor: Actor, eventId: string, executor: DbExecutor = db): Promise<{ created: number }> {
+  const event = await getEventWithPermission(actor, eventId, "event.tasks.manage", executor);
+  const existing = await executor.select({ title: eventTasks.title }).from(eventTasks).where(eq(eventTasks.eventId, eventId));
+  const titles = new Set(existing.map((t) => t.title.trim().toLowerCase()));
+  const [maxRow] = await executor.select({ m: sql<number>`coalesce(max(sort_order),0)::int` }).from(eventTasks).where(eq(eventTasks.eventId, eventId));
+  const rows = TASK_SUGGESTIONS[event.type]
+    .filter((s) => !titles.has(s.title.toLowerCase()))
+    .map((s, i) => ({
+      eventId,
+      title: s.title,
+      section: s.section,
+      dueDate: event.eventDate && s.dueDaysBefore !== null ? addDays(event.eventDate, -s.dueDaysBefore) : null,
+      visibility: (event.access.isOrganizer ? "organizers" : "team") as "organizers" | "team",
+      sortOrder: (maxRow?.m ?? 0) + 10 + i,
+      createdByUserId: actor.userId,
+    }));
+  if (rows.length) await executor.insert(eventTasks).values(rows);
+  return { created: rows.length };
 }
 
 export async function listAssignableMembers(eventId: string, executor: DbExecutor = db) {

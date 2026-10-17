@@ -146,3 +146,15 @@ Dernière mise à jour : 2026-10-17 (fin de la mission V1). Preuves : `pnpm test
 | Audit dépendances | 🟡 | 1 alerte « high » restante sans correctif publié (`braces` via eslint-config-next, outil de dev uniquement) |
 | RLS PostgreSQL | ⬜ | Étudiée, non activée (`docs/security.md`) |
 | Pentest indépendant | ⬜ | À planifier avant ouverture commerciale |
+
+## Vitalité (images, exemples, données de démo) — 2026-10-17
+
+| Élément | Statut | Preuve / limite |
+|---|---|---|
+| Catalogue de 74 photos de démonstration vérifiées + composant `DemoPhoto` | ✅ | `docs/assets.md` ; à remplacer par des visuels sous licence avant commercialisation |
+| Illustrations SVG originales (9 scènes de base + scènes public/app/pro/évènements) | ✅ | `src/components/illustrations/*` |
+| Accueil, organiser, professionnels, annuaire illustrés avec exemples réels (évènement et fiches de démo étiquetés) | ✅ | `e2e/public*.spec.ts`, `e2e/accessibility.spec.ts` |
+| Fiches de démo avec vraies photos (couverture, galerie), 48 avis publiés liés à des demandes, pages et 24 templates avec photos | ✅ | seed `files.ts`/`professionals-data.ts`/`pages.ts`, `e2e/page-builder.spec.ts` |
+| Espaces évènements : couverture, tableau de bord visuel, états vides illustrés, chips d'exemples réels, seed riche | ✅ | `e2e/vitality.spec.ts`, intégration events |
+| Onboarding illustré avec « Utiliser cet exemple », pages auth en écran partagé, `/app` avec prochaines actions, paywalls avec aperçus React, admin avec sparklines | ✅ | `e2e/auth`, `premium`, `admin` |
+| Images du pipeline fichiers via `next/image` optimisé | 🟡 | rendues `unoptimized` (variantes WebP côté serveur) ; `images.localPatterns` à évaluer |

@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { toActionError, type ActionResult } from "@/lib/errors";
 import { requireActorOrThrow } from "@/lib/session";
-import { createMilestone, deleteMilestone, updateMilestone } from "@/modules/events/application/milestone-service";
+import { addSuggestedMilestones, createMilestone, deleteMilestone, updateMilestone } from "@/modules/events/application/milestone-service";
 
 function revalidate(eventId: string) {
   revalidatePath(`/app/evenements/${eventId}/planning`);
@@ -38,6 +38,17 @@ export async function deleteMilestoneAction(eventId: string, milestoneId: string
     await deleteMilestone(actor, z.uuid().parse(eventId), z.uuid().parse(milestoneId));
     revalidate(eventId);
     return { ok: true, data: undefined };
+  } catch (e) {
+    return toActionError(e);
+  }
+}
+
+export async function addSuggestedMilestonesAction(eventId: string): Promise<ActionResult<{ created: number }>> {
+  try {
+    const actor = await requireActorOrThrow();
+    const res = await addSuggestedMilestones(actor, z.uuid().parse(eventId));
+    revalidate(eventId);
+    return { ok: true, data: res };
   } catch (e) {
     return toActionError(e);
   }

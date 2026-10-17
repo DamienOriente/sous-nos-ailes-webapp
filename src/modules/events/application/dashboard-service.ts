@@ -1,6 +1,6 @@
-import { and, desc, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
-import { channelMembers, eventBudgetLines, eventChannels, eventChildren, eventExpenses, eventProfessionals, eventTasks, invitations, messages, professionalCategories, users } from "@/db/schema";
+import { channelMembers, eventBudgetLines, eventChannels, eventChildren, eventExpenses, eventMembers, eventMilestones, eventProfessionals, eventTasks, invitations, messages, professionalCategories, professionals, users } from "@/db/schema";
 import type { Actor } from "@/lib/session";
 import { computeAlerts, type Alert } from "@/modules/events/domain/alerts";
 import { computeBudgetSummary, type BudgetSummary } from "@/modules/events/domain/budget";
@@ -22,6 +22,14 @@ export type EventDashboard = {
   recentMessages: Array<{ id: string; body: string; authorName: string; channelName: string; channelId: string; createdAt: Date }>;
   pendingValidations: Array<{ id: string; label: string; status: string; categoryName: string | null; quoteCents: number | null }>;
   wanted: Array<{ slug: string; name: string; filled: boolean }>;
+  /** Next moments of the planning (D-day timeline), oldest first. */
+  upcomingMilestones: Array<{ id: string; title: string; startsAt: Date; endsAt: Date | null; location: string | null }>;
+  /** Checklist progress by section (organisers only). */
+  sectionProgress: Array<{ section: string; done: number; total: number }>;
+  /** Confirmed providers with the cover of their public listing when it exists. */
+  confirmedProviders: Array<{ id: string; displayName: string; categoryName: string | null; coverFileId: string | null; proSlug: string | null; isExternal: boolean }>;
+  /** Childcare team (members whose trade is childcare) + headcounts; null when the actor cannot see the roster. */
+  childcareTeam: { members: Array<{ id: string; name: string; role: string; title: string | null; assigned: number }>; children: number; expected: number | null } | null;
 };
 
 export async function getEventDashboard(actor: Actor, eventId: string, executor: DbExecutor = db): Promise<EventDashboard> {
@@ -31,9 +39,10 @@ export async function getEventDashboard(actor: Actor, eventId: string, executor:
   const base = `/app/evenements/${eventId}`;
 
   const providerRows = await executor
-    .select({ id: eventProfessionals.id, status: eventProfessionals.status, professionalId: eventProfessionals.professionalId, externalName: eventProfessionals.externalName, quoteCents: eventProfessionals.quoteCents, categoryName: professionalCategories.name })
+    .select({ id: eventProfessionals.id, status: eventProfessionals.status, professionalId: eventProfessionals.professionalId, externalName: eventProfessionals.externalName, proName: professionals.displayName, quoteCents: eventProfessionals.quoteCents, categoryName: professionalCategories.name })
     .from(eventProfessionals)
     .leftJoin(professionalCategories, eq(professionalCategories.id, eventProfessionals.categoryId))
+    .leftJoin(professionals, eq(professionals.id, eventProfessionals.professionalId))
     .where(eq(eventProfessionals.eventId, eventId));
   const real = providerRows.filter((p) => p.professionalId || p.externalName);
   const providers = {
@@ -127,9 +136,70 @@ export async function getEventDashboard(actor: Actor, eventId: string, executor:
   const pendingValidations = access.permissions.has("event.providers.manage")
     ? real
         .filter((p) => p.status === "requested" || p.status === "quoted")
-        .map((p) => ({ id: p.id, label: p.externalName ?? "Professionnel de la plateforme", status: p.status, categoryName: p.categoryName, quoteCents: p.quoteCents }))
+        .map((p) => ({ id: p.id, label: p.proName ?? p.externalName ?? "Professionnel de la plateforme", status: p.status, categoryName: p.categoryName, quoteCents: p.quoteCents }))
     : [];
 
+  const upcomingMilestones = access.permissions.has("event.milestones.view")
+    ? await executor
+        .select({ id: eventMilestones.id, title: eventMilestones.title, startsAt: eventMilestones.startsAt, endsAt: eventMilestones.endsAt, location: eventMilestones.location })
+        .from(eventMilestones)
+        .where(eq(eventMilestones.eventId, eventId))
+        .orderBy(asc(eventMilestones.startsAt), asc(eventMilestones.sortOrder))
+        .limit(6)
+    : [];
 
-  return { event, daysUntil: days, providers, tasks, budget, invitations: invitationStats, childrenCount, unreadMessages, alerts, upcomingTasks, recentMessages, pendingValidations, wanted };
+  const sectionMap = new Map<string, { done: number; total: number }>();
+  if (access.isOrganizer) {
+    for (const t of taskRows) {
+      if (t.status === "cancelled") continue;
+      const key = t.section ?? "Autres";
+      const acc = sectionMap.get(key) ?? { done: 0, total: 0 };
+      acc.total += 1;
+      if (t.status === "done") acc.done += 1;
+      sectionMap.set(key, acc);
+    }
+  }
+  const sectionProgress = [...sectionMap.entries()].map(([section, v]) => ({ section, ...v }));
+
+  const confirmedProviders = access.permissions.has("event.providers.view")
+    ? (
+        await executor
+          .select({
+            id: eventProfessionals.id,
+            externalName: eventProfessionals.externalName,
+            proName: professionals.displayName,
+            proSlug: professionals.slug,
+            professionalId: eventProfessionals.professionalId,
+            categoryName: professionalCategories.name,
+            coverFileId: sql<string | null>`(select ma.file_id from media_assets ma where ma.professional_id = ${eventProfessionals.professionalId} and ma.kind = 'cover' order by ma.sort_order asc limit 1)`,
+          })
+          .from(eventProfessionals)
+          .leftJoin(professionals, eq(professionals.id, eventProfessionals.professionalId))
+          .leftJoin(professionalCategories, eq(professionalCategories.id, eventProfessionals.categoryId))
+          .where(and(eq(eventProfessionals.eventId, eventId), eq(eventProfessionals.status, "confirmed")))
+          .orderBy(asc(professionalCategories.sortOrder))
+      )
+        .filter((p) => p.proName || p.externalName)
+        .map((p) => ({ id: p.id, displayName: p.proName ?? p.externalName ?? "", categoryName: p.categoryName, coverFileId: p.professionalId ? p.coverFileId : null, proSlug: p.proSlug, isExternal: !p.professionalId }))
+    : [];
+
+  let childcareTeam: EventDashboard["childcareTeam"] = null;
+  if (childrenCount !== null) {
+    const team = await executor
+      .select({
+        id: eventMembers.id,
+        name: users.name,
+        role: eventMembers.role,
+        title: eventMembers.title,
+        assigned: sql<number>`(select count(*) from child_care_assignments a join event_children c on c.id = a.child_id where a.member_id = ${eventMembers.id} and c.anonymized_at is null)::int`,
+      })
+      .from(eventMembers)
+      .innerJoin(users, eq(users.id, eventMembers.userId))
+      .innerJoin(professionalCategories, eq(professionalCategories.id, eventMembers.categoryId))
+      .where(and(eq(eventMembers.eventId, eventId), eq(eventMembers.status, "active"), eq(professionalCategories.isChildcare, true)))
+      .orderBy(asc(users.name));
+    childcareTeam = { members: team, children: childrenCount, expected: event.expectedChildren };
+  }
+
+  return { event, daysUntil: days, providers, tasks, budget, invitations: invitationStats, childrenCount, unreadMessages, alerts, upcomingTasks, recentMessages, pendingValidations, wanted, upcomingMilestones, sectionProgress, confirmedProviders, childcareTeam };
 }

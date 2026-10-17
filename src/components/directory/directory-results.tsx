@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Info, SearchX } from "lucide-react";
+import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { EmptyState } from "@/components/shared/empty-state";
+import { EmptyNestScene } from "@/components/illustrations";
 import { ProfessionalCard } from "@/components/directory/professional-card";
 import type { DirectoryResult } from "@/modules/directory/application/directory-search";
 import { toQueryString, type SearchFilters } from "@/modules/directory/domain/search-params";
@@ -51,12 +51,12 @@ export function DirectoryResults({
           <p className="text-xs text-muted-foreground">Classement : pertinence métier, proximité, disponibilité, complétude, vérifications. Les sponsorisés sont séparés et étiquetés.</p>
         </div>
         {result.items.length === 0 ? (
-          <EmptyState
-            icon={SearchX}
-            title="Aucun professionnel ne correspond"
-            description="Élargissez le rayon, retirez un critère ou explorez les métiers ci-dessous. Les professionnels sont ajoutés chaque semaine."
-            action={
-              <div className="flex flex-wrap justify-center gap-2">
+          <div role="status" className="grid items-center gap-6 rounded-3xl border border-dashed bg-card/60 p-6 sm:p-8 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)]">
+            <EmptyNestScene className="mx-auto max-w-[16rem]" />
+            <div>
+              <h3 className="text-lg font-semibold">Le nid est vide pour cette recherche</h3>
+              <p className="mt-1 max-w-md text-sm leading-6 text-muted-foreground text-pretty">Élargissez le rayon, retirez un critère ou explorez les métiers déjà présents. Les professionnels sont ajoutés chaque semaine.</p>
+              <div className="mt-5 flex flex-wrap gap-2">
                 <Button asChild variant="outline" size="sm">
                   <Link href="/annuaire">Réinitialiser les filtres</Link>
                 </Button>
@@ -68,8 +68,8 @@ export function DirectoryResults({
                   </Button>
                 ))}
               </div>
-            }
-          />
+            </div>
+          </div>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="results-grid">
             {result.items.map((p) => (

@@ -44,3 +44,15 @@ Si un fichier partagé doit absolument changer, décris le diff exact dans ton r
 3. Tests écrits et résultat d'exécution réel.
 4. Points de sécurité/limites connus, validations externes nécessaires.
 5. Toute modification demandée sur un fichier partagé (diff exact).
+
+## Chantier « vitalité » (2026-10-17, après la V1)
+
+Objectif : rendre l'application vivante — images, scènes illustrées, exemples et données de démonstration riches — sans jamais inventer de témoignage, de chiffre ou de certification.
+
+Socle disponible :
+- **Photos** : `@/modules/media/demo-photos` — catalogue de 75 photos Unsplash vérifiées (`DEMO_PHOTOS`, `demoPhoto(theme, index)`, `categoryPhoto(categorySlug, index)`, `eventPhoto(eventType, index)`, `unsplashUrl(id, {w,h,q})`, `CATEGORY_PHOTO_THEMES`). Composant `DemoPhoto` (`@/components/shared/demo-photo`, `next/image` avec `fill` : donne un conteneur dimensionné, `sizes` adapté, `priority` seulement pour le LCP). Les photos sont réservées aux profils fictifs, aux pages marketing de démo et aux états vides : ne jamais les attacher à un vrai professionnel. Marque « photo de démonstration » dans l'`alt` ou une légende quand le contexte peut prêter à confusion.
+- **Illustrations** : `@/components/illustrations` — `WingsScene`, `KidsCornerScene`, `TableScene`, `MusicScene`, `CameraScene`, `FlowersScene`, `CalendarScene`, `ConfettiScene`, `EmptyNestScene` (+ `ILLUSTRATIONS` map). Décoratives (`aria-hidden`) sauf `title` fourni. Tu peux en ajouter dans ce dossier (fichier à ton nom de module, ex. `events-scenes.tsx`) en suivant le même style : formes simples, tokens `--sna-*`.
+- Pour mettre de vraies images dans les galeries des pros de démo, le seed `files.ts` peut télécharger les photos du catalogue (`fetch` → `createUpload(..., { process: "inline" })`) avec repli sur les visuels générés si le réseau est absent.
+- Règles inchangées : fichiers partagés interdits, pas de `drizzle-kit generate`, `pnpm tsc --noEmit` et `pnpm lint` verts, tests existants verts (`pnpm test`, suites d'intégration/E2E touchées), aucune donnée inventée présentée comme réelle (démo = `isDemo`, étiquetée).
+
+Socle « exemples » réutilisable (ajouté par le chantier vitalité) : `src/components/illustrations/{public-scenes,app-scenes,pro-scenes,event-scenes}.tsx`, `src/modules/tools/domain/tool-examples.ts` (un exemple par outil), `src/components/professionals/listing-examples.ts` (fiches d'exemple par métier), `FEATURE_PREVIEWS` dans `src/components/billing/tool-previews.tsx` (mini-rendus React des outils premium), `src/modules/identity/domain/next-actions.ts` (prochaines actions dérivées des données).

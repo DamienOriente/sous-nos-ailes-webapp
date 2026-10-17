@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { sampleRenderData, withSampleGallery } from "@/modules/pages/domain/sample-content";
+import { sampleRenderData, withSamplePhotos } from "@/modules/pages/domain/sample-content";
 import type { PageRenderData } from "@/modules/pages/domain/render-data";
 import { PageRenderer } from "./renderer";
 
@@ -10,7 +10,10 @@ import { PageRenderer } from "./renderer";
  * the caller provides the label).
  */
 export function TemplateThumbnail({ templateKey, paletteKey, data, className, width = 1280, compact = true }: { templateKey: string; paletteKey?: string; data?: PageRenderData; className?: string; width?: number; /** Only the hero and the first sections: enough to show the structure, light enough for a grid of 24. */ compact?: boolean }) {
-  const sample = data ?? { ...sampleRenderData(templateKey, paletteKey), content: withSampleGallery(sampleRenderData(templateKey).content) };
+  const sample = data ?? (() => {
+    const base = sampleRenderData(templateKey, paletteKey);
+    return { ...base, content: withSamplePhotos(base.content, templateKey) };
+  })();
   const content = compact ? sample.content.slice(0, 5) : sample.content;
   const render = { ...sample, content, templateKey, theme: paletteKey ? { ...sample.theme, palette: paletteKey } : sample.theme };
   return (

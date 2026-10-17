@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -17,12 +17,20 @@ import { EVENT_TYPE_LABELS, EVENT_TYPES, type EventType } from "@/modules/events
 
 export type CategoryOption = { slug: string; name: string; group: string; isChildcare: boolean };
 
-type Props = {
+/** Fields mirrored to the parent (live summary) and accepted as initial values (examples). */
+export type EventFormValues = { type: EventType; who: string; name: string; eventDate: string; city: string; postalCode: string; venueName: string; guests: string; children: string; budget: string };
+
+export type EventFormProps = {
   categories: CategoryOption[];
   firstName: string;
   mode: "onboarding" | "create";
   action: (input: CreateEventInput) => Promise<ActionResult<{ id: string }>>;
+  /** Pre-filled values (e.g. "use this example"); remount the form with a new `key` to apply another set. */
+  initialValues?: Partial<EventFormValues>;
+  /** Called after every change with the current values. */
+  onChange?: (values: EventFormValues) => void;
 };
+type Props = EventFormProps;
 
 const STEPS = ["Type", "Date & lieu", "Invités & budget", "Prestataires"] as const;
 
@@ -37,27 +45,33 @@ const DEFAULT_WANTED: Record<EventType, string[]> = {
 };
 
 /** Progressive form shared by the organiser onboarding and "new event". Validation errors come from the server (Zod) and are shown globally. */
-export function EventForm({ categories, firstName, mode, action }: Props) {
+export function EventForm({ categories, firstName, mode, action, initialValues, onChange }: Props) {
   const router = useRouter();
+  const iv = initialValues ?? {};
+  const initialType = iv.type ?? "wedding";
   const [step, setStep] = useState(0);
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const [type, setType] = useState<EventType>("wedding");
-  const [who, setWho] = useState("");
-  const [name, setName] = useState(suggestedEventName("wedding", firstName));
-  const [nameTouched, setNameTouched] = useState(false);
+  const [type, setType] = useState<EventType>(initialType);
+  const [who, setWho] = useState(iv.who ?? "");
+  const [name, setName] = useState(iv.name ?? suggestedEventName(initialType, firstName, iv.who));
+  const [nameTouched, setNameTouched] = useState(Boolean(iv.name));
   const [dateKnown, setDateKnown] = useState(true);
-  const [eventDate, setEventDate] = useState("");
+  const [eventDate, setEventDate] = useState(iv.eventDate ?? "");
   const [tentative, setTentative] = useState(false);
   const [startTime, setStartTime] = useState("");
-  const [city, setCity] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [venueName, setVenueName] = useState("");
-  const [guests, setGuests] = useState("");
-  const [children, setChildren] = useState("");
-  const [budget, setBudget] = useState("");
-  const [wanted, setWanted] = useState<string[]>(DEFAULT_WANTED.wedding);
+  const [city, setCity] = useState(iv.city ?? "");
+  const [postalCode, setPostalCode] = useState(iv.postalCode ?? "");
+  const [venueName, setVenueName] = useState(iv.venueName ?? "");
+  const [guests, setGuests] = useState(iv.guests ?? "");
+  const [children, setChildren] = useState(iv.children ?? "");
+  const [budget, setBudget] = useState(iv.budget ?? "");
+  const [wanted, setWanted] = useState<string[]>(DEFAULT_WANTED[initialType].filter((slug) => categories.some((c) => c.slug === slug)));
+
+  useEffect(() => {
+    onChange?.({ type, who, name, eventDate, city, postalCode, venueName, guests, children, budget });
+  }, [onChange, type, who, name, eventDate, city, postalCode, venueName, guests, children, budget]);
   const [preferences, setPreferences] = useState("");
 
   const grouped = useMemo(() => {

@@ -1,6 +1,10 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Baby, CheckSquare, Euro, Handshake, Info, Mail, MessageSquare, Search, ShieldAlert, Sparkles } from "lucide-react";
-import { EmptyState, StatCard, StatusBadge } from "@/components/shared";
+import { AlertTriangle, ArrowRight, Baby, CheckSquare, Clock, CloudSun, Euro, Handshake, Info, Mail, MapPin, MessageSquare, Search, ShieldAlert, Sparkles, Sun } from "lucide-react";
+import { Monogram, ProgressBar } from "@/components/events/event-cover";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { CalendarScene, KidsCornerScene } from "@/components/illustrations";
+import { ChatScene, HandshakeScene } from "@/components/illustrations/event-scenes";
+import { StatCard, StatusBadge } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireActor } from "@/lib/session";
@@ -9,7 +13,14 @@ import { getEventDashboard } from "@/modules/events/application/dashboard-servic
 import { suggestProfessionals } from "@/modules/events/application/event-service";
 import { countdownLabel } from "@/modules/events/domain/event-status";
 import { PROVIDER_STATUS_LABELS, PROVIDER_STATUS_TONES } from "@/modules/events/domain/providers";
+import { publicImageHref } from "@/modules/files/application/file-urls";
 import { guardPage } from "./_guards";
+
+const SECTION_TONES = ["primary", "gold", "sky", "blush"] as const;
+
+function timeIn(d: Date, timeZone: string) {
+  return new Intl.DateTimeFormat("fr-FR", { timeZone, hour: "2-digit", minute: "2-digit" }).format(d);
+}
 
 export default async function EventDashboardPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ nouveau?: string }> }) {
   const { id } = await params;
@@ -21,6 +32,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
   const missing = d.wanted.filter((w) => !w.filled);
   const showSuggestions = access.permissions.has("event.providers.manage") && (nouveau === "1" || missing.length > 0);
   const suggestions = showSuggestions ? await suggestProfessionals(missing.map((m) => m.slug), event.department) : [];
+  const weather = d.alerts.some((a) => a.severity === "danger") ? "orage" : d.alerts.length > 0 ? "nuageux" : "beau";
 
   return (
     <div className="space-y-8">
@@ -102,24 +114,139 @@ export default async function EventDashboardPage({ params, searchParams }: { par
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          {d.alerts.length > 0 && (
-            <section aria-labelledby="alerts" className="space-y-2">
-              <h2 id="alerts" className="text-lg font-semibold">
-                Alertes
-              </h2>
-              <ul className="space-y-2">
-                {d.alerts.map((a) => (
-                  <li key={a.key}>
-                    <Link href={a.href ?? base} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3 transition-colors hover:bg-muted/50">
-                      {a.severity === "danger" ? <ShieldAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" /> : a.severity === "warning" ? <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground" aria-hidden="true" /> : <Info className="mt-0.5 size-4 shrink-0 text-info" aria-hidden="true" />}
-                      <span>
-                        <span className="block font-medium">{a.title}</span>
-                        {a.description && <span className="block text-sm text-muted-foreground">{a.description}</span>}
+          {access.permissions.has("event.milestones.view") && (
+            <section aria-labelledby="moments" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 id="moments" className="text-lg font-semibold">
+                  Moments à venir
+                </h2>
+                <Link href={`${base}/planning`} className="text-sm font-medium text-primary hover:underline">
+                  Planning complet
+                </Link>
+              </div>
+              {d.upcomingMilestones.length === 0 ? (
+                <IllustratedEmpty
+                  scene={CalendarScene}
+                  compact
+                  title="Le déroulé du jour J n'est pas encore écrit"
+                  description="Les moments clés sont partagés avec les prestataires concernés, qui sont prévenus à chaque changement."
+                  example="Cérémonie — 15:00 → 16:00, le parc"
+                  action={access.permissions.has("event.milestones.manage") ? <Button asChild size="sm"><Link href={`${base}/planning`}>Construire le planning</Link></Button> : undefined}
+                />
+              ) : (
+                <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="dashboard-moments">
+                  {d.upcomingMilestones.map((m, i) => (
+                    <li key={m.id} className="relative overflow-hidden rounded-2xl border bg-card p-4">
+                      <span className="absolute inset-y-0 left-0 w-1 bg-primary/70" style={{ opacity: 1 - i * 0.12 }} aria-hidden="true" />
+                      <p className="inline-flex items-center gap-1.5 text-sm font-semibold tabular-nums text-primary">
+                        <Clock className="size-3.5" aria-hidden="true" />
+                        {timeIn(m.startsAt, event.timezone)}
+                        {m.endsAt ? ` – ${timeIn(m.endsAt, event.timezone)}` : ""}
+                      </p>
+                      <p className="mt-1 font-medium leading-snug">{m.title}</p>
+                      {m.location && (
+                        <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="size-3" aria-hidden="true" />
+                          {m.location}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
+          )}
+
+          {access.isOrganizer && d.sectionProgress.length > 0 && (
+            <section aria-labelledby="progress" className="space-y-3 rounded-2xl border bg-card p-5">
+              <div className="flex items-center justify-between">
+                <h2 id="progress" className="text-lg font-semibold">
+                  Progression par section
+                </h2>
+                <span className="text-sm text-muted-foreground tabular-nums">
+                  {d.tasks.done} / {d.tasks.total} tâches
+                </span>
+              </div>
+              <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2" data-testid="dashboard-sections">
+                {d.sectionProgress.map((s, i) => (
+                  <li key={s.section} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <Link href={`${base}/taches`} className="font-medium hover:underline">
+                        {s.section}
+                      </Link>
+                      <span className="text-muted-foreground tabular-nums">
+                        {s.done}/{s.total}
                       </span>
-                    </Link>
+                    </div>
+                    <ProgressBar value={s.done} max={s.total} label={`${s.section} : ${s.done} sur ${s.total}`} tone={SECTION_TONES[i % SECTION_TONES.length]} />
                   </li>
                 ))}
               </ul>
+            </section>
+          )}
+
+          {access.isOrganizer && (
+            <section aria-labelledby="weather" className="space-y-2">
+              <h2 id="weather" className="flex items-center gap-2 text-lg font-semibold">
+                {weather === "beau" ? <Sun className="size-5 text-gold" aria-hidden="true" /> : <CloudSun className="size-5 text-warning-foreground" aria-hidden="true" />}
+                Météo de l'organisation
+              </h2>
+              {d.alerts.length === 0 ? (
+                <p className="rounded-2xl border bg-card px-4 py-3 text-sm text-muted-foreground">Ciel dégagé : aucune tâche en retard, aucun budget dépassé, tous les prestataires recherchés sont trouvés.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {d.alerts.map((a) => (
+                    <li key={a.key}>
+                      <Link href={a.href ?? base} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3 transition-colors hover:bg-muted/50">
+                        {a.severity === "danger" ? <ShieldAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" /> : a.severity === "warning" ? <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground" aria-hidden="true" /> : <Info className="mt-0.5 size-4 shrink-0 text-info" aria-hidden="true" />}
+                        <span>
+                          <span className="block font-medium">{a.title}</span>
+                          {a.description && <span className="block text-sm text-muted-foreground">{a.description}</span>}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+
+          {access.permissions.has("event.providers.view") && (
+            <section aria-labelledby="confirmed" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 id="confirmed" className="text-lg font-semibold">
+                  Prestataires confirmés
+                </h2>
+                <Link href={`${base}/prestataires`} className="text-sm font-medium text-primary hover:underline">
+                  Tous les prestataires
+                </Link>
+              </div>
+              {d.confirmedProviders.length === 0 ? (
+                <IllustratedEmpty scene={HandshakeScene} compact title="Aucun prestataire confirmé pour l'instant" description="Dès qu'un devis est accepté, le professionnel apparaît ici avec la photo de sa fiche." example="Domaine des Tilleuls — lieu de réception, confirmé" action={access.permissions.has("event.providers.manage") ? <Button asChild size="sm" variant="outline"><Link href={`${base}/prestataires`}>Voir la présélection</Link></Button> : undefined} />
+              ) : (
+                <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="dashboard-providers">
+                  {d.confirmedProviders.map((p) => (
+                    <li key={p.id}>
+                      <Link href={`${base}/prestataires/${p.id}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-shadow hover:shadow-md">
+                        <div className="relative aspect-[5/2] bg-muted">
+                          {p.coverFileId ? (
+                            // eslint-disable-next-line @next/next/no-img-element -- public rendition served by the files module
+                            <img src={publicImageHref(p.coverFileId, "medium")} alt="" className="absolute inset-0 size-full object-cover" />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center bg-sage-soft">
+                              <Monogram name={p.displayName} size="lg" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <p className="text-[11px] font-semibold tracking-wide text-primary uppercase">{p.categoryName ?? "Prestataire"}</p>
+                          <p className="truncate font-medium group-hover:underline">{p.displayName}</p>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           )}
 
@@ -134,7 +261,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
                 </Link>
               </div>
               {d.upcomingTasks.length === 0 ? (
-                <EmptyState title="Aucune échéance à venir" description="Ajoutez des tâches avec une date pour les voir apparaître ici." />
+                <p className="rounded-2xl border bg-card px-4 py-3 text-sm text-muted-foreground">Aucune échéance à venir. Ajoutez une date aux tâches pour les voir apparaître ici.</p>
               ) : (
                 <ul className="divide-y rounded-xl border bg-card">
                   {d.upcomingTasks.map((t) => (
@@ -174,35 +301,82 @@ export default async function EventDashboardPage({ params, searchParams }: { par
           )}
         </div>
 
-        <aside className="space-y-2" aria-labelledby="recent-messages">
-          <div className="flex items-center justify-between">
-            <h2 id="recent-messages" className="text-lg font-semibold">
-              Derniers messages
-            </h2>
-            <Link href={`${base}/messages`} className="text-sm font-medium text-primary hover:underline">
-              Messagerie
-            </Link>
-          </div>
-          {d.recentMessages.length === 0 ? (
-            <EmptyState icon={MessageSquare} title="Pas encore de message" description="Le canal Général est ouvert à toute l'équipe." />
-          ) : (
-            <ul className="space-y-2">
-              {d.recentMessages.map((m) => (
-                <li key={m.id}>
-                  <Link href={`${base}/messages/${m.channelId}`} className="block rounded-xl border bg-card px-4 py-3 text-sm transition-colors hover:bg-muted/50">
-                    <span className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                      <span className="truncate">
-                        <span className="font-medium text-foreground">{m.authorName}</span> · #{m.channelName}
-                      </span>
-                      <time dateTime={m.createdAt.toISOString()}>{formatDateFr(m.createdAt, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</time>
-                    </span>
-                    <span className="mt-1 line-clamp-2 block">{m.body}</span>
+        <aside className="space-y-6">
+          {d.childcareTeam && (
+            <section aria-labelledby="kids-team" className="overflow-hidden rounded-2xl border bg-card" data-testid="dashboard-kids">
+              <div className="bg-sage-soft/60 px-5 pt-4">
+                <KidsCornerScene className="mx-auto max-w-[14rem]" />
+              </div>
+              <div className="space-y-3 p-5">
+                <div className="flex items-center justify-between">
+                  <h2 id="kids-team" className="text-lg font-semibold">
+                    Équipe enfants
+                  </h2>
+                  <Link href={`${base}/enfants`} className="text-sm font-medium text-primary hover:underline">
+                    Espace enfants
                   </Link>
-                </li>
-              ))}
-            </ul>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground tabular-nums">{d.childcareTeam.children}</span> enfant{d.childcareTeam.children > 1 ? "s" : ""} inscrit{d.childcareTeam.children > 1 ? "s" : ""}
+                  {d.childcareTeam.expected ? ` sur ${d.childcareTeam.expected} attendus` : ""} · {d.childcareTeam.members.length} encadrant{d.childcareTeam.members.length > 1 ? "s" : ""}
+                </p>
+                {d.childcareTeam.members.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Aucun professionnel de la garde d'enfants n'a encore rejoint l'équipe.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {d.childcareTeam.members.map((m) => (
+                      <li key={m.id} className="flex items-center gap-3 text-sm">
+                        <Monogram name={m.name} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">{m.name}</span>
+                          <span className="block truncate text-xs text-muted-foreground">{m.title ?? (m.role === "staff" ? "Renfort" : "Responsable")}</span>
+                        </span>
+                        <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums">
+                          {m.assigned} enfant{m.assigned > 1 ? "s" : ""}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
           )}
-          <CardContent className="px-0 pt-2 text-xs text-muted-foreground">Les organisateurs de l'évènement peuvent lire tous les échanges de cet espace.</CardContent>
+
+          <section className="space-y-2" aria-labelledby="recent-messages">
+            <div className="flex items-center justify-between">
+              <h2 id="recent-messages" className="text-lg font-semibold">
+                Derniers messages
+              </h2>
+              <Link href={`${base}/messages`} className="text-sm font-medium text-primary hover:underline">
+                Messagerie
+              </Link>
+            </div>
+            {d.recentMessages.length === 0 ? (
+              <IllustratedEmpty scene={ChatScene} compact title="Pas encore de message" description="Le canal Général est ouvert à toute l'équipe ; les organisateurs lisent tous les échanges." example="Bienvenue à tous ! Le planning du jour J est dans l'onglet Planning." action={<Button asChild size="sm" variant="outline"><Link href={`${base}/messages`}>Écrire le premier message</Link></Button>} />
+            ) : (
+              <ul className="space-y-2" data-testid="dashboard-messages">
+                {d.recentMessages.map((m) => (
+                  <li key={m.id}>
+                    <Link href={`${base}/messages/${m.channelId}`} className="flex gap-3 rounded-xl border bg-card px-3 py-3 text-sm transition-colors hover:bg-muted/50">
+                      <Monogram name={m.authorName} />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                          <span className="truncate">
+                            <span className="font-medium text-foreground">{m.authorName}</span> · #{m.channelName}
+                          </span>
+                          <time dateTime={m.createdAt.toISOString()} className="shrink-0">
+                            {formatDateFr(m.createdAt, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          </time>
+                        </span>
+                        <span className="mt-1 line-clamp-2 block">{m.body}</span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <CardContent className="px-0 pt-2 text-xs text-muted-foreground">Les organisateurs de l'évènement peuvent lire tous les échanges de cet espace.</CardContent>
+          </section>
         </aside>
       </div>
     </div>

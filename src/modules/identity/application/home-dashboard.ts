@@ -1,7 +1,8 @@
-import { and, asc, desc, eq, gte, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
-import { eventMembers, events, notifications, professionals, users } from "@/db/schema";
+import { eventMembers, events, mediaAssets, notifications, professionalCategories, professionals, users } from "@/db/schema";
 import type { Actor } from "@/lib/session";
+import { deriveNextActions, type NextAction } from "@/modules/identity/domain/next-actions";
 import { isPrivilegedRole } from "@/modules/identity/domain/security";
 
 export type HomeEvent = {
@@ -12,6 +13,9 @@ export type HomeEvent = {
   eventDate: string | null;
   dateIsTentative: boolean;
   city: string | null;
+  venueName: string | null;
+  expectedGuests: number | null;
+  expectedChildren: number | null;
   role: string;
   timezone: string;
 };
@@ -23,6 +27,10 @@ export type HomeProfessional = {
   status: string;
   city: string | null;
   completenessScore: number;
+  categorySlug: string | null;
+  categoryName: string | null;
+  /** Cover picture uploaded by the professional (media_assets kind "cover"), if any. */
+  coverFileId: string | null;
 };
 
 export type HomeNotification = {
@@ -45,6 +53,9 @@ export type HomeDashboard = {
   professionals: HomeProfessional[];
   unreadNotifications: HomeNotification[];
   unreadCount: number;
+  nextActions: NextAction[];
+  /** Days until the first dated upcoming event (0 = today), null when none. */
+  nextEventInDays: number | null;
   isEmpty: boolean;
 };
 
@@ -70,6 +81,9 @@ export async function getHomeDashboard(actor: Actor, executor: DbExecutor = db):
       eventDate: events.eventDate,
       dateIsTentative: events.dateIsTentative,
       city: events.city,
+      venueName: events.venueName,
+      expectedGuests: events.expectedGuests,
+      expectedChildren: events.expectedChildren,
       role: eventMembers.role,
       timezone: events.timezone,
     })
@@ -87,12 +101,33 @@ export async function getHomeDashboard(actor: Actor, executor: DbExecutor = db):
     .orderBy(sql`${events.eventDate} asc nulls last`, asc(events.createdAt))
     .limit(5);
 
-  const pros = await executor
-    .select({ id: professionals.id, displayName: professionals.displayName, slug: professionals.slug, status: professionals.status, city: professionals.city, completenessScore: professionals.completenessScore })
+  const proRows = await executor
+    .select({
+      id: professionals.id,
+      displayName: professionals.displayName,
+      slug: professionals.slug,
+      status: professionals.status,
+      city: professionals.city,
+      completenessScore: professionals.completenessScore,
+      categorySlug: professionalCategories.slug,
+      categoryName: professionalCategories.name,
+    })
     .from(professionals)
+    .leftJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
     .where(and(eq(professionals.ownerUserId, actor.userId), isNull(professionals.deletedAt)))
     .orderBy(desc(professionals.updatedAt))
     .limit(5);
+
+  const covers = proRows.length
+    ? await executor
+        .select({ professionalId: mediaAssets.professionalId, fileId: mediaAssets.fileId })
+        .from(mediaAssets)
+        .where(and(inArray(mediaAssets.professionalId, proRows.map((p) => p.id)), eq(mediaAssets.kind, "cover")))
+        .orderBy(asc(mediaAssets.sortOrder), asc(mediaAssets.createdAt))
+    : [];
+  const coverByPro = new Map<string, string>();
+  for (const c of covers) if (!coverByPro.has(c.professionalId)) coverByPro.set(c.professionalId, c.fileId);
+  const pros: HomeProfessional[] = proRows.map((p) => ({ ...p, coverFileId: coverByPro.get(p.id) ?? null }));
 
   const unread = await executor
     .select({ id: notifications.id, type: notifications.type, title: notifications.title, body: notifications.body, href: notifications.href, createdAt: notifications.createdAt })
@@ -107,16 +142,23 @@ export async function getHomeDashboard(actor: Actor, executor: DbExecutor = db):
     .where(and(eq(notifications.userId, actor.userId), isNull(notifications.readAt)));
 
   const twoFactorEnabled = userRow?.twoFactorEnabled ?? false;
+  const emailVerified = userRow?.emailVerified ?? actor.emailVerified;
+  const twoFactorRequiredButMissing = isPrivilegedRole(actor.globalRole) && !twoFactorEnabled;
+  const unreadCount = count?.n ?? 0;
+  const firstDated = upcomingEvents.find((e) => e.eventDate);
+  const nextEventInDays = firstDated?.eventDate ? Math.max(0, Math.round((new Date(`${firstDated.eventDate}T12:00:00Z`).getTime() - Date.now()) / 86_400_000)) : null;
   return {
     firstName: (userRow?.name ?? actor.name).split(/\s+/)[0] ?? actor.name,
     timezone: userRow?.timezone ?? "Europe/Paris",
-    emailVerified: userRow?.emailVerified ?? actor.emailVerified,
+    emailVerified,
     twoFactorEnabled,
-    twoFactorRequiredButMissing: isPrivilegedRole(actor.globalRole) && !twoFactorEnabled,
+    twoFactorRequiredButMissing,
     upcomingEvents,
     professionals: pros,
     unreadNotifications: unread,
-    unreadCount: count?.n ?? 0,
+    unreadCount,
+    nextEventInDays,
+    nextActions: deriveNextActions({ today: new Date(), emailVerified, twoFactorRequiredButMissing, unreadCount, events: upcomingEvents, professionals: pros }),
     isEmpty: upcomingEvents.length === 0 && pros.length === 0,
   };
 }

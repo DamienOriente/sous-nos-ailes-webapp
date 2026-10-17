@@ -3,13 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container, Section } from "@/components/shared/section";
 import { Breadcrumbs, CategoryFaq, CategoryIntro, CategoryJsonLd, geoTitle } from "@/components/directory/category-seo";
+import { DirectoryHeader } from "@/components/directory/directory-header";
 import { DirectoryResults } from "@/components/directory/directory-results";
 import { SearchFilters } from "@/components/directory/search-filters";
+import { InquiryExample } from "@/components/marketing/mockups";
 import { env } from "@/lib/env";
 import { getActor } from "@/lib/session";
 import { emptyStateSuggestions, searchDirectory } from "@/modules/directory/application/directory-search";
 import { listIndexableDirectoryPaths } from "@/modules/directory/application/directory-paths";
 import { parseSearchParams } from "@/modules/directory/domain/search-params";
+import { categoryPhoto } from "@/modules/media/demo-photos";
 import { listActiveCategories } from "@/modules/professionals/application/professional-service";
 import { findDepartmentBySlug } from "@/modules/professionals/domain/geo";
 
@@ -45,16 +48,15 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     { name: "Annuaire", path: "/annuaire" },
     { name: cat.name, path },
   ];
+  const photos = [categoryPhoto(cat.slug, 0), categoryPhoto(cat.slug, 1), categoryPhoto(cat.slug, 2)].filter((p, i, arr) => arr.findIndex((o) => o.id === p.id) === i);
   return (
     <Section className="py-8 sm:py-12">
       <Container size="wide" className="space-y-8">
         <CategoryJsonLd title={title} path={path} items={result.items} breadcrumbs={breadcrumbs} />
         <Breadcrumbs items={breadcrumbs} />
-        <header className="space-y-3">
-          <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">{cat.group}</p>
-          <h1 className="font-heading text-3xl font-semibold text-balance sm:text-4xl">{title}</h1>
+        <DirectoryHeader eyebrow={cat.group} title={title} photos={photos}>
           <CategoryIntro categoryName={cat.name} categoryDescription={cat.description} isChildcare={cat.isChildcare} geo={null} total={result.total} />
-        </header>
+        </DirectoryHeader>
         <SearchFilters filters={filters} categories={categories.map((c) => ({ slug: c.slug, name: c.name, group: c.group }))} action={path} lockedCategory signedIn={Boolean(actor)} />
         <DirectoryResults result={result} filters={filters} basePath={path} signedIn={Boolean(actor)} suggestions={suggestions.categories} />
         {geoLinks.length > 0 && (
@@ -74,7 +76,15 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             </ul>
           </nav>
         )}
-        <CategoryFaq categoryName={cat.name} isChildcare={cat.isChildcare} geo={null} />
+        <div className="grid gap-8 border-t pt-8 lg:grid-cols-2 lg:gap-10">
+          <CategoryFaq categoryName={cat.name} isChildcare={cat.isChildcare} geo={null} />
+          <section aria-labelledby="demande-title" className="space-y-3">
+            <h2 id="demande-title" className="font-heading text-xl font-semibold">
+              Exemple de demande de devis
+            </h2>
+            <InquiryExample categoryName={cat.name} />
+          </section>
+        </div>
       </Container>
     </Section>
   );

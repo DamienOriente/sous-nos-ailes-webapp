@@ -252,11 +252,13 @@ export async function ensurePublicProfile(professionalId: string, templateKey?: 
   if (!profile) throw new Error("failed to create public profile");
 
   const content = generateDefaultContent(toSnapshot(pro, cat), template.key);
+  // A profile can exist without a draft pointer (published version only, e.g. after moderation tooling): continue the numbering.
+  const [{ max }] = (await executor.select({ max: sql<number>`coalesce(max(${profileVersions.versionNumber}), 0)` }).from(profileVersions).where(eq(profileVersions.publicProfileId, profile.id))) as [{ max: number }];
   const [draft] = await executor
     .insert(profileVersions)
     .values({
       publicProfileId: profile.id,
-      versionNumber: 1,
+      versionNumber: Number(max) + 1,
       status: "draft",
       templateKey: template.key,
       schemaVersion: SCHEMA_VERSION,

@@ -1,6 +1,18 @@
 import { cn } from "@/lib/utils";
+import { richTextToPlain } from "@/modules/pages/domain/page-schema";
+import { labelFor, PRICE_UNITS } from "@/modules/professionals/domain/listing-schema";
 import { FaqAccordion } from "./faq-accordion";
-import { anchorOf, type BlockProps, CtaButton, formatPrice, headingOr, Picture, RichText, SectionHeading, Stars } from "./shared";
+import { anchorOf, type BlockContext, type BlockProps, CtaButton, formatPrice, headingOr, Monogram, Picture, RichText, SectionHeading, Stars } from "./shared";
+
+/**
+ * Pictures that can illustrate the services ("exemples de prestations"): the
+ * page's own gallery, cycled so every card gets a different photo. Empty when
+ * the page has no gallery, in which case the cards stay text-only.
+ */
+function servicePictures(ctx: BlockContext): Array<{ fileId: string; alt: string }> {
+  const gallery = ctx.data.content.find((b) => b.type === "gallery" && !b.hidden);
+  return gallery && gallery.type === "gallery" ? gallery.props.images.map((img) => ({ fileId: img.fileId, alt: img.alt })) : [];
+}
 
 /** About: prose | two-column | with-image | pullquote | boxed */
 export function AboutBlock({ block, variant = "prose" }: BlockProps<"about">) {
@@ -39,7 +51,7 @@ export function AboutBlock({ block, variant = "prose" }: BlockProps<"about">) {
           {heading}
         </h2>
         {first && <RichText body={[first]} className="text-2xl leading-snug sm:text-3xl [&_p]:font-[var(--pg-font-heading)]" />}
-        {rest.length > 0 && <RichText body={rest} className="mt-8 columns-1 gap-10 text-[1.05rem] leading-relaxed text-(--pg-muted) sm:columns-2" />}
+        {rest.length > 0 && <RichText body={rest} className={cn("mt-8 text-[1.05rem] leading-relaxed text-(--pg-muted)", richTextToPlain(rest).length > 500 && "columns-1 gap-10 sm:columns-2")} />}
       </section>
     );
   }
@@ -63,6 +75,8 @@ export function AboutBlock({ block, variant = "prose" }: BlockProps<"about">) {
   );
 }
 
+const formatDuration = (minutes: number) => (minutes >= 60 ? `${Math.floor(minutes / 60)} h${minutes % 60 ? ` ${String(minutes % 60).padStart(2, "0")}` : ""}` : `${minutes} min`);
+
 /** Services: cards | list | menu | tiles | steps | columns | table */
 export function ServicesBlock({ block, ctx, variant = "cards" }: BlockProps<"services">) {
   const heading = headingOr(block, "Prestations");
@@ -72,8 +86,8 @@ export function ServicesBlock({ block, ctx, variant = "cards" }: BlockProps<"ser
       ? ctx.data.services.map((s) => ({
           name: s.name,
           description: s.description ?? undefined,
-          priceLabel: s.priceCents ? `à partir de ${formatPrice(s.priceCents)}${s.priceUnit ? ` / ${s.priceUnit}` : ""}` : undefined,
-          meta: [s.durationMinutes ? `${s.durationMinutes} min` : null, s.minAge !== null || s.maxAge !== null ? `${s.minAge ?? 0}–${s.maxAge ?? 12} ans` : null, s.capacity ? `jusqu'à ${s.capacity} enfants` : null].filter(Boolean) as string[],
+          priceLabel: s.priceCents ? `à partir de ${formatPrice(s.priceCents)}${s.priceUnit ? ` ${labelFor(PRICE_UNITS, s.priceUnit)}` : ""}` : undefined,
+          meta: [s.durationMinutes ? formatDuration(s.durationMinutes) : null, s.minAge !== null || s.maxAge !== null ? `${s.minAge ?? 0}–${s.maxAge ?? 12} ans` : null, s.capacity ? `jusqu'à ${s.capacity} ${s.minAge !== null || s.maxAge !== null ? "enfants" : "personnes"}` : null].filter(Boolean) as string[],
         }))
       : block.props.items.map((s) => ({ ...s, meta: [] as string[] }));
 
@@ -85,6 +99,7 @@ export function ServicesBlock({ block, ctx, variant = "cards" }: BlockProps<"ser
     ) : null;
   }
 
+  const pictures = servicePictures(ctx);
   const head = (
     <div className="mb-8 max-w-2xl">
       <SectionHeading>
@@ -155,17 +170,22 @@ export function ServicesBlock({ block, ctx, variant = "cards" }: BlockProps<"ser
     );
   }
   if (variant === "tiles") {
+    const lead = pictures[0];
     return (
       <section id={id} aria-labelledby={`${id}-h`}>
         {head}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((it, i) => (
-            <article key={i} className={cn("flex flex-col justify-between rounded-(--pg-radius-lg) p-6", i === 0 ? "bg-(--pg-accent) text-(--pg-accent-contrast) sm:col-span-2 lg:col-span-1 lg:row-span-2" : "bg-(--pg-surface) border border-(--pg-border)")}>
-              <div>
-                <h3 className={cn("text-2xl font-semibold", i === 0 && "text-4xl")}>{it.name}</h3>
-                {it.description && <p className={cn("mt-3 text-pretty", i === 0 ? "opacity-90" : "text-(--pg-muted)")}>{it.description}</p>}
+            <article key={i} className={cn("flex flex-col justify-between overflow-hidden rounded-(--pg-radius-lg)", i === 0 ? "bg-(--pg-accent) text-(--pg-accent-contrast) sm:col-span-2 lg:col-span-1 lg:row-span-2" : "border border-(--pg-border) bg-(--pg-surface)")}>
+              {i === 0 && lead && <Picture fileId={lead.fileId} alt={lead.alt} variant="medium" className="aspect-[4/3]" sizes="(min-width: 1024px) 33vw, 100vw" seed={3} />}
+              <div className="flex flex-1 flex-col justify-between p-6">
+                <div>
+                  <h3 className={cn("text-2xl font-semibold", i === 0 && "text-4xl")}>{it.name}</h3>
+                  {it.description && <p className={cn("mt-3 text-pretty", i === 0 ? "opacity-90" : "text-(--pg-muted)")}>{it.description}</p>}
+                  {it.meta.length > 0 && <p className={cn("mt-2 text-xs", i === 0 ? "opacity-80" : "text-(--pg-muted)")}>{it.meta.join(" · ")}</p>}
+                </div>
+                {it.priceLabel && <p className="mt-6 text-sm font-semibold">{it.priceLabel}</p>}
               </div>
-              {it.priceLabel && <p className="mt-6 text-sm font-semibold">{it.priceLabel}</p>}
             </article>
           ))}
         </div>
@@ -227,14 +247,20 @@ export function ServicesBlock({ block, ctx, variant = "cards" }: BlockProps<"ser
     <section id={id} aria-labelledby={`${id}-h`}>
       {head}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((it, i) => (
-          <article key={i} className="flex flex-col rounded-(--pg-radius-lg) border border-(--pg-border) bg-(--pg-surface) p-6">
-            <h3 className="text-xl">{it.name}</h3>
-            {it.description && <p className="mt-2 flex-1 text-sm leading-relaxed text-(--pg-muted) text-pretty">{it.description}</p>}
-            {it.meta.length > 0 && <p className="mt-3 text-xs text-(--pg-muted)">{it.meta.join(" · ")}</p>}
-            {it.priceLabel && <p className="mt-4 text-sm font-semibold text-(--pg-accent)">{it.priceLabel}</p>}
-          </article>
-        ))}
+        {items.map((it, i) => {
+          const pic = pictures.length > 0 ? pictures[i % pictures.length] : undefined;
+          return (
+            <article key={i} className="flex flex-col overflow-hidden rounded-(--pg-radius-lg) border border-(--pg-border) bg-(--pg-surface)">
+              {pic && <Picture fileId={pic.fileId} alt={pic.alt} variant="medium" className="aspect-[3/2]" sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" seed={i + 3} />}
+              <div className="flex flex-1 flex-col p-6">
+                <h3 className="text-xl">{it.name}</h3>
+                {it.description && <p className="mt-2 flex-1 text-sm leading-relaxed text-(--pg-muted) text-pretty">{it.description}</p>}
+                {it.meta.length > 0 && <p className="mt-3 text-xs text-(--pg-muted)">{it.meta.join(" · ")}</p>}
+                {it.priceLabel && <p className="mt-4 text-sm font-semibold text-(--pg-accent)">{it.priceLabel}</p>}
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
@@ -338,7 +364,10 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
             <blockquote className="mt-4 text-2xl leading-snug sm:text-4xl" style={{ fontFamily: "var(--pg-font-heading)" }}>
               « {first.body} »
             </blockquote>
-            <figcaption className="mt-5 text-sm text-(--pg-muted)">{first.authorName} · avis vérifié</figcaption>
+            <figcaption className="mt-6 flex items-center justify-center gap-3 text-sm text-(--pg-muted)">
+              <Monogram name={first.authorName} size="sm" />
+              <span>{first.authorName} · avis vérifié{first.title ? ` · « ${first.title} »` : ""}</span>
+            </figcaption>
           </figure>
         )}
         {rest.length > 0 && (
@@ -346,8 +375,13 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
             {rest.map((r) => (
               <li key={r.id} className="border-l-2 border-(--pg-accent) pl-4">
                 <Stars rating={r.rating} />
+                {r.title && <p className="mt-2 font-medium">{r.title}</p>}
                 <p className="mt-2 text-pretty">{r.body}</p>
-                <p className="mt-2 text-xs text-(--pg-muted)">{r.authorName} · avis vérifié</p>
+                <p className="mt-3 flex items-center gap-2 text-xs text-(--pg-muted)">
+                  <Monogram name={r.authorName} size="sm" />
+                  <span>{r.authorName} · avis vérifié</span>
+                </p>
+                {r.replyBody && <p className="mt-3 rounded-(--pg-radius-sm) bg-(--pg-surface) p-3 text-sm text-pretty">Réponse : {r.replyBody}</p>}
               </li>
             ))}
           </ul>
@@ -365,7 +399,10 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
           {selected.map((r) => (
             <li key={r.id} className="py-5">
               <div className="flex items-center justify-between gap-4">
-                <p className="font-medium">{r.authorName}</p>
+                <p className="flex items-center gap-3 font-medium">
+                  <Monogram name={r.authorName} size="sm" />
+                  <span>{r.authorName}</span>
+                </p>
                 <Stars rating={r.rating} />
               </div>
               {r.title && <p className="mt-1 font-medium">{r.title}</p>}
@@ -385,10 +422,14 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
       <ul className="grid gap-4 md:grid-cols-3">
         {selected.map((r) => (
           <li key={r.id} className="flex flex-col rounded-(--pg-radius-lg) bg-(--pg-surface) p-6 shadow-[0_1px_0_var(--pg-border)]">
-            <Stars rating={r.rating} />
-            {r.title && <p className="mt-3 font-medium">{r.title}</p>}
+            <div className="flex items-center justify-between gap-3">
+              <Monogram name={r.authorName} />
+              <Stars rating={r.rating} />
+            </div>
+            {r.title && <p className="mt-4 font-medium">{r.title}</p>}
             <p className="mt-2 flex-1 text-(--pg-muted) text-pretty">{r.body}</p>
             <p className="mt-4 text-xs text-(--pg-muted)">{r.authorName} · avis vérifié</p>
+            {r.replyBody && <p className="mt-3 border-t border-(--pg-border) pt-3 text-sm text-(--pg-muted) text-pretty">Réponse du professionnel : {r.replyBody}</p>}
           </li>
         ))}
       </ul>

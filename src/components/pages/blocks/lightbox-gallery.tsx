@@ -3,8 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { publicImageHref } from "@/modules/files/application/file-urls";
-import { isSampleFileId, Placeholder } from "./shared";
+import { imageSrcFor, imageToneFor, isFilesApiSrc, Placeholder } from "./shared";
 
 /**
  * Gallery thumbnails + the only interactive part of a public page besides the
@@ -40,7 +39,7 @@ export function LightboxGallery({ images, layout = "grid", className }: { images
   const current = index === null ? null : images[index];
 
   const container: Record<GalleryLayout, string> = {
-    mosaic: "grid grid-cols-2 gap-2 md:grid-cols-4 md:auto-rows-[180px]",
+    mosaic: "grid grid-cols-2 gap-2 md:grid-flow-dense md:grid-cols-4 md:auto-rows-[180px]",
     band: "pg-scroll-x flex snap-x gap-3 pb-2",
     grid: "grid grid-cols-2 gap-3 md:grid-cols-3",
     filmstrip: "pg-film pg-scroll-x flex gap-4 px-6",
@@ -52,7 +51,8 @@ export function LightboxGallery({ images, layout = "grid", className }: { images
   const item = (i: number): string => {
     switch (layout) {
       case "mosaic":
-        return cn("aspect-square md:aspect-auto", i % 5 === 0 && "md:col-span-2 md:row-span-2", i % 5 === 3 && "md:col-span-2");
+        // Pattern of six: one 2×2 tile, two squares, three wide tiles → fills a 4-column grid without holes.
+        return cn("aspect-square md:aspect-auto", i % 6 === 0 && "md:col-span-2 md:row-span-2", i % 6 >= 3 && "md:col-span-2");
       case "band":
         return "h-56 w-72 shrink-0 snap-start sm:h-72 sm:w-96";
       case "filmstrip":
@@ -82,8 +82,10 @@ export function LightboxGallery({ images, layout = "grid", className }: { images
               className={cn("group relative block h-full w-full overflow-hidden text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--pg-accent)", radius)}
               aria-label={`Agrandir : ${img.alt || `image ${i + 1}`}`}
             >
-              {img.fileId && !isSampleFileId(img.fileId) ? (
-                <Image src={publicImageHref(img.fileId, "medium")} alt={img.alt} fill sizes="(min-width: 768px) 33vw, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+              {imageSrcFor(img.fileId, "medium") ? (
+                <span className="absolute inset-0 block" style={imageToneFor(img.fileId) ? { backgroundColor: imageToneFor(img.fileId) } : undefined}>
+                  <Image src={imageSrcFor(img.fileId, "medium") ?? ""} alt={img.alt} fill sizes="(min-width: 768px) 33vw, 50vw" unoptimized={isFilesApiSrc(imageSrcFor(img.fileId, "medium") ?? "")} className="object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none" />
+                </span>
               ) : (
                 <Placeholder className="absolute inset-0" seed={i} />
               )}
@@ -103,7 +105,7 @@ export function LightboxGallery({ images, layout = "grid", className }: { images
             </button>
           </div>
           <div className="relative flex-1" onClick={(e) => e.stopPropagation()}>
-            {current.fileId && !isSampleFileId(current.fileId) ? <Image src={publicImageHref(current.fileId, "large")} alt={current.alt} fill sizes="100vw" className="object-contain" /> : <Placeholder className="absolute inset-6" seed={index ?? 0} />}
+            {imageSrcFor(current.fileId, "large") ? <Image src={imageSrcFor(current.fileId, "large") ?? ""} alt={current.alt} fill sizes="100vw" unoptimized={isFilesApiSrc(imageSrcFor(current.fileId, "large") ?? "")} className="object-contain" /> : <Placeholder className="absolute inset-6" seed={index ?? 0} />}
           </div>
           <div className="flex items-center justify-between gap-3 p-3 sm:p-4" onClick={(e) => e.stopPropagation()}>
             <button type="button" onClick={() => step(-1)} className={cn("rounded-full px-4 py-2 text-sm hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white", images.length < 2 && "invisible")}>

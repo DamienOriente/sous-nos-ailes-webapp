@@ -4,7 +4,8 @@ import { Mail, Plus, QrCode, ScanLine } from "lucide-react";
 import { Paywall } from "@/components/billing/paywall";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { EmptyState } from "@/components/shared/empty-state";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { EnvelopeScene } from "@/components/illustrations/event-scenes";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -59,7 +60,14 @@ export default async function InvitationsPage({ params }: { params: Promise<{ id
       </div>
 
       {invitations.length === 0 ? (
-        <EmptyState icon={Mail} title="Aucune invitation" description="Commencez par ajouter vos invités, puis créez une invitation." action={<Button asChild><Link href={`/app/evenements/${id}/invitations/nouvelle`}>Créer une invitation</Link></Button>} />
+        <IllustratedEmpty
+          scene={EnvelopeScene}
+          title="Aucune invitation envoyée"
+          description="Une invitation couvre une personne, une famille ou un groupe. Envoyez-la par e-mail ou partagez le lien RSVP : les réponses mettent la liste des invités à jour toutes seules. Avec l'offre Plus, un QR code d'accès à usage unique sert au contrôle à l'entrée."
+          example="Famille Dubois — modèle champêtre, 3 invités, répondue : 3 présents"
+          action={<><Button asChild><Link href={`/app/evenements/${id}/invitations/nouvelle`}><Plus className="size-4" aria-hidden="true" /> Créer une invitation</Link></Button><Button asChild variant="outline"><Link href={`/app/evenements/${id}/invites`}>Compléter la liste des invités</Link></Button></>}
+          testId="invitations-empty"
+        />
       ) : (
         <div className="overflow-x-auto rounded-xl border bg-card">
           <Table>

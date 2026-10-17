@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { requireActor } from "@/lib/session";
 import { formatEuros } from "@/lib/utils";
 import { hasFeature } from "@/modules/billing/application/entitlements";
-import { getBudget } from "@/modules/events/application/budget-service";
+import { getBudget, previewBudgetTemplate } from "@/modules/events/application/budget-service";
 import { getEventForMember } from "@/modules/events/application/event-service";
+import { budgetTemplateLabel } from "@/modules/events/domain/suggestions";
 import { guardPage } from "../_guards";
-import { createBudgetLineAction, createExpenseAction, deleteBudgetLineAction, deleteExpenseAction, updateBudgetLineAction, updateExpenseAction } from "./actions";
+import { applyBudgetTemplateAction, createBudgetLineAction, createExpenseAction, deleteBudgetLineAction, deleteExpenseAction, updateBudgetLineAction, updateExpenseAction } from "./actions";
 
 export default async function BudgetPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ vue?: string }> }) {
   const { id } = await params;
@@ -22,6 +23,7 @@ export default async function BudgetPage({ params, searchParams }: { params: Pro
     return { event, budget };
   });
   const advanced = await hasFeature(actor.userId, "organizer", "budget.advanced");
+  const template = budget.canManage ? await previewBudgetTemplate(actor, id) : [];
   const base = `/app/evenements/${id}/budget`;
   const s = budget.summary;
 
@@ -91,7 +93,9 @@ export default async function BudgetPage({ params, searchParams }: { params: Pro
           expenses={budget.expenses.map((e) => ({ id: e.id, label: e.label, amountCents: e.amountCents, status: e.status, budgetLineId: e.budgetLineId, lineLabel: e.lineLabel, paidAt: e.paidAt, receiptFileId: e.receiptFileId }))}
           providers={budget.providers}
           canManage={budget.canManage}
-          actions={{ createLine: createBudgetLineAction, updateLine: updateBudgetLineAction, deleteLine: deleteBudgetLineAction, createExpense: createExpenseAction, updateExpense: updateExpenseAction, deleteExpense: deleteExpenseAction }}
+          template={template}
+          templateLabel={budgetTemplateLabel(event.expectedGuests)}
+          actions={{ createLine: createBudgetLineAction, updateLine: updateBudgetLineAction, deleteLine: deleteBudgetLineAction, createExpense: createExpenseAction, updateExpense: updateExpenseAction, deleteExpense: deleteExpenseAction, applyTemplate: applyBudgetTemplateAction }}
         />
       )}
     </div>

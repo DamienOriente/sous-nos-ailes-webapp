@@ -35,3 +35,13 @@ test("signalement mobile : le formulaire se soumet", async ({ page }) => {
   await page.getByRole("button", { name: "Envoyer le signalement" }).click();
   await expect(page.getByTestId("report-success")).toBeVisible();
 });
+
+test("annuaire et organiser mobile : photos, mockups et aucun débordement", async ({ page }) => {
+  for (const path of ["/annuaire", "/organiser"]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, path).toBeLessThanOrEqual(1);
+  }
+  await expect(page.getByText("Tour de contrôle").first()).toBeVisible();
+});

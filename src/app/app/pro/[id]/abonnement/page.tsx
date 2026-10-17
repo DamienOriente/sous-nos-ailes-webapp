@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { LiveBillingBanner } from "@/components/billing/live-billing-banner";
+import { PlanChanges } from "@/components/billing/plan-changes";
 import { PlanComparison } from "@/components/billing/plan-comparison";
 import { SubscriptionCard } from "@/components/billing/subscription-card";
 import { ActionForm, ActionSubmit } from "@/components/admin/action-form";
@@ -36,9 +37,11 @@ export default async function ProfessionalSubscriptionPage({ params, searchParam
         <Card className="gap-1 border-primary/40 bg-accent/40 p-5" data-testid="feature-highlight">
           <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">Fonctionnalité demandée</p>
           <p className="font-medium">{FEATURES[feature]}</p>
+          <p className="text-sm text-muted-foreground">Incluse dans Professionnel Premium. Le comparatif ci-dessous la met en évidence.</p>
         </Card>
       )}
       <SubscriptionCard overview={overview} actions={{ cancel: cancelSubscriptionAction, resume: resumeSubscriptionAction, portal: openPortalAction, simulateEnd: simulatePeriodEndAction }} />
+      <PlanChanges audience="professional" plans={overview.plans} currentPlanKey={overview.effective.planKey} highlightFeature={feature} />
       <section className="space-y-4" aria-labelledby="comparatif">
         <h2 id="comparatif" className="text-xl font-semibold">
           Comparatif des offres professionnelles

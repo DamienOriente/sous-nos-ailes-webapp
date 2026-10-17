@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { WingsScene } from "@/components/illustrations";
 import { Feather } from "@/components/marketing/illustrations";
+import { PhotoFrame } from "@/components/marketing/photo-frame";
 import { Container, Section } from "@/components/shared/section";
+import { demoPhoto } from "@/modules/media/demo-photos";
 
 export const metadata: Metadata = {
   title: "À propos",
@@ -17,21 +20,28 @@ const COMMITMENTS = [
 ];
 
 export default function AboutPage() {
+  const photo = demoPhoto("family", 3);
   return (
     <>
       <Section>
-        <Container size="narrow">
-          <h1 className="text-4xl font-semibold text-balance sm:text-5xl">Des ailes pour les évènements où il y a des enfants</h1>
-          <div className="mt-8 space-y-5 text-lg leading-8 text-pretty">
-            <p>
-              Un mariage, un baptême, un séminaire d'entreprise avec les familles : il y a presque toujours des enfants, et presque jamais quelqu'un dont c'est le métier de s'en occuper. Les parents alternent entre la table et le coin jeux, les organisateurs improvisent, et la fête se vit à moitié.
-            </p>
-            <p>
-              Sous Nos Ailes part de là. La plateforme met en avant les professionnels de la garde d'enfants et de l'animation, puis tous les métiers de l'évènementiel autour d'eux, et donne à l'organisateur un espace unique pour coordonner tout ce monde : planning, invités, prestataires, messagerie, espace enfants.
-            </p>
-            <p>
-              Nous sommes une petite équipe. Le service est en phase de lancement : les fiches de démonstration sont signalées comme telles, les documents juridiques sont des brouillons en cours de validation, et nous préférons dire ce que nous ne faisons pas encore plutôt que de le promettre.
-            </p>
+        <Container size="wide" className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14">
+          <div>
+            <h1 className="text-4xl font-semibold text-balance sm:text-5xl">Des ailes pour les évènements où il y a des enfants</h1>
+            <div className="mt-8 space-y-5 text-lg leading-8 text-pretty">
+              <p>
+                Un mariage, un baptême, un séminaire d'entreprise avec les familles : il y a presque toujours des enfants, et presque jamais quelqu'un dont c'est le métier de s'en occuper. Les parents alternent entre la table et le coin jeux, les organisateurs improvisent, et la fête se vit à moitié.
+              </p>
+              <p>
+                Sous Nos Ailes part de là. La plateforme met en avant les professionnels de la garde d'enfants et de l'animation, puis tous les métiers de l'évènementiel autour d'eux, et donne à l'organisateur un espace unique pour coordonner tout ce monde : planning, invités, prestataires, messagerie, espace enfants.
+              </p>
+              <p>
+                Nous sommes une petite équipe. Le service est en phase de lancement : les fiches de démonstration sont signalées comme telles, les documents juridiques sont des brouillons en cours de validation, et nous préférons dire ce que nous ne faisons pas encore plutôt que de le promettre.
+              </p>
+            </div>
+          </div>
+          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+            <PhotoFrame photo={photo} corner="tr" aspect="aspect-[4/5]" width={1000} height={1250} sizes="(max-width: 1024px) 100vw, 480px" caption="Photo de démonstration" alt="Enfant porté par sa mère — photo de démonstration" />
+            <WingsScene className="pointer-events-none absolute -bottom-4 -left-6 w-44 drop-shadow-[0_18px_30px_oklch(0.48_0.07_150_/_0.25)]" />
           </div>
         </Container>
       </Section>

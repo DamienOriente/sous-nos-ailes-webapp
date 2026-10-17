@@ -210,9 +210,18 @@ export function ZoneBlock({ block, ctx, variant = "text" }: BlockProps<"zone">) 
           <span id={`${id}-h`}>{heading}</span>
         </SectionHeading>
         <p className="text-pretty">
-          {pro.city ? <>Basé à <strong>{pro.city}</strong>, </> : null}
-          intervention dans un rayon d'environ <strong>{pro.interventionRadiusKm} km</strong>
-          {pro.region ? ` (${pro.region})` : ""}.
+          {pro.interventionRadiusKm > 0 ? (
+            <>
+              {pro.city ? <>Basé à <strong>{pro.city}</strong>, </> : null}
+              intervention dans un rayon d'environ <strong>{pro.interventionRadiusKm} km</strong>
+              {pro.region ? ` (${pro.region})` : ""}.
+            </>
+          ) : (
+            <>
+              Accueil sur place{pro.city ? <> à <strong>{pro.city}</strong></> : null}
+              {pro.region ? ` (${pro.region})` : ""}.
+            </>
+          )}
         </p>
         {departments.length > 0 && (
           <ul className="mt-3 flex flex-wrap gap-2" aria-label="Départements couverts">

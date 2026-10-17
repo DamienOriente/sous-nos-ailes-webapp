@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminTable, dateTime } from "@/components/admin/admin-table";
+import { ListingThumbnail } from "@/components/admin/listing-thumbnail";
 import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -8,6 +9,7 @@ import { CASE_KIND_LABELS, CASE_STATUS_LABELS } from "@/modules/moderation/domai
 import { listCases } from "@/modules/moderation/application/moderation-service";
 import { STATUS_LABELS, STATUS_TONES, type ProfessionalStatus } from "@/modules/professionals/domain/status";
 import { requireAdminPage } from "../_lib/admin-page";
+import { getModerationPreviews } from "../_lib/moderation-previews";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,7 @@ export default async function ModerationQueuePage({ searchParams }: { searchPara
   const kind = KINDS.includes(sp.kind ?? "") ? sp.kind : undefined;
   const assigned = sp.assigne === "me" || sp.assigne === "unassigned" ? sp.assigne : undefined;
   const rows = await listCases(actor, { status, kind, assignedToUserId: assigned });
+  const previews = await getModerationPreviews(rows.slice(0, 40).flatMap((r) => (r.professionalId ? [r.professionalId] : [])));
   const link = (patch: Partial<Search>) => {
     const p = new URLSearchParams();
     const next = { statut: sp.statut, kind: sp.kind, assigne: sp.assigne, ...patch };
@@ -64,20 +67,26 @@ export default async function ModerationQueuePage({ searchParams }: { searchPara
         rows={rows}
         rowKey={(r) => r.id}
         emptyTitle="Rien à modérer"
-        emptyDescription="Aucun cas ne correspond à ces filtres."
+        emptyDescription={status === "active" && !kind && !assigned ? "La file est vide : chaque fiche soumise, signalement ou recours apparaîtra ici avec un aperçu de la page." : "Aucun cas ne correspond à ces filtres."}
         columns={[
           { key: "kind", header: "Type", cell: (r) => <StatusBadge tone={r.kind === "report" ? "warning" : r.kind === "appeal" ? "info" : "primary"}>{CASE_KIND_LABELS[r.kind] ?? r.kind}</StatusBadge> },
           {
             key: "subject",
             header: "Objet",
-            cell: (r) => (
-              <div className="min-w-0">
-                <Link href={`/admin/moderation/${r.id}`} className="font-medium underline-offset-2 hover:underline">
-                  {r.professionalName ?? `${r.resourceType} ${r.resourceId.slice(0, 8)}`}
-                </Link>
-                {r.summary && <p className="max-w-md truncate text-xs text-muted-foreground">{r.summary}</p>}
-              </div>
-            ),
+            cell: (r) => {
+              const preview = r.professionalId ? previews.get(r.professionalId) : undefined;
+              return (
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="min-w-0">
+                    <Link href={`/admin/moderation/${r.id}`} className="font-medium underline-offset-2 hover:underline">
+                      {r.professionalName ?? `${r.resourceType} ${r.resourceId.slice(0, 8)}`}
+                    </Link>
+                    {r.summary && <p className="max-w-md truncate text-xs text-muted-foreground">{r.summary}</p>}
+                  </div>
+                  {preview && <ListingThumbnail coverFileId={preview.coverFileId} categorySlug={preview.categorySlug} templateKey={preview.templateKey} className="ml-auto" />}
+                </div>
+              );
+            },
           },
           { key: "proStatus", header: "Statut fiche", cell: (r) => (r.professionalStatus ? <StatusBadge tone={STATUS_TONES[r.professionalStatus as ProfessionalStatus]}>{STATUS_LABELS[r.professionalStatus as ProfessionalStatus]}</StatusBadge> : "—") },
           { key: "status", header: "Cas", cell: (r) => CASE_STATUS_LABELS[r.status] ?? r.status },

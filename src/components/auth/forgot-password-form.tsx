@@ -3,6 +3,7 @@ import { useId, useState } from "react";
 import { Loader2, MailCheck } from "lucide-react";
 import { describeAuthFailure } from "@/components/auth/auth-client-error";
 import { RateLimitNotice } from "@/components/auth/rate-limit-notice";
+import { WingsScene } from "@/components/illustrations";
 import { FormMessage } from "@/components/shared/form-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="space-y-4" role="status">
+        <WingsScene className="mx-auto -mt-2 w-40" />
         <div className="flex items-start gap-3 rounded-xl bg-success/15 p-4 text-sm">
           <MailCheck className="mt-0.5 size-5 shrink-0 text-success" aria-hidden="true" />
           <p>

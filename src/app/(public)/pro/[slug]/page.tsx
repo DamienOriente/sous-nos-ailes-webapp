@@ -7,6 +7,7 @@ import { CalendarPlus } from "lucide-react";
 import { FavoriteButton } from "@/components/directory/favorite-button";
 import { VerificationBadge } from "@/components/directory/verification-badge";
 import { InquiryForm } from "@/components/inquiries/inquiry-form";
+import { PlatformPanel } from "@/components/pages/public/platform-panel";
 import { PageRenderer } from "@/components/pages/renderer";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { getActor } from "@/lib/session";
 import { isFavorite } from "@/modules/directory/application/favorites-service";
 import { publicImageHref } from "@/modules/files/application/file-urls";
 import { getPublishedPage, incrementViewCount } from "@/modules/pages/application/page-service";
+import { getPublicActivity } from "@/modules/professionals/application/stats-service";
 import { buildJsonLd, generateDescription, generateTitle, serializeJsonLd } from "@/modules/seo/domain/meta";
 
 /**
@@ -71,7 +73,7 @@ export default async function PublicProfessionalPage({ params }: { params: Promi
   const description = data.seoDescription?.trim() || generateDescription(pro, data.content);
   const jsonLd = buildJsonLd(data, { url, siteUrl: env.APP_URL, title, description, imageUrl: heroImage(page) });
 
-  const [actor, ua] = await Promise.all([getActor(), headers().then((h) => h.get("user-agent") ?? "")]);
+  const [actor, ua, activity] = await Promise.all([getActor(), headers().then((h) => h.get("user-agent") ?? ""), getPublicActivity(pro.id)]);
   const favorite = actor ? await isFavorite(actor.userId, pro.id).catch(() => false) : false;
 
   if (!BOT_UA.test(ua)) {
@@ -135,6 +137,7 @@ export default async function PublicProfessionalPage({ params }: { params: Promi
           verificationBadge: <VerificationBadge level={pro.verificationLevel} statements={statements} size="md" />,
         }}
       />
+      <PlatformPanel activity={activity} displayName={pro.displayName} isDemo={pro.isDemo} />
     </>
   );
 }

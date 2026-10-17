@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, MailOpen } from "lucide-react";
 import { AuthCard, AuthLink } from "@/components/auth/auth-card";
+import { ConfettiScene } from "@/components/illustrations";
 import { ResendVerification } from "@/components/auth/resend-verification";
 import { FormMessage } from "@/components/shared/form-message";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
     return (
       <AuthCard eyebrow="C'est confirmé" title="Adresse e-mail vérifiée" description="Merci ! Votre compte est maintenant pleinement actif.">
         <div className="space-y-4">
+          <ConfettiScene className="mx-auto -mt-4 w-48" />
           <div className="flex items-center gap-3 rounded-xl bg-success/15 p-4 text-sm" role="status">
             <CheckCircle2 className="size-5 shrink-0 text-success" aria-hidden="true" />
             <p>Vous recevrez désormais vos notifications par e-mail selon vos préférences.</p>

@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { EmptyState } from "@/components/shared/empty-state";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { CalendarScene } from "@/components/illustrations";
 import { StatusBadge } from "@/components/shared/status-badge";
 import type { ActionResult } from "@/lib/errors";
 import { cn } from "@/lib/utils";
@@ -305,7 +306,7 @@ function Chip({ o, tz, onSelect, compact = false }: { o: ClientOccurrence; tz: s
 }
 
 function AgendaView({ occurrences, tz, onSelect }: { occurrences: ClientOccurrence[]; tz: string; onSelect: (o: ClientOccurrence) => void }) {
-  if (!occurrences.length) return <EmptyState title="Rien de prévu sur cette période" description="Créez une entrée ou changez de période." />;
+  if (!occurrences.length) return <IllustratedEmpty scene={CalendarScene} compact title="Rien de prévu sur cette période" description="Vos prestations, disponibilités et évènements s'affichent ici ; les entrées liées à un évènement se créent depuis son espace. Changez de période avec les flèches ou créez une entrée." example="Repérage lumière au domaine — samedi 29 mai, 17:00 → 19:30" testId="calendar-empty" />;
   const groups = new Map<string, ClientOccurrence[]>();
   for (const o of occurrences) groups.set(o.dayKey, [...(groups.get(o.dayKey) ?? []), o]);
   return (

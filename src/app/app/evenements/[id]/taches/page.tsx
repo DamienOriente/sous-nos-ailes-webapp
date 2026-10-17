@@ -4,8 +4,9 @@ import { requireActor } from "@/lib/session";
 import { getEventForMember } from "@/modules/events/application/event-service";
 import { listAssignableMembers, listTasks } from "@/modules/events/application/task-service";
 import { toLocalDateString } from "@/modules/events/domain/event-status";
+import { TASK_SUGGESTIONS } from "@/modules/events/domain/suggestions";
 import { guardPage } from "../_guards";
-import { addTaskCommentAction, createTaskAction, deleteTaskAction, listTaskCommentsAction, toggleTaskAction, updateTaskAction } from "./actions";
+import { addSuggestedTasksAction, addTaskCommentAction, createTaskAction, deleteTaskAction, listTaskCommentsAction, toggleTaskAction, updateTaskAction } from "./actions";
 
 export default async function TasksPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ filtre?: string; tache?: string }> }) {
   const { id } = await params;
@@ -17,6 +18,8 @@ export default async function TasksPage({ params, searchParams }: { params: Prom
     return { event, tasks, access };
   });
   const members = await listAssignableMembers(id);
+  const titles = new Set(tasks.map((t) => t.title.trim().toLowerCase()));
+  const suggestionCount = TASK_SUGGESTIONS[event.type].filter((s) => !titles.has(s.title.toLowerCase())).length;
   return (
     <div className="space-y-6">
       <PageHeader title="Tâches" description={access.isOrganizer ? "Votre liste de préparation, générée à partir du type d'évènement et enrichie par vos soins." : "Les tâches opérationnelles partagées avec l'équipe."} />
@@ -29,7 +32,8 @@ export default async function TasksPage({ params, searchParams }: { params: Prom
         today={toLocalDateString(new Date(), event.timezone)}
         initialFilter={filtre}
         highlightTaskId={tache}
-        actions={{ create: createTaskAction, update: updateTaskAction, toggle: toggleTaskAction, remove: deleteTaskAction, listComments: listTaskCommentsAction, addComment: addTaskCommentAction }}
+        suggestionCount={suggestionCount}
+        actions={{ create: createTaskAction, update: updateTaskAction, toggle: toggleTaskAction, remove: deleteTaskAction, listComments: listTaskCommentsAction, addComment: addTaskCommentAction, addSuggested: addSuggestedTasksAction }}
       />
     </div>
   );

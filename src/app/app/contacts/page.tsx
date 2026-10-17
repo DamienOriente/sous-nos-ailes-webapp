@@ -3,7 +3,9 @@ import { BookUser, Copy, Download, Plus, Upload } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EmptyState } from "@/components/shared/empty-state";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { EmptyNestScene } from "@/components/illustrations";
+import { AddressBookScene } from "@/components/illustrations/event-scenes";
 import { PageHeader } from "@/components/shared/page-header";
 import { ContactFormDialog } from "@/components/contacts/contact-form-dialog";
 import { ContactsTable } from "@/components/contacts/contacts-table";
@@ -53,16 +55,18 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
                 <Upload className="size-4" aria-hidden="true" /> Importer
               </Link>
             </Button>
-            <ContactFormDialog
-              scopes={scopes}
-              onSubmit={createContactAction}
-              disabledReason={atLimit ? `Votre offre ${usage.planName} est limitée à ${usage.limit} contacts personnels. Vous pouvez toujours consulter et exporter votre carnet ; passez à Organisateur Plus pour en ajouter.` : null}
-              trigger={
-                <Button size="sm">
-                  <Plus className="size-4" aria-hidden="true" /> Nouveau contact
-                </Button>
-              }
-            />
+            {(contacts.length > 0 || hasFilters) && (
+              <ContactFormDialog
+                scopes={scopes}
+                onSubmit={createContactAction}
+                disabledReason={atLimit ? `Votre offre ${usage.planName} est limitée à ${usage.limit} contacts personnels. Vous pouvez toujours consulter et exporter votre carnet ; passez à Organisateur Plus pour en ajouter.` : null}
+                trigger={
+                  <Button size="sm">
+                    <Plus className="size-4" aria-hidden="true" /> Nouveau contact
+                  </Button>
+                }
+              />
+            )}
           </>
         }
       />
@@ -128,22 +132,18 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
       </form>
 
       {contacts.length === 0 ? (
-        <EmptyState
-          icon={BookUser}
-          title={hasFilters ? "Aucun contact ne correspond" : "Votre carnet est vide"}
-          description={hasFilters ? "Essayez d'élargir votre recherche." : "Ajoutez un premier contact ou importez votre fichier CSV existant."}
-          action={
-            hasFilters ? (
-              <Button asChild variant="outline">
-                <Link href="/app/contacts">Réinitialiser les filtres</Link>
-              </Button>
-            ) : (
-              <Button asChild variant="outline">
-                <Link href="/app/contacts/import">Importer un CSV</Link>
-              </Button>
-            )
-          }
-        />
+        hasFilters ? (
+          <IllustratedEmpty scene={EmptyNestScene} compact title="Aucun contact ne correspond" description="Essayez d'élargir votre recherche ou de retirer un filtre." action={<Button asChild variant="outline" size="sm"><Link href="/app/contacts">Réinitialiser les filtres</Link></Button>} />
+        ) : (
+          <IllustratedEmpty
+            scene={AddressBookScene}
+            title="Votre carnet d'adresses est vide"
+            description="Famille, amis, prestataires, partenaires : un carnet privé que vous retrouvez d'un évènement à l'autre. Associez un contact à un évènement ou ajoutez-le comme invité en un clic ; la détection des doublons s'occupe des fichiers importés en vrac."
+            example="Maxime Girard — ami, témoin · maxime.girard@example.test · tags : amis, témoin"
+            action={<><Button asChild variant="outline"><Link href="/app/contacts/import"><Upload className="size-4" aria-hidden="true" /> Importer un CSV</Link></Button><ContactFormDialog scopes={scopes} onSubmit={createContactAction} disabledReason={atLimit ? `Votre offre ${usage.planName} est limitée à ${usage.limit} contacts personnels.` : null} trigger={<Button><Plus className="size-4" aria-hidden="true" /> Nouveau contact</Button>} /></>}
+            testId="contacts-empty"
+          />
+        )
       ) : (
         <>
           <p className="text-sm text-muted-foreground">{contacts.length} contact(s)</p>

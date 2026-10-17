@@ -1,5 +1,5 @@
-import { FolderOpen } from "lucide-react";
-import { EmptyState, PageHeader } from "@/components/shared";
+import { PageHeader } from "@/components/shared";
+import { FilesEmptyState } from "@/components/files/files-empty-state";
 import { DeleteFileButton } from "@/components/files/delete-file-button";
 import { FileList, formatFileSize } from "@/components/files/file-list";
 import { ScopeFilesUploader } from "@/components/files/scope-files-uploader";
@@ -34,7 +34,7 @@ export default async function MyFilesPage() {
       <section className="space-y-3" aria-label="Fichiers enregistrés">
         <h2 className="text-base font-semibold">Fichiers enregistrés</h2>
         {files.length === 0 ? (
-          <EmptyState icon={FolderOpen} title="Aucun fichier pour l'instant" description="Les fichiers que vous envoyez apparaissent ici une fois vérifiés." />
+          <FilesEmptyState />
         ) : (
           <FileList files={files} renderActions={(f) => <DeleteFileButton fileId={f.id} fileName={f.originalName} action={deleteMyFileAction} />} />
         )}

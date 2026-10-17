@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ActionResult } from "@/lib/errors";
 import { cn, formatDateFr } from "@/lib/utils";
 import type { SearchHit } from "@/app/app/evenements/[id]/messages/actions";
+import { CHANNEL_EXAMPLES } from "@/modules/events/domain/suggestions";
 
 export type ChannelListItem = { id: string; name: string; kind: string; unread: number; archived: boolean; isMember: boolean; memberCount: number };
 export type MemberOption = { id: string; name: string; role: string };
@@ -122,10 +123,11 @@ function CreateChannelDialog({ eventId, members, action }: { eventId: string; me
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [openToAll, setOpenToAll] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const input = { name: fd.get("name"), description: String(fd.get("description") ?? "") || null, kind: openToAll ? "topic" : "coordination", memberIds: selected, isOpenToAllMembers: openToAll };
+    const input = { name, description: description || null, kind: openToAll ? "topic" : "coordination", memberIds: selected, isOpenToAllMembers: openToAll };
     start(async () => {
       const res = await action(eventId, input);
       if (!res.ok) {
@@ -150,13 +152,20 @@ function CreateChannelDialog({ eventId, members, action }: { eventId: string; me
           <DialogDescription>Un canal thématique (logistique, enfants, musique…) ou de coordination entre quelques prestataires. Les organisateurs y ont toujours accès.</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
+          <div className="flex flex-wrap gap-1.5" aria-label="Exemples de canaux">
+            {CHANNEL_EXAMPLES.map((ex) => (
+              <button key={ex.name} type="button" onClick={() => { setName(ex.name); setDescription(ex.description); }} className="rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground">
+                {ex.name}
+              </button>
+            ))}
+          </div>
           <div className="space-y-1.5">
             <Label htmlFor="ch-name">Nom</Label>
-            <Input id="ch-name" name="name" required minLength={2} maxLength={80} placeholder="Logistique lieu & traiteur" />
+            <Input id="ch-name" name="name" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} maxLength={80} placeholder="Logistique lieu & traiteur" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="ch-desc">Description</Label>
-            <Textarea id="ch-desc" name="description" rows={2} maxLength={300} />
+            <Textarea id="ch-desc" name="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} maxLength={300} placeholder="Accès, horaires de livraison, cuisine, plan de salle." />
           </div>
           <label className="flex items-center gap-2 text-sm">
             <Checkbox checked={openToAll} onCheckedChange={(v) => setOpenToAll(Boolean(v))} />

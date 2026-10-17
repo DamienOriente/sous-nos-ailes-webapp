@@ -71,6 +71,8 @@ export async function canReadFile(actor: Actor | null, file: FileRecord, executo
       if (!actor) return false;
       const access = await getEventAccess(actor, file.scopeId, executor);
       if (!access) return false;
+      // The event cover is part of the shared workspace header: every active member sees it.
+      if (file.purpose === "cover") return true;
       return canReadEventFile(access, file, executor);
     }
     case "organization": {

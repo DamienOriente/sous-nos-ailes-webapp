@@ -56,6 +56,10 @@ export const events = pgTable(
     expectedChildren: integer("expected_children"),
     budgetCents: integer("budget_cents"),
     preferences: text("preferences"),
+    /** Ambience photo from the demo catalogue (modules/media/demo-photos id). Chosen at creation, changeable in settings. */
+    coverPhotoId: text("cover_photo_id"),
+    /** Personal cover uploaded by the organiser (files.id, scope event / purpose cover). Takes precedence over coverPhotoId. */
+    coverFileId: uuid("cover_file_id"),
     isDemo: boolean("is_demo").notNull().default(false),
     ...timestamps,
     ...softDelete,

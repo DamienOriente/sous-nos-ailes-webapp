@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { publicImageHref, type ImageVariant } from "@/modules/files/application/file-urls";
 import type { Block, BlockType, Inline, RichText as RichTextModel } from "@/modules/pages/domain/page-schema";
 import type { PageRenderData } from "@/modules/pages/domain/render-data";
+import { isSampleFileId as isSampleId, SAMPLE_FILE_PREFIX as SAMPLE_PREFIX, sampleImageSrc, samplePhotoFromFileId, type SampleVariant } from "@/modules/pages/domain/sample-photos";
 
 /**
  * Shared building bricks for blocks and templates. No hooks, no IO: these
@@ -22,9 +23,33 @@ export type BlockContext = {
 
 export type BlockProps<T extends BlockType> = { block: Extract<Block, { type: T }>; ctx: BlockContext; variant?: string };
 
-/** Gallery/preview sample images use this sentinel prefix: they render as palette placeholders, never as a request to /api/files. */
-export const SAMPLE_FILE_PREFIX = "00000000-0000-4000-8000-";
-export const isSampleFileId = (id: string | null | undefined): boolean => Boolean(id && id.startsWith(SAMPLE_FILE_PREFIX));
+/** Gallery/preview sample images use this sentinel prefix: they render as catalogue photos or palette placeholders, never as a request to /api/files. */
+export const SAMPLE_FILE_PREFIX = SAMPLE_PREFIX;
+export const isSampleFileId = isSampleId;
+
+/** Source URL for an image reference: the files API for real uploads, Unsplash for sample ids. Null means "draw a placeholder". */
+export function imageSrcFor(fileId: string | null | undefined, variant: ImageVariant = "large"): string | null {
+  if (!fileId) return null;
+  if (isSampleFileId(fileId)) {
+    const photo = samplePhotoFromFileId(fileId);
+    return photo ? sampleImageSrc(photo, variant as SampleVariant) : null;
+  }
+  return publicImageHref(fileId, variant);
+}
+
+/**
+ * Files served by our own API already come as WebP variants sized by the
+ * pipeline (thumb/medium/large) and are reached through a signed redirect:
+ * running them through next/image's optimizer would fetch and re-encode them a
+ * second time (and query strings on local sources require `images.localPatterns`).
+ * Catalogue photos (Unsplash) do go through the optimizer.
+ */
+export const isFilesApiSrc = (src: string): boolean => src.startsWith("/api/files/");
+
+/** Dominant tone of a sample photo, used behind the picture while it loads. */
+export function imageToneFor(fileId: string | null | undefined): string | undefined {
+  return samplePhotoFromFileId(fileId)?.tone;
+}
 
 export const ANCHOR_PREFIX = "section-";
 export const anchorOf = (block: Pick<Block, "id">) => `${ANCHOR_PREFIX}${block.id}`;
@@ -59,10 +84,11 @@ export function Picture({
   seed?: number;
   placeholderLabel?: string;
 }) {
-  if (!fileId || isSampleFileId(fileId)) return <Placeholder className={className} seed={seed} label={placeholderLabel} />;
+  const src = imageSrcFor(fileId, variant);
+  if (!src) return <Placeholder className={className} seed={seed} label={placeholderLabel} />;
   return (
-    <div className={cn("relative overflow-hidden bg-(--pg-surface)", className)}>
-      <Image src={publicImageHref(fileId, variant)} alt={alt} fill sizes={sizes} priority={priority} className="object-cover" />
+    <div className={cn("relative overflow-hidden bg-(--pg-surface)", className)} style={imageToneFor(fileId) ? { backgroundColor: imageToneFor(fileId) } : undefined} data-pg-picture="">
+      <Image src={src} alt={alt} fill sizes={sizes} priority={priority} unoptimized={isFilesApiSrc(src)} className="object-cover" />
     </div>
   );
 }
@@ -137,6 +163,22 @@ export function CtaButton({ href, children, className, tone = "accent", size = "
 
 export function Chip({ children, className }: { children: React.ReactNode; className?: string }) {
   return <span className={cn("inline-flex items-center rounded-(--pg-radius-sm) border border-(--pg-border) bg-(--pg-surface) px-2.5 py-1 text-xs font-medium text-(--pg-text)", className)}>{children}</span>;
+}
+
+/** Initials disc for reviews and team lists: the accent at low opacity, the letters in the accent. */
+export function Monogram({ name, className, size = "md" }: { name: string; className?: string; size?: "sm" | "md" | "lg" }) {
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p.replace(/[^\p{L}]/gu, "")[0]?.toUpperCase() ?? "")
+    .join("");
+  const sizes = { sm: "size-8 text-xs", md: "size-11 text-sm", lg: "size-14 text-base" };
+  return (
+    <span aria-hidden="true" className={cn("inline-flex shrink-0 items-center justify-center rounded-full bg-(--pg-accent-soft) font-semibold tracking-wide text-(--pg-accent)", sizes[size], className)} style={{ fontFamily: "var(--pg-font-body)" }}>
+      {initials || "?"}
+    </span>
+  );
 }
 
 export function Stars({ rating, className }: { rating: number; className?: string }) {

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Inbox } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { ReplyExample } from "@/components/pages/workspace/examples";
+import { IllustratedEmpty } from "@/components/pages/workspace/illustrated-empty";
 import { InquiryStatusBadge } from "@/components/inquiries/inquiry-status-badge";
 import { requireActor } from "@/lib/session";
 import { cn, formatDateFr } from "@/lib/utils";
@@ -40,7 +40,10 @@ export default async function InquiriesPage({ params, searchParams }: { params: 
         </ul>
       </nav>
       {items.length === 0 ? (
-        <EmptyState icon={Inbox} title={status === "all" ? "Aucune demande reçue" : "Aucune demande dans ce statut"} description="Les demandes envoyées depuis le formulaire de votre page publique arrivent ici, avec une notification et un e-mail." />
+        <IllustratedEmpty
+          title={status === "all" ? "Aucune demande reçue pour l'instant" : "Aucune demande dans ce statut"}
+          description={status === "all" ? "Les demandes envoyées depuis le formulaire de votre page publique arrivent ici, avec une notification et un e-mail. En attendant, préparez votre première réponse : l'exemple ci-dessous vous donne la structure." : "Changez de filtre pour voir les autres demandes."}
+        />
       ) : (
         <ul className="divide-y rounded-2xl border bg-card" data-testid="inquiries-list">
           {items.map((i) => (
@@ -62,6 +65,7 @@ export default async function InquiriesPage({ params, searchParams }: { params: 
           ))}
         </ul>
       )}
+      <ReplyExample />
     </div>
   );
 }

@@ -9,6 +9,9 @@ import { expect, test } from "@playwright/test";
 const PAGES: Array<{ path: string; name: string }> = [
   { path: "/", name: "accueil" },
   { path: "/annuaire", name: "annuaire" },
+  { path: "/annuaire/garde-enfants-evenementielle", name: "annuaire catégorie" },
+  { path: "/organiser", name: "organiser" },
+  { path: "/professionnels", name: "professionnels" },
   { path: "/connexion", name: "connexion" },
   { path: "/tarifs", name: "tarifs" },
   { path: "/confidentialite", name: "page légale" },

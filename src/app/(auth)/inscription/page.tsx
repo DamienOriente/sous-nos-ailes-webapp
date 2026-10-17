@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { AuthCard, AuthLink } from "@/components/auth/auth-card";
+import { AuthCard, AuthLink, AuthPanel, AuthSplit } from "@/components/auth/auth-card";
 import { SignUpForm } from "@/components/auth/sign-up-form";
+import { KidsCornerScene } from "@/components/illustrations";
 import { getActor } from "@/lib/session";
+import { demoPhoto } from "@/modules/media/demo-photos";
 import { safeNextPath } from "@/modules/identity/domain/auth";
 
 export const metadata: Metadata = { title: "Créer un compte" };
@@ -14,17 +16,30 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
   const next = params.next ? safeNextPath(params.next) : null;
 
   return (
-    <AuthCard
-      eyebrow="Bienvenue"
-      title="Créer votre compte"
-      description="Un seul compte pour organiser vos évènements ou proposer vos services. Gratuit, sans engagement."
-      footer={
-        <p>
-          Déjà inscrit ? <AuthLink href={next ? `/connexion?next=${encodeURIComponent(next)}` : "/connexion"}>Se connecter</AuthLink>
-        </p>
+    <AuthSplit
+      panel={
+        <AuthPanel
+          photo={demoPhoto("kids", 8)}
+          scene={<KidsCornerScene />}
+          promise="Des évènements où les enfants ont leur place, et les parents leur soirée."
+          benefits={["Gratuit : un espace par évènement, l'annuaire et les demandes de devis sans engagement", "Un seul compte pour organiser et pour proposer vos services", "Exemple pour commencer : le mariage de Louis et Lisa, 90 invités dont 12 enfants"]}
+          caption="Photo d'ambiance de démonstration."
+        />
       }
     >
-      <SignUpForm next={next} />
-    </AuthCard>
+      <AuthCard
+        flat
+        eyebrow="Bienvenue"
+        title="Créer votre compte"
+        description="Un seul compte pour organiser vos évènements ou proposer vos services. Gratuit, sans engagement."
+        footer={
+          <p>
+            Déjà inscrit ? <AuthLink href={next ? `/connexion?next=${encodeURIComponent(next)}` : "/connexion"}>Se connecter</AuthLink>
+          </p>
+        }
+      >
+        <SignUpForm next={next} />
+      </AuthCard>
+    </AuthSplit>
   );
 }

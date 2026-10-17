@@ -1,10 +1,11 @@
 "use client";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, List, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import { Clock, List, MapPin, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { IllustratedEmpty } from "@/components/events/illustrated-empty";
+import { CalendarScene } from "@/components/illustrations";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { EmptyState } from "@/components/shared/empty-state";
 import { FormMessage } from "@/components/shared/form-message";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,16 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ActionResult } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import type { CategoryOption } from "@/modules/events/application/categories";
+import { MILESTONE_TEMPLATES, milestoneTemplateLabel } from "@/modules/events/domain/suggestions";
+import type { EventType } from "@/modules/events/domain/event-types";
 
 export type MilestoneItem = { id: string; title: string; description: string | null; startsAt: string; endsAt: string | null; location: string | null; categorySlugs: string[] };
 type Actions = {
   create: (eventId: string, input: unknown) => Promise<ActionResult<{ id: string }>>;
   update: (eventId: string, milestoneId: string, input: unknown) => Promise<ActionResult>;
   remove: (eventId: string, milestoneId: string) => Promise<ActionResult>;
+  /** Creates the classic moments of the event type (existing titles are skipped). */
+  addSuggested?: (eventId: string) => Promise<ActionResult<{ created: number }>>;
 };
 
 function localParts(iso: string, timeZone: string) {
@@ -31,8 +36,28 @@ function localParts(iso: string, timeZone: string) {
   return { date: `${get("year")}-${get("month")}-${get("day")}`, time: `${get("hour")}:${get("minute")}` };
 }
 
-export function Timeline({ eventId, eventDate, timezone, milestones, categories, canManage, memberCategory, actions }: { eventId: string; eventDate: string | null; timezone: string; milestones: MilestoneItem[]; categories: CategoryOption[]; canManage: boolean; memberCategory: string | null; actions: Actions }) {
+export function Timeline({ eventId, eventType, eventDate, timezone, milestones, categories, canManage, memberCategory, actions }: { eventId: string; eventType: EventType; eventDate: string | null; timezone: string; milestones: MilestoneItem[]; categories: CategoryOption[]; canManage: boolean; memberCategory: string | null; actions: Actions }) {
   const router = useRouter();
+  const [pendingSuggest, startSuggest] = useTransition();
+  const existingTitles = useMemo(() => new Set(milestones.map((m) => m.title.trim().toLowerCase())), [milestones]);
+  const missingTemplates = MILESTONE_TEMPLATES[eventType].filter((t) => !existingTitles.has(t.title.toLowerCase())).length;
+  function addSuggested() {
+    if (!actions.addSuggested) return;
+    startSuggest(async () => {
+      const res = await actions.addSuggested!(eventId);
+      if (!res.ok) toast.error(res.error);
+      else {
+        toast.success(res.data.created ? `${res.data.created} étape${res.data.created > 1 ? "s" : ""} ajoutée${res.data.created > 1 ? "s" : ""} au planning.` : "Ces moments sont déjà dans le planning.");
+        router.refresh();
+      }
+    });
+  }
+  const suggestChip = canManage && actions.addSuggested && missingTemplates > 0 && eventDate && (
+    <Button variant="outline" size="sm" onClick={addSuggested} disabled={pendingSuggest} data-testid="add-suggested-milestones">
+      <Sparkles className="size-3.5" aria-hidden="true" />
+      {milestoneTemplateLabel(eventType)}
+    </Button>
+  );
   const [view, setView] = useState<"list" | "timeline">("timeline");
   const [editing, setEditing] = useState<MilestoneItem | "new" | null>(null);
   const [onlyMine, setOnlyMine] = useState(false);
@@ -67,7 +92,8 @@ export function Timeline({ eventId, eventDate, timezone, milestones, categories,
               Mes étapes seulement
             </label>
           )}
-          {canManage && (
+          {milestones.length > 0 && suggestChip}
+          {canManage && milestones.length > 0 && (
             <Button onClick={() => setEditing("new")}>
               <Plus className="size-4" aria-hidden="true" />
               Ajouter une étape
@@ -76,8 +102,17 @@ export function Timeline({ eventId, eventDate, timezone, milestones, categories,
         </div>
       </div>
 
-      {shown.length === 0 ? (
-        <EmptyState icon={Clock} title="Le planning est vide" description={canManage ? "Ajoutez les grandes étapes : cérémonie, cocktail, dîner, goûter des enfants…" : "L'organisateur n'a pas encore partagé le déroulé."} />
+      {milestones.length === 0 ? (
+        <IllustratedEmpty
+          scene={CalendarScene}
+          title="Le déroulé du jour J reste à écrire"
+          description={canManage ? "Heure par heure : qui fait quoi, où, et quels prestataires sont concernés. Chaque étape ajoutée prévient automatiquement les professionnels de son métier." : "L'organisateur n'a pas encore partagé le déroulé de la journée."}
+          example="Goûter des enfants — 16:30 → 17:15, la grange (garde d'enfants, traiteur)"
+          action={canManage ? <>{suggestChip}<Button onClick={() => setEditing("new")}><Plus className="size-4" aria-hidden="true" />Ajouter une étape</Button></> : undefined}
+          testId="planning-empty"
+        />
+      ) : shown.length === 0 ? (
+        <IllustratedEmpty scene={CalendarScene} compact title="Aucune étape ne concerne votre métier" description="Décochez « Mes étapes seulement » pour voir tout le déroulé." action={<Button variant="outline" size="sm" onClick={() => setOnlyMine(false)}>Voir tout le planning</Button>} />
       ) : (
         byDay.map(([day, list]) => (
           <section key={day} aria-labelledby={`day-${day}`} className="space-y-3">
@@ -249,7 +284,7 @@ function MilestoneDialog({ eventId, eventDate, timezone, item, categories, onClo
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="m-desc">Détails</Label>
-            <Textarea id="m-desc" name="description" defaultValue={m?.description ?? ""} rows={3} maxLength={2000} />
+            <Textarea id="m-desc" name="description" defaultValue={m?.description ?? ""} rows={3} maxLength={2000} placeholder="Par exemple : pointage à l'arrivée, remise des consignes des parents à l'équipe." />
           </div>
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">Prestataires concernés</legend>

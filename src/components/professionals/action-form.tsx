@@ -59,7 +59,9 @@ export function ActionForm({
         onSubmit={(e) => {
           e.preventDefault();
           const submitter = (e.nativeEvent as SubmitEvent).submitter;
-          const data = new FormData(e.currentTarget, submitter instanceof HTMLElement ? submitter : undefined);
+          const data = new FormData(e.currentTarget);
+          // Mirror the browser behaviour of including the clicked submit button's name/value.
+          if (submitter instanceof HTMLButtonElement && submitter.name) data.append(submitter.name, submitter.value);
           startTransition(() => formAction(data));
         }}
       >

@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { env, isProduction } from "@/lib/env";
 
@@ -11,12 +11,27 @@ import { env, isProduction } from "@/lib/env";
 function loadOrCreateLocalKey(name: string): string {
   const dir = path.join(process.cwd(), ".secrets");
   const file = path.join(dir, `${name}.key`);
-  if (existsSync(file)) return readFileSync(file, "utf8").trim();
+  const read = (): string | null => {
+    try {
+      return readFileSync(file, "utf8").trim();
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw err;
+    }
+  };
+  const existing = read();
+  if (existing) return existing;
   if (isProduction) throw new Error(`${name} key missing in production`);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   const key = randomBytes(32).toString("base64");
-  writeFileSync(file, key, { mode: 0o600 });
-  return key;
+  try {
+    // "wx": exclusive create, so two processes starting at once never overwrite each other's key.
+    writeFileSync(file, key, { mode: 0o600, flag: "wx" });
+    return key;
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "EEXIST") return read() ?? key;
+    throw err;
+  }
 }
 
 export const authSecret: string = env.BETTER_AUTH_SECRET ?? loadOrCreateLocalKey("auth");

@@ -145,7 +145,7 @@ describe("Scenario C with the Stripe SDK mocked", () => {
   it("creates customer, product/price on the fly and a checkout session with metadata", async () => {
     const res = await startCheckout(actor, { planKey: "organizer_plus", audience: "organizer" });
     expect(res.provider).toBe("stripe");
-    expect(res.url).toMatch(/^https:\/\/checkout\.stripe\.com/);
+    expect(res.url).toMatch(/^https:\/\/checkout\.stripe\.com\//);
     expect(fake.customers.create).toHaveBeenCalledTimes(1);
     expect(fake.prices.create).toHaveBeenCalledTimes(1);
     const params = fake.checkout.sessions.create.mock.calls[0]?.[0] as { mode: string; metadata: Record<string, string>; success_url: string; line_items: Array<{ price: string }> };

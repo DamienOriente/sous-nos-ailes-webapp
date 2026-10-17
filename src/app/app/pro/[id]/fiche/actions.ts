@@ -47,15 +47,13 @@ export async function submitListingAction(id: string): Promise<ActionResult<unde
 }
 
 export async function archiveListingAction(id: string): Promise<ActionResult<undefined>> {
-  let ok = false;
   try {
     const actor = await requireActorOrThrow();
     await getManagedListing(actor, idSchema.parse(id));
     await archiveListing(actor, id);
-    ok = true;
   } catch (e) {
     return toActionError(e);
   }
-  if (ok) redirect("/app/pro");
-  return { ok: true, data: undefined };
+  // Outside the try block: redirect() signals through an exception that must not be swallowed.
+  redirect("/app/pro");
 }

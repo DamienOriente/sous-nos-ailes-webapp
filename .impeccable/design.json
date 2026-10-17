@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-17T00:00:00Z",
+  "title": "Design System: Les Petits Invités — avec Marie",
+  "extensions": {
+    "colorMeta": {
+      "sage-band": { "role": "primary", "displayName": "Sage Band", "canonical": "#3b5447", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "sage-footer": { "role": "primary", "displayName": "Sage Footer", "canonical": "#2e4237", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "sage-night": { "role": "primary", "displayName": "Sage Night", "canonical": "#1f2f27", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "sage-stem": { "role": "primary", "displayName": "Sage Stem", "canonical": "#486553", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "sage-leaf": { "role": "primary", "displayName": "Sage Leaf", "canonical": "#5b7a66", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "sage-mid": { "role": "primary", "displayName": "Sage Mid", "canonical": "#7a9683", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "sage-soft": { "role": "primary", "displayName": "Sage Soft", "canonical": "#9fb7a6", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "sage-hairline": { "role": "primary", "displayName": "Sage Hairline", "canonical": "#c3d3c7", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "sage-pale": { "role": "primary", "displayName": "Sage Pale", "canonical": "#dce6de", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "sage-wash": { "role": "primary", "displayName": "Sage Wash", "canonical": "#eef3ef", "tonalRamp": ["#1f2f27", "#2e4237", "#3b5447", "#486553", "#5b7a66", "#7a9683", "#9fb7a6", "#c3d3c7", "#dce6de", "#eef3ef"] },
+      "clay-stamp": { "role": "secondary", "displayName": "Clay Stamp", "canonical": "#9e4f2c", "tonalRamp": ["#633018", "#83401f", "#9e4f2c", "#b4603a", "#c97e58", "#d49e80", "#e3c0ac", "#f1ded3"] },
+      "clay-label": { "role": "secondary", "displayName": "Clay Label", "canonical": "#83401f", "tonalRamp": ["#633018", "#83401f", "#9e4f2c", "#b4603a", "#c97e58", "#d49e80", "#e3c0ac", "#f1ded3"] },
+      "clay-pressed": { "role": "secondary", "displayName": "Clay Pressed", "canonical": "#633018", "tonalRamp": ["#633018", "#83401f", "#9e4f2c", "#b4603a", "#c97e58", "#d49e80", "#e3c0ac", "#f1ded3"] },
+      "clay-stroke": { "role": "secondary", "displayName": "Clay Stroke", "canonical": "#b4603a", "tonalRamp": ["#633018", "#83401f", "#9e4f2c", "#b4603a", "#c97e58", "#d49e80", "#e3c0ac", "#f1ded3"] },
+      "clay-tape": { "role": "secondary", "displayName": "Clay Tape", "canonical": "#c97e58", "tonalRamp": ["#633018", "#83401f", "#9e4f2c", "#b4603a", "#c97e58", "#d49e80", "#e3c0ac", "#f1ded3"] },
+      "clay-pin": { "role": "secondary", "displayName": "Clay Pin", "canonical": "#d49e80", "tonalRamp": ["#633018", "#83401f", "#9e4f2c", "#b4603a", "#c97e58", "#d49e80", "#e3c0ac", "#f1ded3"] },
+      "clay-pale": { "role": "secondary", "displayName": "Clay Pale", "canonical": "#e3c0ac", "tonalRamp": ["#633018", "#83401f", "#9e4f2c", "#b4603a", "#c97e58", "#d49e80", "#e3c0ac", "#f1ded3"] },
+      "clay-wash": { "role": "secondary", "displayName": "Clay Wash", "canonical": "#f1ded3", "tonalRamp": ["#633018", "#83401f", "#9e4f2c", "#b4603a", "#c97e58", "#d49e80", "#e3c0ac", "#f1ded3"] },
+      "ivory-sheet": { "role": "neutral", "displayName": "Ivory Sheet", "canonical": "#f7f2ea", "tonalRamp": ["#d2c4ad", "#e3d8c6", "#efe7da", "#f7f2ea", "#fbf8f3"] },
+      "ivory-card": { "role": "neutral", "displayName": "Ivory Card", "canonical": "#fbf8f3", "tonalRamp": ["#d2c4ad", "#e3d8c6", "#efe7da", "#f7f2ea", "#fbf8f3"] },
+      "ivory-recessed": { "role": "neutral", "displayName": "Ivory Recessed", "canonical": "#efe7da", "tonalRamp": ["#d2c4ad", "#e3d8c6", "#efe7da", "#f7f2ea", "#fbf8f3"] },
+      "ivory-edge": { "role": "neutral", "displayName": "Ivory Edge", "canonical": "#e3d8c6", "tonalRamp": ["#d2c4ad", "#e3d8c6", "#efe7da", "#f7f2ea", "#fbf8f3"] },
+      "ivory-deep": { "role": "neutral", "displayName": "Ivory Deep", "canonical": "#d2c4ad", "tonalRamp": ["#d2c4ad", "#e3d8c6", "#efe7da", "#f7f2ea", "#fbf8f3"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#1c231f", "tonalRamp": ["#1c231f", "#3a423d", "#5c655f", "#9aa39d"] },
+      "ink-body": { "role": "neutral", "displayName": "Ink Body", "canonical": "#3a423d", "tonalRamp": ["#1c231f", "#3a423d", "#5c655f", "#9aa39d"] },
+      "ink-muted": { "role": "neutral", "displayName": "Ink Muted", "canonical": "#5c655f", "tonalRamp": ["#1c231f", "#3a423d", "#5c655f", "#9aa39d"] },
+      "ink-faint": { "role": "neutral", "displayName": "Ink Faint", "canonical": "#9aa39d", "tonalRamp": ["#1c231f", "#3a423d", "#5c655f", "#9aa39d"] },
+      "success": { "role": "semantic", "displayName": "Success (Sage Stem)", "canonical": "#486553", "tonalRamp": ["#486553", "#eef3ef"] },
+      "warning": { "role": "semantic", "displayName": "Warning", "canonical": "#8a6a1e", "tonalRamp": ["#8a6a1e", "#f3e8c9"] },
+      "warning-wash": { "role": "semantic", "displayName": "Warning Wash", "canonical": "#f3e8c9", "tonalRamp": ["#8a6a1e", "#f3e8c9"] },
+      "danger": { "role": "semantic", "displayName": "Danger", "canonical": "#9b3b2e", "tonalRamp": ["#9b3b2e", "#f3d9d4"] },
+      "danger-wash": { "role": "semantic", "displayName": "Danger Wash", "canonical": "#f3d9d4", "tonalRamp": ["#9b3b2e", "#f3d9d4"] },
+      "info": { "role": "semantic", "displayName": "Info", "canonical": "#3f5f7a", "tonalRamp": ["#3f5f7a", "#dbe5ee"] },
+      "info-wash": { "role": "semantic", "displayName": "Info Wash", "canonical": "#dbe5ee", "tonalRamp": ["#3f5f7a", "#dbe5ee"] },
+      "paper-print": { "role": "neutral", "displayName": "Paper Print", "canonical": "#ffffff", "tonalRamp": ["#ffffff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Home hero title and page-intro titles, Young Serif 400." },
+      "headline": { "displayName": "Headline", "purpose": "SectionTitle on every public section and the closing invitation." },
+      "title": { "displayName": "Title", "purpose": "Step titles on the sage sheet, event-family names, document titles, wordmarks." },
+      "title-operate": { "displayName": "Title (Operate)", "purpose": "PageHeader h1 in private spaces; Figtree 600, never the serif." },
+      "subtitle": { "displayName": "Subtitle", "purpose": "Label-card titles, FAQ questions, admin section titles, empty-state titles." },
+      "lead": { "displayName": "Lead", "purpose": "Paragraph under a headline, max 42rem." },
+      "body": { "displayName": "Body", "purpose": "The working 15px size: paragraphs, inputs, buttons, table cells, nav links." },
+      "prose": { "displayName": "Prose", "purpose": "Long editorial content (.prose-lpi), 68ch, line-height 1.7." },
+      "label": { "displayName": "Label", "purpose": "Reference lines, table headers, badges, footer column heads. Sentence case, never uppercase." }
+    },
+    "shadows": [
+      { "name": "shadow-card", "value": "0 1px 2px rgba(31, 47, 39, 0.05), 0 10px 28px -16px rgba(31, 47, 39, 0.28)", "purpose": "The specimen label lifting off the sheet: label cards, printable sheets, skip link." },
+      { "name": "shadow-float", "value": "0 2px 6px rgba(31, 47, 39, 0.06), 0 18px 40px -20px rgba(31, 47, 39, 0.35)", "purpose": "Declared for a lifted layer (menus, popovers); unused in the shipped build." },
+      { "name": "stamp-inset", "value": "inset 0 -1px 0 rgba(0, 0, 0, 0.12)", "purpose": "Bottom edge of the primary (clay) button." },
+      { "name": "hero-plate-filter", "value": "drop-shadow(0 18px 40px -24px rgba(31, 47, 39, 0.45))", "purpose": "One-off CSS filter under the hero HerbariumPlate SVG." }
+    ],
+    "motion": [
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The settle animation and the specimen-link underline (220ms)." },
+      { "name": "ease-in-out-soft", "value": "cubic-bezier(0.45, 0, 0.2, 1)", "purpose": "Declared in @theme; unused in the shipped build." },
+      { "name": "settle", "value": "opacity 0→1, translateY(6px→0), 700ms var(--ease-out-expo) both; delays 0/80/160/240ms", "purpose": "The one signature moment: the hero plate's five branch groups settle once on load." },
+      { "name": "specimen-link-underline", "value": "right: 100%→0 over 220ms var(--ease-out-expo); 2px clay-500 stroke", "purpose": "Hover and focus-visible underline on every specimen link." },
+      { "name": "control-transition", "value": "background-color, color, border-color, box-shadow 200ms ease-out (buttons); border-color, box-shadow 150ms ease-out (inputs)", "purpose": "State transitions on controls." },
+      { "name": "reduced-motion", "value": "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important } html { scroll-behavior: auto } }", "purpose": "Global collapse; every animation and transition inherits it." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "26rem" },
+      { "name": "sm", "value": "40rem" },
+      { "name": "md", "value": "48rem" },
+      { "name": "lg", "value": "64rem" },
+      { "name": "xl", "value": "80rem" }
+    ],
+    "focus": { "value": "outline: 2px solid var(--color-clay-600); outline-offset: 3px; border-radius: 2px", "purpose": "Global :focus-visible ring. Inputs replace it with border sage-700 + 2px ring sage-200." },
+    "paperGrain": { "value": "160px tiled inline SVG feTurbulence (baseFrequency 0.9, 2 octaves) tinted rgb(61,84,71) at 4.5% alpha over ivory-100", "purpose": "The cotton-paper grain of the sheet; removed under @media print." }
+  },
+  "components": [
+    {
+      "name": "Primary Button (clay stamp)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one clay-filled action per view: « Parler de mon événement » and every form submit.",
+      "html": "<button class=\"ds-btn-primary\">Parler de mon événement</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border: none; border-radius: var(--radius-sm, 4px); background: var(--color-clay-600, #9e4f2c); color: var(--color-ivory-50, #fbf8f3); font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; font-size: 15px; font-weight: 600; line-height: 1; white-space: nowrap; box-shadow: inset 0 -1px 0 rgba(0,0,0,0.12); cursor: pointer; transition: background-color 200ms ease-out, color 200ms ease-out, border-color 200ms ease-out, box-shadow 200ms ease-out; } .ds-btn-primary:hover { background: var(--color-clay-700, #83401f); } .ds-btn-primary:active { background: var(--color-clay-800, #633018); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-clay-600, #9e4f2c); outline-offset: 3px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Sage Button",
+      "kind": "button",
+      "refersTo": "button-sage",
+      "description": "Confirming actions in Operate mode (« Proposer la mission », « Affecter »).",
+      "html": "<button class=\"ds-btn-sage\">Proposer la mission</button>",
+      "css": ".ds-btn-sage { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border: none; border-radius: var(--radius-sm, 4px); background: var(--color-sage-700, #3b5447); color: var(--color-ivory-50, #fbf8f3); font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; font-size: 15px; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 200ms ease-out; } .ds-btn-sage:hover { background: var(--color-sage-800, #2e4237); } .ds-btn-sage:active { background: var(--color-sage-900, #1f2f27); } .ds-btn-sage:focus-visible { outline: 2px solid var(--color-clay-600, #9e4f2c); outline-offset: 3px; }"
+    },
+    {
+      "name": "Secondary Button (outline)",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outline sage stroke for secondary actions beside a stamp.",
+      "html": "<button class=\"ds-btn-secondary\">Enregistrer le brouillon</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border: 1px solid var(--color-sage-400, #7a9683); border-radius: var(--radius-sm, 4px); background: transparent; color: var(--color-sage-800, #2e4237); font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; font-size: 15px; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 200ms ease-out, border-color 200ms ease-out; } .ds-btn-secondary:hover { border-color: var(--color-sage-700, #3b5447); background: var(--color-sage-50, #eef3ef); } .ds-btn-secondary:active { background: var(--color-sage-100, #dce6de); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--color-clay-600, #9e4f2c); outline-offset: 3px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Borderless tertiary action.",
+      "html": "<button class=\"ds-btn-ghost\">Annuler</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border: none; border-radius: var(--radius-sm, 4px); background: transparent; color: var(--color-sage-800, #2e4237); font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; font-size: 15px; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 200ms ease-out; } .ds-btn-ghost:hover { background: var(--color-sage-50, #eef3ef); } .ds-btn-ghost:active { background: var(--color-sage-100, #dce6de); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--color-clay-600, #9e4f2c); outline-offset: 3px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Outline danger for destructive actions (cancel a file, withdraw a proposal).",
+      "html": "<button class=\"ds-btn-danger\">Annuler le dossier</button>",
+      "css": ".ds-btn-danger { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border: 1px solid var(--color-danger-600, #9b3b2e); border-radius: var(--radius-sm, 4px); background: transparent; color: var(--color-danger-600, #9b3b2e); font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; font-size: 15px; font-weight: 600; line-height: 1; cursor: pointer; transition: background-color 200ms ease-out; } .ds-btn-danger:hover { background: var(--color-danger-100, #f3d9d4); } .ds-btn-danger:focus-visible { outline: 2px solid var(--color-clay-600, #9e4f2c); outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled input with help text; sage stroke, ivory card fill, clay asterisk when required.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-city\">Commune <span class=\"ds-field-req\" aria-hidden=\"true\">*</span></label><input class=\"ds-input\" id=\"ds-city\" placeholder=\"Ex. Lyon\" /><p class=\"ds-field-help\">Commune du lieu de réception.</p></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; } .ds-field-label { font-size: 15px; font-weight: 600; color: var(--color-ink-900, #1c231f); } .ds-field-req { margin-left: 4px; color: var(--color-clay-700, #83401f); } .ds-input { display: block; width: 100%; height: 44px; padding: 0 14px; border: 1px solid var(--color-sage-300, #9fb7a6); border-radius: var(--radius-sm, 4px); background: var(--color-ivory-50, #fbf8f3); color: var(--color-ink-900, #1c231f); font: inherit; font-size: 15px; transition: border-color 150ms ease-out, box-shadow 150ms ease-out; } .ds-input::placeholder { color: var(--color-ink-500, #5c655f); opacity: 1; } .ds-input:hover { border-color: var(--color-sage-400, #7a9683); } .ds-input:focus { outline: none; border-color: var(--color-sage-700, #3b5447); box-shadow: 0 0 0 2px var(--color-sage-200, #c3d3c7); } .ds-input[aria-invalid='true'] { border-color: var(--color-danger-600, #9b3b2e); } .ds-input:disabled { background: var(--color-ivory-200, #efe7da); color: var(--color-ink-500, #5c655f); } .ds-field-help { font-size: 14px; line-height: 1.375; color: var(--color-ink-500, #5c655f); margin: 0; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "status-badge",
+      "description": "Dot + text + weight in an ivory pill; the tone only reinforces the written state.",
+      "html": "<span class=\"ds-badge ds-badge-sage\"><span class=\"ds-badge-dot\" aria-hidden=\"true\"></span>Confirmé</span> <span class=\"ds-badge ds-badge-clay\"><span class=\"ds-badge-dot\" aria-hidden=\"true\"></span>Nouveau</span> <span class=\"ds-badge ds-badge-neutral\"><span class=\"ds-badge-dot\" aria-hidden=\"true\"></span>Brouillon</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 10px; border: 1px solid; border-radius: 9999px; background: var(--color-ivory-50, #fbf8f3); font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; font-size: 13px; font-weight: 600; line-height: 1; white-space: nowrap; } .ds-badge-dot { width: 8px; height: 8px; border-radius: 9999px; background: currentColor; } .ds-badge-sage { color: var(--color-sage-800, #2e4237); border-color: var(--color-sage-200, #c3d3c7); } .ds-badge-sage .ds-badge-dot { background: var(--color-sage-600, #486553); } .ds-badge-clay { color: var(--color-clay-800, #633018); border-color: var(--color-clay-200, #e3c0ac); } .ds-badge-clay .ds-badge-dot { background: var(--color-clay-500, #b4603a); } .ds-badge-neutral { color: var(--color-ink-700, #3a423d); border-color: var(--color-ivory-400, #d2c4ad); } .ds-badge-neutral .ds-badge-dot { background: var(--color-ink-300, #9aa39d); }"
+    },
+    {
+      "name": "Label Card",
+      "kind": "card",
+      "refersTo": "label-card",
+      "description": "The specimen label: ivory card, hairline sage frame, clay reference line, card shadow.",
+      "html": "<article class=\"ds-label-card\"><p class=\"ds-label-card-ref\">Événements accompagnés</p><h3 class=\"ds-label-card-title\">Mariages</h3><p class=\"ds-label-card-body\">Du vin d’honneur à l’ouverture du bal, les enfants ont leur espace, leurs activités et des adultes qui ne font que ça.</p></article>",
+      "css": ".ds-label-card { padding: 20px; background: var(--color-ivory-50, #fbf8f3); border: 1px solid var(--color-sage-200, #c3d3c7); border-radius: var(--radius-md, 6px); box-shadow: var(--shadow-card, 0 1px 2px rgba(31,47,39,0.05), 0 10px 28px -16px rgba(31,47,39,0.28)); font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; color: var(--color-ink-900, #1c231f); } .ds-label-card-ref { margin: 0 0 8px; font-size: 13px; font-weight: 600; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; color: var(--color-clay-700, #83401f); } .ds-label-card-title { margin: 0; font-size: 18px; font-weight: 600; } .ds-label-card-body { margin: 8px 0 0; font-size: 15px; line-height: 1.625; color: var(--color-ink-700, #3a423d); }"
+    },
+    {
+      "name": "Public Navigation",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Sticky ivory bar: serif wordmark, specimen links with a clay stroke on hover, clay stamp CTA.",
+      "html": "<header class=\"ds-nav\"><a class=\"ds-nav-brand\" href=\"#\">Les Petits Invités — avec Marie</a><nav class=\"ds-nav-links\"><a class=\"ds-specimen-link\" href=\"#\">Prestations</a><a class=\"ds-specimen-link ds-specimen-link-active\" href=\"#\" aria-current=\"page\">Mariages</a><a class=\"ds-specimen-link\" href=\"#\">Événements</a><a class=\"ds-specimen-link\" href=\"#\">Lieux partenaires</a><a class=\"ds-specimen-link\" href=\"#\">À propos</a></nav><a class=\"ds-nav-cta\" href=\"#\">Parler de mon événement</a></header>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 64px; padding: 0 32px; background: rgba(247, 242, 234, 0.95); border-bottom: 1px solid rgba(195, 211, 199, 0.8); font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; } .ds-nav-brand { font-family: 'Young Serif', 'Iowan Old Style', Georgia, serif; font-size: 24px; line-height: 1; color: var(--color-sage-800, #2e4237); text-decoration: none; white-space: nowrap; } .ds-nav-links { display: flex; align-items: center; gap: 24px; } .ds-specimen-link { position: relative; font-size: 15px; font-weight: 500; color: var(--color-ink-700, #3a423d); text-decoration: none; white-space: nowrap; } .ds-specimen-link::after { content: ''; position: absolute; left: 0; right: 100%; bottom: -2px; height: 2px; background: var(--color-clay-500, #b4603a); transition: right 220ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-specimen-link:hover, .ds-specimen-link-active { color: var(--color-sage-900, #1f2f27); } .ds-specimen-link:hover::after, .ds-specimen-link:focus-visible::after { right: 0; } .ds-specimen-link:focus-visible { outline: 2px solid var(--color-clay-600, #9e4f2c); outline-offset: 3px; border-radius: 2px; } .ds-nav-cta { display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border-radius: 4px; background: var(--color-clay-600, #9e4f2c); color: var(--color-ivory-50, #fbf8f3); font-size: 14px; font-weight: 600; line-height: 1; text-decoration: none; box-shadow: inset 0 -1px 0 rgba(0,0,0,0.12); transition: background-color 200ms ease-out; } .ds-nav-cta:hover { background: var(--color-clay-700, #83401f); }"
+    },
+    {
+      "name": "Operate Side Navigation",
+      "kind": "nav",
+      "refersTo": "nav-item-operate",
+      "description": "Private-space navigation: sans items, sage wash on hover, solid sage-700 for the current page.",
+      "html": "<nav class=\"ds-opnav\" aria-label=\"Espace de gestion\"><a class=\"ds-opnav-item\" href=\"#\">Tableau de bord</a><a class=\"ds-opnav-item ds-opnav-item-active\" href=\"#\" aria-current=\"page\">Demandes et événements</a><a class=\"ds-opnav-item\" href=\"#\">Planning</a><a class=\"ds-opnav-item\" href=\"#\">Intervenant·es</a></nav>",
+      "css": ".ds-opnav { display: flex; flex-direction: column; gap: 4px; width: 224px; font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; } .ds-opnav-item { display: block; padding: 8px 12px; border-radius: var(--radius-sm, 4px); font-size: 15px; font-weight: 500; color: var(--color-ink-700, #3a423d); text-decoration: none; transition: background-color 150ms ease-out, color 150ms ease-out; } .ds-opnav-item:hover { background: var(--color-sage-50, #eef3ef); color: var(--color-sage-900, #1f2f27); } .ds-opnav-item-active, .ds-opnav-item-active:hover { background: var(--color-sage-700, #3b5447); color: var(--color-ivory-50, #fbf8f3); } .ds-opnav-item:focus-visible { outline: 2px solid var(--color-clay-600, #9e4f2c); outline-offset: 3px; }"
+    },
+    {
+      "name": "Alert",
+      "kind": "custom",
+      "refersTo": "status-badge",
+      "description": "Inline notice replacing toasts and modals; wash fill, 30 % tone border, tone text.",
+      "html": "<div class=\"ds-alert ds-alert-success\" role=\"status\"><p class=\"ds-alert-title\">Proposition envoyée</p><div class=\"ds-alert-body\">Le client la retrouve dans son espace. Rien n’est confirmé avant votre validation.</div></div>",
+      "css": ".ds-alert { padding: 12px 16px; border: 1px solid; border-radius: var(--radius-md, 6px); font-family: 'Figtree Variable', 'Avenir Next', 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.375; } .ds-alert-success { background: var(--color-sage-50, #eef3ef); border-color: var(--color-sage-300, #9fb7a6); color: var(--color-sage-800, #2e4237); } .ds-alert-title { margin: 0; font-weight: 600; } .ds-alert-body { margin-top: 4px; opacity: 0.9; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Herbarium Plate",
+    "overview": "Every surface is a sheet of warm, faintly grained cotton paper on which the service is catalogued rather than sold. Services, venues, steps and event families are pressed specimens: each has a name, a flat two-tone sage illustration, a hairline frame and a small clay label. Nothing is layered on glass, nothing glows, nothing moves except one settling of the hero plate on first load. The visitor is invited to add their own event to the sheet, and the clay stamp button (« Parler de mon événement ») is the only warm, saturated object on any public screen.\n\nThe public site runs in Persuade mode with a Committed colour strategy: deep sage bands (« Le déroulement », the footer) carry entire sections in reverse, and the display serif (Young Serif) sets plate titles. The private spaces (admin, client, intervenant·e, partenaire) inherit the same sheet in Operate mode with a Restrained strategy: one text family (Figtree), sage reserved for the active navigation item and confirmations, clay for the primary action and demo notices, and status always written out with a dot, a text label and weight.\n\nDensity is editorial on the public site (96 px section rhythm, 68ch prose, large serif), and compact in the private spaces (44 px controls, 15 px body, label-card headers, disclosures instead of modals). The build confirms the refused devices: no stock-photo hero, no icon-card trio, no testimonial strip (the reviews section renders nothing until real reviews exist), no gradients, no glassmorphism, no kickers, no section numbers, no uppercase tracking labels.",
+    "keyCharacteristics": [
+      "Warm ivory sheet with an inline-SVG cotton grain; ivory card on sheet is the only \"elevation\" most pages need.",
+      "Deep sage carries whole sections in reverse on the public site; it never tints a card or a button in the private spaces except the active nav item.",
+      "Clay is reserved for the primary action, the specimen reference line, pin strips and the caret; it is never a background for content.",
+      "Young Serif at weight 400 for plate titles; Figtree for every other word, including all headings in Operate mode.",
+      "Hairlines (1 px sage-200) and divided lists replace cards wherever a list is a list.",
+      "Status = dot + text + weight; hue only reinforces.",
+      "One authored motion: the hero plate settles once (700 ms, exponential ease-out); specimen links underline with a clay stroke on hover."
+    ],
+    "rules": [
+      { "name": "The One Stamp Rule", "body": "Clay fills exactly one kind of element per screen: the primary action. Everything else clay is a line, a dot, a pin or a word.", "section": "colors" },
+      { "name": "The Sage Sheet Rule", "body": "On the public site sage may carry a whole section in reverse; it may not tint a card. In Operate mode sage fills only the active navigation item and the checked control.", "section": "colors" },
+      { "name": "The Dot-and-Word Rule", "body": "Status is a 8 px dot, a text label and font weight 600 inside an ivory pill. Hue is the third signal, never the first.", "section": "colors" },
+      { "name": "The One Weight Serif Rule", "body": "Young Serif is used at 400 only, never bold, never italic, never below 1.125rem.", "section": "typography" },
+      { "name": "The Sentence Case Rule", "body": "No uppercase, no letter-spaced kickers. A label is a short sentence-case phrase in Figtree 600 at 13px.", "section": "typography" },
+      { "name": "The Operate Sans Rule", "body": "Inside a private shell every heading is Figtree 600; the serif is reserved for the wordmark.", "section": "typography" },
+      { "name": "The Paper-on-Paper Rule", "body": "Elevation is a lighter ivory and a hairline first; a shadow is added only when a surface must be read as a separate sheet (label card, printable document, hero plate).", "section": "elevation" },
+      { "name": "The No Glass Rule", "body": "No translucent panels over content, no blur as a material. The header's 95 % ivory is opacity for scroll continuity, not a glass effect.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do put content on the ivory sheet and lift it with an `ivory-card` + 1 px `sage-hairline` label card before reaching for a shadow.",
+      "Do carry a whole public section in `sage-band` reverse when it needs weight (« Le déroulement », footer), with titles in `ivory-card`, body in `sage-pale` and labels in `clay-pale`.",
+      "Do use exactly one clay-filled primary button per view; secondary actions are specimen links (`sage-footer`, 15px / 600, clay stroke on hover) or outline buttons.",
+      "Do write every status as dot + French label + 600 weight inside an ivory pill, and every tracker state as a word.",
+      "Do set public titles in Young Serif 400 at the Display / Headline / Title steps and everything else, including every Operate heading, in Figtree.",
+      "Do keep lists as lists: divided `<dl>` / `<ol>` rows over hairlines, one step per full-width row, three-column `<dl>` for families.",
+      "Do honour `prefers-reduced-motion`: the global 0.01 ms collapse already covers `.settle` and every transition; new motion must be a CSS animation or transition so it inherits it.",
+      "Do draw illustrations as deterministic inline SVG in the four sage steps plus ivory, pinned with a `clay-pin` strip; document provenance."
+    ],
+    "donts": [
+      "Don't add kickers, eyebrows, section numbers or uppercase letter-spaced labels; labels are sentence-case 13px / 600.",
+      "Don't use gradients, glass panels, backdrop blur as a material, or coloured drop shadows; the only shadows are Card, the hero plate's filter and the stamp's 1 px inset.",
+      "Don't fill cards, badges or tables with sage or clay; fills are `ivory-card`, and sage fills belong to section bands, the active Operate nav item, the sage button and checked controls only.",
+      "Don't convey state with colour alone, and don't assign a tone without a text label.",
+      "Don't use icon-card trios, stock photography, emoji as identity, or a photographed person in Marie's portrait slot.",
+      "Don't set Young Serif bold, italic, under 1.125rem, or inside Operate headings, tables and forms.",
+      "Don't add radii above 10px on surfaces or below 4px on controls; pills are for dots and badges only.",
+      "Don't add a second authored motion; the hero settle is the one signature moment and nothing else drifts or fades on load."
+    ]
+  }
+}

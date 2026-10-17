@@ -1,0 +1,702 @@
+// Les Petits Invités — data model.
+// Money is stored in integer cents. Instants are stored in UTC (timestamptz);
+// date-only values use @db.Date. Display conversion to Europe/Paris happens in src/lib/time.ts.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  CLIENT
+  PROVIDER
+  PARTNER
+}
+
+enum LoginTokenPurpose {
+  MAGIC_LINK
+}
+
+enum EventType {
+  WEDDING
+  PRIVATE_PARTY
+  PROFESSIONAL
+  OTHER
+}
+
+enum EventStatus {
+  NEW
+  QUALIFYING
+  PROPOSAL_SENT
+  AGREED
+  PREPARING
+  CONFIRMED
+  COMPLETED
+  DECLINED
+  CANCELLED
+}
+
+enum TriState {
+  YES
+  PARTIAL
+  NO
+  UNKNOWN
+}
+
+enum RequestSource {
+  DIRECT
+  PARTNER_LINK
+  VENUE_PAGE
+}
+
+enum QuoteVersionStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  SUPERSEDED
+  WITHDRAWN
+}
+
+enum QuoteLineKind {
+  SERVICE
+  TRAVEL
+  OPTION
+  SURCHARGE
+  DISCOUNT
+  OTHER
+}
+
+enum VatMode {
+  NONE
+  STANDARD
+}
+
+enum PricingUnit {
+  FLAT
+  PER_HOUR
+  PER_PROVIDER
+}
+
+enum ProviderVettingStatus {
+  NEW
+  IN_REVIEW
+  ACTIVE
+  PAUSED
+}
+
+enum QualificationStatus {
+  DECLARED
+  VERIFIED
+  REJECTED
+}
+
+enum CostBasis {
+  PER_MISSION
+  PER_HOUR
+}
+
+enum AvailabilityKind {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+  EXPIRED
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  CANCELLED
+}
+
+enum VenueType {
+  CHATEAU
+  DOMAINE
+  SALLE_DE_RECEPTION
+  RESTAURANT
+  HOTEL
+  AUTRE
+}
+
+enum PartnershipStatus {
+  PROSPECT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum EditorialStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+}
+
+enum ReferralSourceKind {
+  LINK
+  QR
+  VENUE_PAGE
+}
+
+enum ApplicationKind {
+  PROVIDER
+  PARTNER
+}
+
+enum ApplicationStatus {
+  NEW
+  REVIEWING
+  ACCEPTED
+  DECLINED
+}
+
+// ---------------------------------------------------------------------------
+// Identity & sessions
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid(2))
+  email        String   @unique
+  name         String
+  phone        String?
+  role         Role
+  passwordHash String?
+  isActive     Boolean  @default(true)
+  isDemo       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions        Session[]
+  loginTokens     LoginToken[]
+  clientEvents    Event[]          @relation("ClientEvents")
+  providerProfile ProviderProfile?
+  partnerVenue    PartnerVenue?    @relation("VenuePartnerUser")
+  notes           InternalNote[]
+  auditEvents     AuditEvent[]
+  acceptedQuotes  QuoteVersion[]   @relation("QuoteAcceptedBy")
+}
+
+model Session {
+  id         String    @id @default(cuid(2))
+  tokenHash  String    @unique
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model LoginToken {
+  id        String            @id @default(cuid(2))
+  tokenHash String            @unique
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   LoginTokenPurpose @default(MAGIC_LINK)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime          @default(now())
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Business settings & editable content
+// ---------------------------------------------------------------------------
+
+model BusinessSettings {
+  id             String  @id @default("default")
+  brandName      String  @default("Les Petits Invités — avec Marie")
+  tagline        String  @default("Une attention pour les enfants, de la sérénité pour votre événement.")
+  ownerFirstName String  @default("Marie")
+  contactEmail   String  @default("contact@example.test")
+  contactPhone   String?
+  areaLabel      String  @default("Zone d’intervention à définir (paramètre de démonstration)")
+
+  // Pricing (demo values, flagged as fictitious in the UI until configured)
+  hourlyRateCents         Int     @default(3500)
+  minimumHours            Int     @default(3)
+  minimumAmountCents      Int?
+  defaultTravelFeeCents   Int     @default(0)
+  nightSurchargeStartHour Int     @default(22)
+  nightSurchargePercent   Int     @default(25)
+  sundaySurchargePercent  Int     @default(0)
+  vatMode                 VatMode @default(NONE)
+  vatRateBps              Int     @default(2000)
+  publicEstimateEnabled   Boolean @default(false)
+  publicEstimateMarginPct Int     @default(15)
+
+  // Staffing parameters: internal working assumptions, NOT regulatory ratios.
+  ratioUnder3   Int @default(3)
+  ratio3to5     Int @default(6)
+  ratio6to10    Int @default(8)
+  ratio11plus   Int @default(10)
+  minProviders  Int @default(1)
+
+  // Scheduling
+  travelBufferMinutes   Int @default(45)
+  invitationExpiryHours Int @default(72)
+
+  // Data
+  dataRetentionMonths Int @default(36)
+
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceOption {
+  id          String      @id @default(cuid(2))
+  code        String      @unique
+  label       String
+  description String?
+  priceCents  Int
+  pricingUnit PricingUnit @default(FLAT)
+  isActive    Boolean     @default(true)
+  sortOrder   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model ContentBlock {
+  key       String   @id
+  title     String?
+  body      String
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Partner venues
+// ---------------------------------------------------------------------------
+
+model PartnerVenue {
+  id              String            @id @default(cuid(2))
+  slug            String            @unique
+  name            String
+  type            VenueType         @default(AUTRE)
+  city            String
+  postalCode      String?
+  region          String?
+  officialWebsite String?
+  summary         String
+  description     String
+  childrenSpaces  String?
+  constraints     String?
+  accessInfo      String?
+  // Private professional contact (never rendered publicly)
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  partnershipStatus PartnershipStatus @default(PROSPECT)
+  editorialStatus   EditorialStatus   @default(DRAFT)
+  lastVerifiedAt    DateTime?
+  publishedAt       DateTime?
+  referralCode      String            @unique
+  illustrationKey   String            @default("domaine")
+  isDemo            Boolean           @default(false)
+  partnerUserId     String?           @unique
+  partnerUser       User?             @relation("VenuePartnerUser", fields: [partnerUserId], references: [id], onDelete: SetNull)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  requests  EventRequest[]
+  events    Event[]
+  referrals Referral[]
+  notes     InternalNote[]
+
+  @@index([editorialStatus, partnershipStatus])
+}
+
+// ---------------------------------------------------------------------------
+// Requests & events
+// ---------------------------------------------------------------------------
+
+model ReferenceCounter {
+  year Int @id
+  next Int @default(1)
+}
+
+// Immutable snapshot of what the organiser submitted.
+model EventRequest {
+  id             String        @id @default(cuid(2))
+  eventType      EventType
+  eventDate      DateTime?     @db.Date
+  eventEndDate   DateTime?     @db.Date
+  dateIsFlexible Boolean       @default(false)
+  dateNote       String?
+  startTime      String?
+  endTime        String?
+  venueId        String?
+  venue          PartnerVenue? @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  venueName      String?
+  city           String
+  postalCode     String
+  childrenUnder3 Int           @default(0)
+  children3to5   Int           @default(0)
+  children6to10  Int           @default(0)
+  children11plus Int           @default(0)
+  parentsOnSite  TriState      @default(UNKNOWN)
+  dedicatedSpace TriState      @default(UNKNOWN)
+  optionCodes    String[]      @default([])
+  organizerName  String
+  organizerEmail String
+  organizerPhone String?
+  organizerRole  String?
+  message        String?
+  privacyAcceptedAt DateTime
+  marketingOptIn    Boolean    @default(false)
+  source            RequestSource @default(DIRECT)
+  submissionKey     String?    @unique
+  createdAt         DateTime   @default(now())
+
+  event    Event?
+  referral Referral?
+}
+
+model Event {
+  id        String      @id @default(cuid(2))
+  reference String      @unique
+  requestId String      @unique
+  request   EventRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  clientId  String
+  client    User        @relation("ClientEvents", fields: [clientId], references: [id], onDelete: Restrict)
+  status    EventStatus @default(NEW)
+  title     String
+  eventType EventType
+
+  // Dates: date-only (Europe/Paris civil date) + UTC instants when times are known
+  date           DateTime? @db.Date
+  endDate        DateTime? @db.Date
+  dateIsFlexible Boolean   @default(false)
+  dateNote       String?
+  startTime      String?
+  endTime        String?
+  startsAt       DateTime?
+  endsAt         DateTime?
+
+  venueId         String?
+  venue           PartnerVenue? @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  venueName       String?
+  venueAddressNote String?
+  city            String
+  postalCode      String
+
+  childrenUnder3 Int      @default(0)
+  children3to5   Int      @default(0)
+  children6to10  Int      @default(0)
+  children11plus Int      @default(0)
+  parentsOnSite  TriState @default(UNKNOWN)
+  dedicatedSpace TriState @default(UNKNOWN)
+  optionCodes    String[] @default([])
+
+  requiredProviders Int @default(1)
+
+  // Preparation (answered by the client or Marie)
+  spaceDescription   String?
+  meetingPoint       String?
+  onSiteContactName  String?
+  onSiteContactPhone String?
+  scheduleNotes      String?
+  opsValidatedAt     DateTime?
+
+  declinedReason  String?
+  cancelledReason String?
+  confirmedAt     DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  quote       Quote?
+  invitations MissionInvitation[]
+  assignments Assignment[]
+  checklist   ChecklistItem[]
+  notes       InternalNote[]
+
+  @@index([status])
+  @@index([startsAt])
+  @@index([clientId])
+  @@index([venueId])
+}
+
+// ---------------------------------------------------------------------------
+// Quotes (versioned, immutable once sent)
+// ---------------------------------------------------------------------------
+
+model Quote {
+  id        String   @id @default(cuid(2))
+  eventId   String   @unique
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  versions QuoteVersion[]
+}
+
+model QuoteVersion {
+  id       String             @id @default(cuid(2))
+  quoteId  String
+  quote    Quote              @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  number   Int
+  status   QuoteVersionStatus @default(DRAFT)
+  title    String
+  introText String?
+  validUntil DateTime?
+
+  vatMode    VatMode @default(NONE)
+  vatRateBps Int     @default(0)
+
+  subtotalCents      Int @default(0)
+  discountCents      Int @default(0)
+  totalExclVatCents  Int @default(0)
+  vatCents           Int @default(0)
+  totalInclVatCents  Int @default(0)
+
+  createdAt        DateTime  @default(now())
+  sentAt           DateTime?
+  acceptedAt       DateTime?
+  acceptedByUserId String?
+  acceptedBy       User?     @relation("QuoteAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  supersededAt     DateTime?
+  withdrawnAt      DateTime?
+
+  lines QuoteLine[]
+
+  @@unique([quoteId, number])
+}
+
+model QuoteLine {
+  id                 String        @id @default(cuid(2))
+  versionId          String
+  version            QuoteVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sortOrder          Int
+  kind               QuoteLineKind @default(SERVICE)
+  label              String
+  description        String?
+  quantityHundredths Int           @default(100)
+  unitPriceCents     Int           @default(0)
+  totalCents         Int           @default(0)
+
+  @@index([versionId])
+}
+
+// ---------------------------------------------------------------------------
+// Provider network
+// ---------------------------------------------------------------------------
+
+model ProviderProfile {
+  id             String                @id @default(cuid(2))
+  userId         String                @unique
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName    String
+  city           String
+  postalCode     String?
+  sector         String
+  bio            String?
+  skills         String[]              @default([])
+  vettingStatus  ProviderVettingStatus @default(NEW)
+  vettingNote    String?
+  vettedAt       DateTime?
+  costBasis      CostBasis             @default(PER_MISSION)
+  agreedCostCents Int                  @default(0)
+  costNote       String?
+  isActive       Boolean               @default(true)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  qualifications ProviderQualification[]
+  availabilities Availability[]
+  invitations    MissionInvitation[]
+  assignments    Assignment[]
+  notes          InternalNote[]
+}
+
+model ProviderQualification {
+  id         String              @id @default(cuid(2))
+  providerId String
+  provider   ProviderProfile     @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  label      String
+  issuer     String?
+  year       Int?
+  status     QualificationStatus @default(DECLARED)
+  verifiedAt DateTime?
+  verifiedNote String?
+  createdAt  DateTime            @default(now())
+
+  @@index([providerId])
+}
+
+model Availability {
+  id         String           @id @default(cuid(2))
+  providerId String
+  provider   ProviderProfile  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  kind       AvailabilityKind
+  startsAt   DateTime
+  endsAt     DateTime
+  note       String?
+  createdAt  DateTime         @default(now())
+
+  @@index([providerId, startsAt])
+}
+
+model MissionInvitation {
+  id                String           @id @default(cuid(2))
+  eventId           String
+  event             Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  providerId        String
+  provider          ProviderProfile  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  status            InvitationStatus @default(PENDING)
+  message           String?
+  proposedCostCents Int?
+  sentAt            DateTime         @default(now())
+  expiresAt         DateTime
+  respondedAt       DateTime?
+  responseNote      String?
+
+  assignment Assignment?
+
+  @@unique([eventId, providerId])
+  @@index([providerId, status])
+}
+
+model Assignment {
+  id              String           @id @default(cuid(2))
+  eventId         String
+  event           Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  providerId      String
+  provider        ProviderProfile  @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  invitationId    String?          @unique
+  invitation      MissionInvitation? @relation(fields: [invitationId], references: [id], onDelete: SetNull)
+  status          AssignmentStatus @default(ASSIGNED)
+  roleLabel       String?
+  agreedCostCents Int              @default(0)
+  assignedAt      DateTime         @default(now())
+  cancelledAt     DateTime?
+  cancelReason    String?
+
+  @@unique([eventId, providerId])
+  @@index([providerId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Attribution, preparation, notes, audit, applications
+// ---------------------------------------------------------------------------
+
+model Referral {
+  id         String             @id @default(cuid(2))
+  venueId    String
+  venue      PartnerVenue       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  requestId  String             @unique
+  request    EventRequest       @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sourceKind ReferralSourceKind @default(LINK)
+  createdAt  DateTime           @default(now())
+
+  @@index([venueId])
+}
+
+model ChecklistItem {
+  id        String    @id @default(cuid(2))
+  eventId   String
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  key       String?
+  label     String
+  isAuto    Boolean   @default(false)
+  isDone    Boolean   @default(false)
+  doneAt    DateTime?
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  @@unique([eventId, key])
+  @@index([eventId])
+}
+
+model InternalNote {
+  id         String           @id @default(cuid(2))
+  eventId    String?
+  event      Event?           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  venueId    String?
+  venue      PartnerVenue?    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  providerId String?
+  provider   ProviderProfile? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User             @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  body       String
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([eventId])
+  @@index([venueId])
+  @@index([providerId])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid(2))
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorRole  Role?
+  action     String
+  entityType String
+  entityId   String
+  summary    String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Application {
+  id                String            @id @default(cuid(2))
+  kind              ApplicationKind
+  status            ApplicationStatus @default(NEW)
+  name              String
+  email             String
+  phone             String?
+  city              String?
+  organisation      String?
+  sector            String?
+  message           String
+  privacyAcceptedAt DateTime
+  reviewedAt        DateTime?
+  reviewNote        String?
+  createdAt         DateTime          @default(now())
+
+  @@index([kind, status])
+}
+
+model ContactMessage {
+  id                String    @id @default(cuid(2))
+  name              String
+  email             String
+  subject           String?
+  message           String
+  privacyAcceptedAt DateTime
+  handledAt         DateTime?
+  createdAt         DateTime  @default(now())
+}
+
+model OutboundEmail {
+  id        String   @id @default(cuid(2))
+  toEmail   String
+  subject   String
+  template  String
+  entityType String?
+  entityId   String?
+  sentAt    DateTime?
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([entityType, entityId])
+}

@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.secrets
+.env
+.env.*
+!.env.example
+playwright-report
+test-results
+coverage
+.impeccable/review
+.impeccable/mocks
+.impeccable/build
+docs
+*.md
+!README.md

@@ -1,0 +1,271 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Les Petits Invités — design tokens (herbarium plate world)
+   Warm ivory sheet, deep sage as the committed colour, clay accents.
+   --------------------------------------------------------------------------- */
+@theme {
+  --color-*: initial;
+
+  --color-ivory-50: #fbf8f3;
+  --color-ivory-100: #f7f2ea;
+  --color-ivory-200: #efe7da;
+  --color-ivory-300: #e3d8c6;
+  --color-ivory-400: #d2c4ad;
+
+  --color-sage-50: #eef3ef;
+  --color-sage-100: #dce6de;
+  --color-sage-200: #c3d3c7;
+  --color-sage-300: #9fb7a6;
+  --color-sage-400: #7a9683;
+  --color-sage-500: #5b7a66;
+  --color-sage-600: #486553;
+  --color-sage-700: #3b5447;
+  --color-sage-800: #2e4237;
+  --color-sage-900: #1f2f27;
+
+  --color-clay-100: #f1ded3;
+  --color-clay-200: #e3c0ac;
+  --color-clay-300: #d49e80;
+  --color-clay-400: #c97e58;
+  --color-clay-500: #b4603a;
+  --color-clay-600: #9e4f2c;
+  --color-clay-700: #83401f;
+  --color-clay-800: #633018;
+
+  --color-ink-900: #1c231f;
+  --color-ink-700: #3a423d;
+  --color-ink-500: #5c655f;
+  --color-ink-300: #9aa39d;
+
+  --color-success-600: #486553;
+  --color-warning-600: #8a6a1e;
+  --color-warning-100: #f3e8c9;
+  --color-danger-600: #9b3b2e;
+  --color-danger-100: #f3d9d4;
+  --color-info-600: #3f5f7a;
+  --color-info-100: #dbe5ee;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-display: "Young Serif", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Figtree Variable", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+
+  --shadow-card: 0 1px 2px rgba(31, 47, 39, 0.05), 0 10px 28px -16px rgba(31, 47, 39, 0.28);
+  --shadow-float: 0 2px 6px rgba(31, 47, 39, 0.06), 0 18px 40px -20px rgba(31, 47, 39, 0.35);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.45, 0, 0.2, 1);
+
+  --breakpoint-xs: 26rem;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    scrollbar-color: var(--color-sage-300) transparent;
+    --selection-bg: var(--color-sage-200);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ivory-100);
+    color: var(--color-ink-900);
+    line-height: 1.6;
+    min-height: 100dvh;
+    caret-color: var(--color-clay-600);
+    /* faint cotton-paper grain, inline SVG so no runtime asset is fetched */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.24 0 0 0 0 0.33 0 0 0 0 0.28 0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--color-ink-900);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-clay-600);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    color: var(--color-ink-900);
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a {
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+  }
+
+  button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: var(--color-ink-500);
+    opacity: 1;
+  }
+
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @media print {
+    body {
+      background: #fff;
+      background-image: none;
+      color: #000;
+    }
+    .no-print {
+      display: none !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 40rem) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .container-page {
+      padding-inline: 3rem;
+    }
+  }
+
+  .hairline {
+    border-color: var(--color-sage-200);
+  }
+
+  /* Specimen label: ivory card with a hairline sage frame and a clay reference line */
+  .label-card {
+    background: var(--color-ivory-50);
+    border: 1px solid var(--color-sage-200);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+  }
+
+  .plate {
+    background: var(--color-ivory-50);
+    border: 1px solid var(--color-ivory-300);
+    border-radius: var(--radius-lg);
+  }
+
+  .prose-lpi {
+    max-width: 68ch;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--color-ink-700);
+  }
+  .prose-lpi p + p {
+    margin-top: 1rem;
+  }
+  .prose-lpi h2 {
+    font-size: 1.75rem;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+  }
+  .prose-lpi h3 {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-sans);
+    font-weight: 600;
+  }
+  .prose-lpi ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin-top: 0.75rem;
+  }
+  .prose-lpi li + li {
+    margin-top: 0.35rem;
+  }
+  .prose-lpi a {
+    color: var(--color-sage-700);
+    text-decoration: underline;
+  }
+
+  /* Signature moment: the hero plate "settles" once on load. */
+  .settle {
+    animation: settle 700ms var(--ease-out-expo) both;
+  }
+  .settle-delay-1 { animation-delay: 80ms; }
+  .settle-delay-2 { animation-delay: 160ms; }
+  .settle-delay-3 { animation-delay: 240ms; }
+  @keyframes settle {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .specimen-link {
+    position: relative;
+    text-decoration: none;
+  }
+  .specimen-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: -2px;
+    height: 2px;
+    background: var(--color-clay-500);
+    transition: right 220ms var(--ease-out-expo);
+  }
+  .specimen-link:hover::after, .specimen-link:focus-visible::after {
+    right: 0;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}

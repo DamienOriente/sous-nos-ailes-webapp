@@ -1,0 +1,93 @@
+# Local demo stack: app + PostgreSQL + Mailpit, bound to localhost only.
+# Start:  docker compose up --build
+# Stop:   docker compose down          (keeps data)
+# Wipe:   docker compose down -v       (destroys database + secrets)
+
+name: les-petits-invites
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: lpi
+      POSTGRES_PASSWORD: lpi
+      POSTGRES_DB: lpi
+    ports:
+      - "127.0.0.1:5440:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lpi -d lpi"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:latest
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+    ports:
+      - "127.0.0.1:8026:8025"
+      - "127.0.0.1:1026:1025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build:
+      context: .
+      target: migrator
+    environment:
+      APP_ENV: local
+      DEMO_MODE: "true"
+      DATABASE_URL: postgresql://lpi:lpi@db:5432/lpi
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+    environment:
+      APP_ENV: local
+      DEMO_MODE: "true"
+      INDEXING_ENABLED: "false"
+      APP_URL: http://localhost:3100
+      DATABASE_URL: postgresql://lpi:lpi@db:5432/lpi
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      MAIL_FROM: "Les Petits Invités <no-reply@example.test>"
+    ports:
+      - "127.0.0.1:3100:3000"
+    volumes:
+      - app-secrets:/app/.secrets
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  db-data:
+  app-secrets:
+
+# Dedicated subnet: the host already runs many Compose projects and Docker's
+# default address pools are exhausted. 10.213.44.0/24 is unused on this machine.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.213.44.0/24

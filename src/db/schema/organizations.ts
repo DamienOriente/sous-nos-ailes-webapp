@@ -1,0 +1,67 @@
+import { relations } from "drizzle-orm";
+import { index, pgEnum, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { id, softDelete, timestamps, tsz } from "./_shared";
+import { users } from "./identity";
+
+export const organizationRoleEnum = pgEnum("organization_role", ["owner", "admin", "manager", "collaborator", "contributor"]);
+export const organizationTypeEnum = pgEnum("organization_type", [
+  "sole_trader", // micro-entrepreneur / EI
+  "company", // SARL, SAS, EURL...
+  "association",
+  "public_body",
+  "other",
+]);
+
+export const organizations = pgTable(
+  "organizations",
+  {
+    id: id(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    type: organizationTypeEnum("type").notNull().default("sole_trader"),
+    siren: text("siren"),
+    siret: text("siret"),
+    vatNumber: text("vat_number"),
+    addressLine1: text("address_line1"),
+    addressLine2: text("address_line2"),
+    postalCode: text("postal_code"),
+    city: text("city"),
+    country: text("country").notNull().default("FR"),
+    email: text("email"),
+    phone: text("phone"),
+    website: text("website"),
+    ownerUserId: text("owner_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    ...timestamps,
+    ...softDelete,
+  },
+  (t) => [uniqueIndex("organizations_slug_uq").on(t.slug), index("organizations_owner_idx").on(t.ownerUserId), index("organizations_siret_idx").on(t.siret)],
+);
+
+export const organizationMembers = pgTable(
+  "organization_members",
+  {
+    id: id(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: organizationRoleEnum("role").notNull().default("collaborator"),
+    invitedByUserId: text("invited_by_user_id").references(() => users.id, { onDelete: "set null" }),
+    acceptedAt: tsz("accepted_at"),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("organization_members_uq").on(t.organizationId, t.userId), index("organization_members_user_idx").on(t.userId)],
+);
+
+export const organizationsRelations = relations(organizations, ({ one, many }) => ({
+  owner: one(users, { fields: [organizations.ownerUserId], references: [users.id] }),
+  members: many(organizationMembers),
+}));
+export const organizationMembersRelations = relations(organizationMembers, ({ one }) => ({
+  organization: one(organizations, { fields: [organizationMembers.organizationId], references: [organizations.id] }),
+  user: one(users, { fields: [organizationMembers.userId], references: [users.id] }),
+}));

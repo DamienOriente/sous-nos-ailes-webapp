@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 10
+    # pnpm enforces minimumReleaseAge (24 h): Dependabot PRs for same-day releases will fail CI until the window passes.
+    groups:
+      next-react:
+        patterns: ["next", "react", "react-dom", "@types/react", "@types/react-dom", "eslint-config-next"]
+      tooling:
+        patterns: ["eslint*", "typescript", "vitest", "@playwright/test", "@axe-core/*", "drizzle-kit", "tsx", "tailwindcss", "@tailwindcss/*"]
+      aws:
+        patterns: ["@aws-sdk/*"]
+    ignore:
+      # Major versions are reviewed by hand (migration notes in docs/operations.md).
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly

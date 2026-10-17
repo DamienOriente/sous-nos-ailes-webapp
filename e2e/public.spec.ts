@@ -1,140 +1,128 @@
 import { expect, test } from "@playwright/test";
-import { readMail, searchMail, uniqueEmail } from "./helpers";
 
-test.describe("public site", () => {
-  test("home page renders the editorial composition and the main CTA", async ({ page }) => {
+/**
+ * Public site: home, navigation, legal pages, cookie banner (refuse = accept in
+ * one click, no pre-ticked choice), report and contact forms. No account needed.
+ */
+test.describe("Accueil", () => {
+  test("présente la promesse, la recherche et les deux parcours", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Une attention pour les enfants");
-    await expect(page.getByRole("link", { name: "Parler de mon événement" }).first()).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Le déroulement" })).toBeVisible();
-    // No fake social proof
-    await expect(page.getByText("Ils nous ont fait confiance")).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Les enfants sont pris en charge");
+    const search = page.getByRole("search", { name: "Rechercher un professionnel" });
+    await expect(search.getByLabel("Quel professionnel ?")).toHaveValue("garde-enfants-evenementielle");
+    await expect(page.getByRole("link", { name: "Je prépare un évènement" })).toHaveAttribute("href", "/inscription?intent=organizer");
+    await expect(page.getByRole("link", { name: "Je propose mes services" })).toHaveAttribute("href", "/inscription?intent=professional");
+    // No invented social proof.
+    await expect(page.locator("body")).not.toContainText(/2 ?000 pros/);
+    // Structured data present.
+    const ld = await page.locator('script[type="application/ld+json"]').first().textContent();
+    expect(ld).toContain('"WebSite"');
+    expect(ld).toContain("SearchAction");
   });
 
-  test("demo mode stays non-indexable (meta robots + robots.txt + empty sitemap)", async ({ page, request }) => {
+  test("la recherche redirige vers l'annuaire du métier avec la ville", async ({ page }) => {
     await page.goto("/");
-    const robotsMeta = page.locator('meta[name="robots"]');
-    await expect(robotsMeta).toHaveAttribute("content", /noindex/);
-    const robots = await request.get("/robots.txt");
-    expect(await robots.text()).toMatch(/Disallow: \//);
-    const sitemap = await request.get("/sitemap.xml");
-    expect(sitemap.status()).toBe(200);
-    expect(await sitemap.text()).not.toMatch(/<loc>/);
+    const search = page.getByRole("search", { name: "Rechercher un professionnel" });
+    await search.getByLabel("Où ?").fill("Toulouse");
+    await search.getByRole("button", { name: "Chercher" }).click();
+    await expect(page).toHaveURL(/\/annuaire\/garde-enfants-evenementielle\?city=Toulouse$/);
   });
 
-  test("security headers and CSP nonce are present", async ({ request }) => {
-    const response = await request.get("/");
-    expect(response.headers()["content-security-policy"]).toMatch(/nonce-/);
-    expect(response.headers()["x-frame-options"]).toBe("DENY");
-    expect(response.headers()["x-content-type-options"]).toBe("nosniff");
-  });
-
-  test("an invalid request creates nothing and shows understandable errors", async ({ page }) => {
-    await page.goto("/demander-un-devis");
-    // Try to continue without a date
-    await page.getByRole("button", { name: "Continuer" }).click();
-    await expect(page.getByText("Indiquez la date, ou choisissez « date encore incertaine ».")).toBeVisible();
-    await expect(page).toHaveURL(/demander-un-devis$/);
-  });
-
-  test("a visitor submits a complete request and receives an acknowledgement in the local inbox", async ({ page }) => {
-    const email = uniqueEmail("organisateur");
-    await page.goto("/demander-un-devis");
-    await page.getByLabel("Mariage", { exact: true }).check();
-    await page.getByLabel("Date de l’événement").fill("2027-06-12");
-    await page.getByLabel("Début de la garde").fill("18:00");
-    await page.getByLabel("Fin de la garde").fill("01:30");
-    await page.getByRole("button", { name: "Continuer" }).click();
-
-    await page.getByLabel("Un autre lieu").check();
-    await page.getByLabel("Nom ou type de lieu").fill("Salle des fêtes (test)");
-    await page.getByLabel("Commune").fill("Lyon");
-    await page.getByLabel("Code postal").fill("69003");
-    await page.getByRole("button", { name: "Continuer" }).click();
-
-    await page.getByLabel("3 à 5 ans").fill("4");
-    await page.getByLabel("6 à 10 ans").fill("3");
-    await page.getByRole("button", { name: "Continuer" }).click();
-
-    await page.getByLabel("Votre nom").fill("Test Organisateur");
-    await page.getByLabel("Votre email").fill(email);
-    await page.getByLabel("Un mot sur votre événement").fill("Parcours de test automatisé.");
-    await page.getByLabel(/J’ai pris connaissance de la/).check();
-    await page.getByRole("button", { name: "Continuer" }).click();
-
-    await expect(page.getByRole("heading", { name: "Récapitulatif" })).toBeVisible();
-    await expect(page.getByText("Salle des fêtes (test)")).toBeVisible();
-    // Anti double-submit: the form was opened a few seconds ago; wait so the min fill time passes.
-    await page.waitForTimeout(3200);
-    await page.getByRole("button", { name: "Envoyer ma demande" }).click();
-    await expect(page).toHaveURL(/demander-un-devis\/merci\?ref=LPI-/);
-    const reference = new URL(page.url()).searchParams.get("ref")!;
-    expect(reference).toMatch(/^LPI-\d{4}-\d{4}$/);
-    await expect(page.getByText(reference)).toBeVisible();
-
-    await expect.poll(async () => (await searchMail(`to:${email}`)).length, { timeout: 15_000 }).toBeGreaterThan(0);
-    const messages = await searchMail(`to:${email}`);
-    expect(messages[0].Subject).toContain(reference);
-    const mail = await readMail(messages[0].ID);
-    expect(mail.Text).toContain("ne constitue pas une réservation");
-    expect(mail.Text).toMatch(/\/connexion\/lien\//);
-  });
-
-  test("a partner referral link keeps its source on the request", async ({ page, context }) => {
-    const email = uniqueEmail("apport");
-    await page.goto("/p/tilleuls");
-    await expect(page).toHaveURL(/\/lieux\/domaine-des-tilleuls/);
-    const cookies = await context.cookies();
-    expect(cookies.find((c) => c.name === "lpi_ref")?.value).toMatch(/^tilleuls\.link$/);
-    await page.getByRole("link", { name: "Organiser la garde des enfants dans ce lieu" }).first().click();
-    await expect(page.getByText("Vous arrivez de la part de")).toBeVisible();
-    await page.getByLabel("Fête privée", { exact: true }).check();
-    await page.getByLabel("Date de l’événement").fill("2027-09-04");
-    await page.getByLabel("Début de la garde").fill("15:00");
-    await page.getByLabel("Fin de la garde").fill("20:00");
-    await page.getByRole("button", { name: "Continuer" }).click();
-    await expect(page.getByRole("combobox", { name: /Lieu partenaire/ })).toHaveValue(/.+/);
-    await page.getByLabel("Code postal").fill("69999");
-    await page.getByRole("button", { name: "Continuer" }).click();
-    await page.getByLabel("3 à 5 ans").fill("5");
-    await page.getByRole("button", { name: "Continuer" }).click();
-    await page.getByLabel("Votre nom").fill("Test Apport");
-    await page.getByLabel("Votre email").fill(email);
-    await page.getByLabel(/J’ai pris connaissance de la/).check();
-    await page.getByRole("button", { name: "Continuer" }).click();
-    await page.waitForTimeout(3200);
-    await page.getByRole("button", { name: "Envoyer ma demande" }).click();
-    await expect(page).toHaveURL(/merci\?ref=LPI-/);
-    const reference = new URL(page.url()).searchParams.get("ref")!;
-    // Marie's notification names the partner origin
-    await expect.poll(async () => (await searchMail(`subject:${reference}`)).length, { timeout: 15_000 }).toBeGreaterThan(0);
-    const admin = (await searchMail(`subject:"Nouvelle demande ${reference}"`))[0];
-    expect(admin).toBeTruthy();
-    const mail = await readMail(admin.ID);
-    expect(mail.Text).toContain("lien partenaire");
-  });
-
-  test("keyboard navigation reaches the main CTA with a visible focus", async ({ page }) => {
+  test("la navigation principale et le pied de page mènent aux pages publiques", async ({ page }) => {
     await page.goto("/");
-    await page.keyboard.press("Tab");
-    await expect(page.getByRole("link", { name: "Aller au contenu" })).toBeFocused();
-    for (let i = 0; i < 12; i += 1) {
-      await page.keyboard.press("Tab");
-      const focused = await page.evaluate(() => document.activeElement?.textContent?.trim() ?? "");
-      if (focused === "Parler de mon événement") break;
-    }
-    const outline = await page.evaluate(() => {
-      const el = document.activeElement as HTMLElement;
-      const style = getComputedStyle(el);
-      return { text: el.textContent?.trim(), outlineWidth: style.outlineWidth, outlineStyle: style.outlineStyle };
+    await page.getByRole("navigation", { name: "Navigation principale" }).getByRole("link", { name: "Organiser un évènement" }).click();
+    await expect(page).toHaveURL(/\/organiser$/);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Préparer un évènement");
+    await page.getByRole("contentinfo").getByRole("link", { name: "À propos" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Des ailes");
+  });
+});
+
+test.describe("Pages juridiques", () => {
+  for (const [path, title] of [
+    ["/mentions-legales", "Mentions légales"],
+    ["/cgu", "Conditions générales d'utilisation"],
+    ["/confidentialite", "Politique de confidentialité"],
+    ["/droits-rgpd", "Vos droits"],
+    ["/accessibilite", "Déclaration d'accessibilité"],
+  ] as const) {
+    test(`${path} s'affiche avec un titre et sans donnée inventée`, async ({ page }) => {
+      const res = await page.goto(path);
+      expect(res?.status()).toBe(200);
+      await expect(page.getByRole("heading", { level: 1 })).toContainText(title);
+      // Placeholders are visible, never a fake SIRET.
+      await expect(page.locator("body")).not.toContainText(/\b\d{3} \d{3} \d{3} \d{5}\b/);
     });
-    expect(outline.text).toBe("Parler de mon événement");
-    expect(outline.outlineStyle).not.toBe("none");
+  }
+
+  test("une page juridique en brouillon affiche l'avertissement et un sommaire", async ({ page }) => {
+    await page.goto("/cgu");
+    await expect(page.locator("article").getByRole("note").first()).toContainText("Brouillon à valider par un professionnel du droit");
+    await expect(page.getByRole("navigation", { name: "Sommaire" })).toBeVisible();
+  });
+});
+
+test.describe("Bannière cookies", () => {
+  test("refuser est aussi simple qu'accepter : un clic, puis la bannière disparaît et le choix est conservé", async ({ page, context }) => {
+    await page.goto("/");
+    const banner = page.getByTestId("cookie-banner");
+    await expect(banner).toBeVisible();
+    const refuse = banner.getByRole("button", { name: "Tout refuser" });
+    const accept = banner.getByRole("button", { name: "Tout accepter" });
+    await expect(refuse).toBeVisible();
+    await expect(accept).toBeVisible();
+    // Same visual weight: identical data-variant on both buttons.
+    expect(await refuse.getAttribute("data-variant")).toBe(await accept.getAttribute("data-variant"));
+    await refuse.click();
+    await expect(banner).toBeHidden();
+    const cookie = (await context.cookies()).find((c) => c.name === "sna_consent");
+    expect(cookie).toBeTruthy();
+    expect(decodeURIComponent(cookie!.value)).toContain('"a":0');
+    await page.reload();
+    await expect(page.getByTestId("cookie-banner")).toHaveCount(0);
   });
 
-  test("404 page is clean", async ({ page }) => {
-    const response = await page.goto("/page-qui-n-existe-pas");
-    expect(response?.status()).toBe(404);
-    await expect(page.getByRole("heading", { name: "Cette page n’existe pas" })).toBeVisible();
+  test("les préférences détaillées sont modifiables sur /cookies", async ({ page }) => {
+    await page.goto("/cookies#preferences");
+    await expect(page.getByTestId("cookie-banner")).toHaveCount(0);
+    const essential = page.getByLabel("Strictement nécessaires");
+    await expect(essential).toBeDisabled();
+    await expect(essential).toBeChecked();
+    const analytics = page.getByLabel("Mesure d'audience");
+    await expect(analytics).not.toBeChecked();
+    await analytics.click();
+    await page.getByRole("button", { name: "Enregistrer mes préférences" }).click();
+    await expect(page.getByText("Préférences enregistrées")).toBeVisible();
+    await expect(page.getByText(/Dernier choix enregistré le/)).toBeVisible();
+  });
+});
+
+test.describe("Formulaires publics", () => {
+  test("le formulaire de signalement valide puis enregistre sans compte", async ({ page }) => {
+    await page.goto("/signalement");
+    await page.getByRole("button", { name: "Envoyer le signalement" }).click();
+    await expect(page.locator("form").getByRole("alert")).toContainText("Vérifiez les champs");
+    await page.getByLabel("Que signalez-vous ?").selectOption("review");
+    await page.getByLabel("Motif").selectOption("fake_review");
+    await page.getByLabel("Lien ou nom du contenu").fill("https://localhost/pro/e2e-fiche");
+    await page.getByLabel("Que s'est-il passé ?").fill("Avis manifestement rédigé par le professionnel lui-même (test e2e).");
+    await page.getByRole("button", { name: "Envoyer le signalement" }).click();
+    await expect(page.getByTestId("report-success")).toContainText("Signalement enregistré");
+  });
+
+  test("le formulaire de contact signale les erreurs puis confirme l'envoi", async ({ page }) => {
+    await page.goto("/contact");
+    const form = page.locator("form");
+    if ((await form.count()) === 0) test.skip(true, "contact address not configured (legal.contact_email)");
+    await page.getByLabel("Votre nom").fill("E2E");
+    await page.getByLabel("Votre e-mail").fill("pas-un-email");
+    await page.getByLabel("Sujet").fill("Test");
+    await page.getByLabel("Message").fill("court");
+    await page.getByRole("button", { name: "Envoyer le message" }).click();
+    await expect(page.getByText("Adresse e-mail invalide.")).toBeVisible();
+    await page.getByLabel("Votre e-mail").fill("e2e-contact@sousnosailes.test");
+    await page.getByLabel("Message").fill("Bonjour, ceci est un message de test envoyé par la suite end-to-end.");
+    await page.getByRole("button", { name: "Envoyer le message" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Message envoyé" })).toBeVisible();
   });
 });

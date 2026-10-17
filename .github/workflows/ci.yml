@@ -1,0 +1,184 @@
+# Continuous integration — no deployment here (deploys are triggered manually from Coolify).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  checks:
+    name: Typecheck, lint, unit tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - name: Build (no database access at build time)
+        env:
+          APP_ENV: build
+          SKIP_ENV_VALIDATION: "1"
+        run: pnpm build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: |
+            .next
+            !.next/cache
+          retention-days: 1
+
+  integration-e2e:
+    name: Integration and end-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: checks
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: sna
+          POSTGRES_PASSWORD: sna
+          POSTGRES_DB: sna
+        ports: ["5450:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sna -d sna"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6390:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      minio:
+        image: bitnami/minio:2025
+        env:
+          MINIO_ROOT_USER: sna-minio
+          MINIO_ROOT_PASSWORD: sna-minio-local-only
+          MINIO_DEFAULT_BUCKETS: sna-files,sna-quarantine
+        ports: ["9010:9000"]
+      mailpit:
+        image: axllent/mailpit:latest
+        env:
+          MP_SMTP_AUTH_ACCEPT_ANY: "1"
+          MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+        ports: ["8027:8025", "1027:1025"]
+    env:
+      APP_ENV: test
+      DEMO_MODE: "true"
+      APP_URL: http://localhost:3200
+      DATABASE_URL: postgresql://sna:sna@localhost:5450/sna
+      REDIS_URL: redis://localhost:6390
+      SMTP_HOST: localhost
+      SMTP_PORT: "1027"
+      S3_ENDPOINT: http://localhost:9010
+      S3_ACCESS_KEY: sna-minio
+      S3_SECRET_KEY: sna-minio-local-only
+      S3_BUCKET: sna-files
+      S3_QUARANTINE_BUCKET: sna-quarantine
+      S3_FORCE_PATH_STYLE: "true"
+      # ClamAV is disabled in CI: the scanner is exercised locally and in staging.
+      CLAMAV_ENABLED: "false"
+      BETTER_AUTH_SECRET: ci-only-secret-value-not-for-production-0000000000
+      DATA_ENCRYPTION_KEY: Y2ktb25seS1kYXRhLWtleS1ub3QtZm9yLXByb2R1Y3Rpb24tMDAwMA==
+      E2E_BASE_URL: http://localhost:3200
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next
+      - name: Migrate and seed demo data
+        run: pnpm db:migrate && pnpm db:seed
+      - name: Integration tests (database)
+        run: pnpm test:integration
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+      - name: End-to-end tests (Playwright starts `pnpm start` against the build)
+        run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+  dependency-audit:
+    name: Dependency audit (reported, non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: pnpm audit (high and above)
+        run: pnpm audit --audit-level=high || echo "::warning::pnpm audit found high/critical advisories — review before release"
+
+  secrets-scan:
+    name: Secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql:
+    name: Static analysis (CodeQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"

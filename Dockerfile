@@ -1,48 +1,48 @@
 # syntax=docker/dockerfile:1.7
-# Multi-stage build for the local Docker Compose run.
-# Targets:
-#   migrator -> runs `prisma migrate deploy` + seed, then exits (compose service "migrate")
-#   runner   -> Next.js standalone server (compose service "app")
+# Multi-stage build: deps → builder → (migrator | runner | worker).
+# Every runtime stage runs as the unprivileged "node" user.
 
-ARG NODE_VERSION=22-alpine
-
-FROM node:${NODE_VERSION} AS base
-RUN apk add --no-cache libc6-compat \
-  && npm install -g pnpm@12.4.2
+FROM node:22-alpine AS base
+ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH NEXT_TELEMETRY_DISABLED=1
+RUN corepack enable && corepack prepare pnpm@12.4.2 --activate
 WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
 
 FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 FROM deps AS builder
 COPY . .
-RUN pnpm prisma generate && pnpm build
+# Build-time env: no secrets needed, the build never touches the database.
+ENV APP_ENV=build SKIP_ENV_VALIDATION=1
+RUN pnpm build
 
-# --- migrator: full toolchain, used once per `docker compose up` ---
+# ── migrator: applies SQL migrations then (optionally) seeds demo data ────────
 FROM deps AS migrator
-COPY prisma ./prisma
-COPY prisma.config.ts tsconfig.json ./
+COPY tsconfig.json drizzle.config.ts ./
+COPY src/db ./src/db
+COPY src/lib ./src/lib
+COPY src/modules ./src/modules
+COPY scripts ./scripts
+USER node
+CMD ["sh", "-c", "pnpm db:migrate && if [ \"$SEED_DEMO\" = \"true\" ]; then pnpm db:seed; fi"]
+
+# ── worker: BullMQ consumers ─────────────────────────────────────────────────
+FROM deps AS worker
+COPY tsconfig.json ./
 COPY src ./src
-RUN pnpm prisma generate
-CMD ["sh", "-c", "pnpm prisma migrate deploy && pnpm db:seed"]
+RUN mkdir -p /app/.secrets && chown node:node /app/.secrets
+USER node
+CMD ["pnpm", "worker"]
 
-# --- runner: minimal production image ---
-FROM node:${NODE_VERSION} AS runner
+# ── runner: Next.js standalone server ────────────────────────────────────────
+FROM node:22-alpine AS runner
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
 WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-ENV NEXT_TELEMETRY_DISABLED=1
-
+RUN mkdir -p /app/.secrets && chown node:node /app/.secrets
+COPY --from=builder --chown=node:node /app/public ./public
 COPY --from=builder --chown=node:node /app/.next/standalone ./
 COPY --from=builder --chown=node:node /app/.next/static ./.next/static
-COPY --from=builder --chown=node:node /app/public ./public
-COPY --chown=node:node docker/entrypoint.sh ./docker/entrypoint.sh
-RUN chmod +x ./docker/entrypoint.sh && mkdir -p /app/.secrets && chown node:node /app/.secrets
-
 USER node
 EXPOSE 3000
-ENTRYPOINT ["./docker/entrypoint.sh"]
 CMD ["node", "server.js"]

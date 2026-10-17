@@ -1,0 +1,155 @@
+import Link from "next/link";
+import { BookUser, Copy, Download, Plus, Upload } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { ContactFormDialog } from "@/components/contacts/contact-form-dialog";
+import { ContactsTable } from "@/components/contacts/contacts-table";
+import { requireActor } from "@/lib/session";
+import { CONTACT_CATEGORIES, CONTACT_CATEGORY_LABELS } from "@/modules/contacts/domain/contact-import";
+import { getContactUsage, listContactTags, listContacts, listOrganizationScopes } from "@/modules/contacts/application/contact-service";
+import { createContactAction } from "./actions";
+
+export const metadata = { title: "Contacts — Sous Nos Ailes" };
+
+type Search = { q?: string; category?: string; tag?: string; scope?: string };
+
+export default async function ContactsPage({ searchParams }: { searchParams: Promise<Search> }) {
+  const actor = await requireActor("/app/contacts");
+  const sp = await searchParams;
+  const [contacts, usage, orgs, tags] = await Promise.all([
+    listContacts(actor, { q: sp.q, category: sp.category, tag: sp.tag, scope: sp.scope }),
+    getContactUsage(actor),
+    listOrganizationScopes(actor),
+    listContactTags(actor),
+  ]);
+  const scopes = [{ value: "personal", label: "Mon carnet personnel" }, ...orgs.filter((o) => o.canWrite).map((o) => ({ value: o.id, label: o.name }))];
+  const orgNames = Object.fromEntries(orgs.map((o) => [o.id, o.name]));
+  const atLimit = usage.limit !== null && usage.used >= usage.limit;
+  const hasFilters = Boolean(sp.q || sp.category || sp.tag || (sp.scope && sp.scope !== "all"));
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Carnet"
+        title="Contacts"
+        description="Votre carnet d'adresses privé : clients, prestataires, famille. Associez-les à vos évènements ou ajoutez-les comme invités en un clic."
+        actions={
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/app/contacts/doublons">
+                <Copy className="size-4" aria-hidden="true" /> Doublons
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <a href={`/api/contacts/export${sp.scope ? `?scope=${encodeURIComponent(sp.scope)}` : ""}`}>
+                <Download className="size-4" aria-hidden="true" /> Exporter CSV
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/app/contacts/import">
+                <Upload className="size-4" aria-hidden="true" /> Importer
+              </Link>
+            </Button>
+            <ContactFormDialog
+              scopes={scopes}
+              onSubmit={createContactAction}
+              disabledReason={atLimit ? `Votre offre ${usage.planName} est limitée à ${usage.limit} contacts personnels. Vous pouvez toujours consulter et exporter votre carnet ; passez à Organisateur Plus pour en ajouter.` : null}
+              trigger={
+                <Button size="sm">
+                  <Plus className="size-4" aria-hidden="true" /> Nouveau contact
+                </Button>
+              }
+            />
+          </>
+        }
+      />
+
+      {usage.limit !== null && (
+        <Alert variant={atLimit ? "destructive" : "default"}>
+          <BookUser className="size-4" aria-hidden="true" />
+          <AlertTitle>
+            {usage.used} / {usage.limit} contacts personnels ({usage.planName})
+          </AlertTitle>
+          <AlertDescription>
+            {atLimit ? (
+              <>
+                Limite atteinte : la création est bloquée, la lecture et l'export restent disponibles.{" "}
+                <Link href="/app/compte/abonnement?audience=organizer&feature=contacts" className="font-medium underline">
+                  Découvrir Organisateur Plus
+                </Link>
+              </>
+            ) : (
+              "Passez à Organisateur Plus pour un carnet illimité."
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <form className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-[1fr_auto_auto_auto_auto]" role="search">
+        <div>
+          <label htmlFor="q" className="sr-only">
+            Rechercher
+          </label>
+          <Input id="q" name="q" placeholder="Rechercher un nom, une société, un e-mail…" defaultValue={sp.q ?? ""} />
+        </div>
+        <select name="category" defaultValue={sp.category ?? ""} aria-label="Catégorie" className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm">
+          <option value="">Toutes catégories</option>
+          {CONTACT_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {CONTACT_CATEGORY_LABELS[c]}
+            </option>
+          ))}
+        </select>
+        <select name="tag" defaultValue={sp.tag ?? ""} aria-label="Tag" className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm">
+          <option value="">Tous tags</option>
+          {tags.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+        {orgs.length > 0 && (
+          <select name="scope" defaultValue={sp.scope ?? "all"} aria-label="Carnet" className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm">
+            <option value="all">Tous les carnets</option>
+            <option value="personal">Personnel</option>
+            {orgs.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.name}
+              </option>
+            ))}
+          </select>
+        )}
+        <Button type="submit" variant="secondary" size="sm">
+          Filtrer
+        </Button>
+      </form>
+
+      {contacts.length === 0 ? (
+        <EmptyState
+          icon={BookUser}
+          title={hasFilters ? "Aucun contact ne correspond" : "Votre carnet est vide"}
+          description={hasFilters ? "Essayez d'élargir votre recherche." : "Ajoutez un premier contact ou importez votre fichier CSV existant."}
+          action={
+            hasFilters ? (
+              <Button asChild variant="outline">
+                <Link href="/app/contacts">Réinitialiser les filtres</Link>
+              </Button>
+            ) : (
+              <Button asChild variant="outline">
+                <Link href="/app/contacts/import">Importer un CSV</Link>
+              </Button>
+            )
+          }
+        />
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground">{contacts.length} contact(s)</p>
+          <ContactsTable contacts={contacts} orgNames={orgNames} />
+        </>
+      )}
+    </div>
+  );
+}

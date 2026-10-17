@@ -1,43 +1,68 @@
 import type { Metadata } from "next";
-import { getSettings } from "@/server/services/settings";
-import { buildMetadata } from "@/lib/seo";
-import { PageIntro } from "@/components/public/page-intro";
-import { Section } from "@/components/public/section";
-import { ContactForm } from "@/components/public/forms";
-import { LabelCard } from "@/components/ui/label-card";
+import Link from "next/link";
+import { ContactForm } from "@/components/legal/contact-form";
+import { Container, Section } from "@/components/shared/section";
+import { getActor } from "@/lib/session";
+import { getContactEmail } from "@/modules/legal/application/legal-pages";
 
-export const metadata: Metadata = buildMetadata({ title: "Contact", description: "Une question avant de décrire votre événement ? Écrivez à Marie : elle répond personnellement.", path: "/contact" });
+export const metadata: Metadata = {
+  title: "Contact",
+  description: "Écrire à l'équipe Sous Nos Ailes : question sur le service, accessibilité, presse, partenariat.",
+  alternates: { canonical: "/contact" },
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function ContactPage() {
-  const settings = await getSettings();
+  const [actor, contactEmail] = await Promise.all([getActor(), getContactEmail()]);
   return (
     <>
-      <PageIntro title="Contact" lead={`Une question, un cas particulier, un lieu à nous présenter ? ${settings.ownerFirstName} répond personnellement.`} crumbs={[{ name: "Contact", path: "/contact" }]} sprig="sage" />
-      <Section tone="paper" className="pt-4 sm:pt-8">
-        <div className="grid gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16">
-          <div className="plate p-6 sm:p-8">
-            <ContactForm />
+      <Section>
+        <Container className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
+          <div>
+            <h1 className="text-4xl font-semibold text-balance">Nous écrire</h1>
+            <p className="mt-4 leading-7 text-muted-foreground text-pretty">Une question sur le service, un partenariat, un obstacle d'accessibilité : ce formulaire arrive directement à l'équipe.</p>
+            <dl className="mt-8 space-y-4 text-sm">
+              <div>
+                <dt className="font-semibold">Vos données personnelles</dt>
+                <dd className="text-muted-foreground">
+                  Export, rectification, suppression : passez par{" "}
+                  <Link href="/app/compte/confidentialite" className="font-medium text-primary underline underline-offset-4">
+                    votre espace
+                  </Link>{" "}
+                  ou lisez{" "}
+                  <Link href="/droits-rgpd" className="font-medium text-primary underline underline-offset-4">
+                    vos droits
+                  </Link>
+                  .
+                </dd>
+              </div>
+              <div>
+                <dt className="font-semibold">Un contenu à signaler</dt>
+                <dd className="text-muted-foreground">
+                  Utilisez plutôt le{" "}
+                  <Link href="/signalement" className="font-medium text-primary underline underline-offset-4">
+                    formulaire de signalement
+                  </Link>
+                  , traité en priorité par la modération.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-semibold">Urgence concernant un enfant</dt>
+                <dd className="text-muted-foreground">Contactez immédiatement les services d'urgence (15, 17, 112). Ce formulaire n'est pas surveillé en continu.</dd>
+              </div>
+            </dl>
           </div>
-          <div className="flex flex-col gap-6">
-            <LabelCard title="Par email">
-              <p className="mt-2 text-[15px] text-ink-700">
-                <a href={`mailto:${settings.contactEmail}`} className="underline">
-                  {settings.contactEmail}
-                </a>
+          <div>
+            {contactEmail ? (
+              <ContactForm defaultEmail={actor?.email} defaultName={actor?.name} />
+            ) : (
+              <p role="status" className="rounded-2xl border bg-card p-6 text-muted-foreground">
+                Le formulaire de contact n'est pas encore activé : l'adresse de réception doit être renseignée par l'équipe dans les paramètres. Réessayez plus tard.
               </p>
-              {settings.contactPhone ? <p className="mt-1 text-[15px] text-ink-700">{settings.contactPhone}</p> : null}
-            </LabelCard>
-            <LabelCard title="Zone d’intervention">
-              <p className="mt-2 text-[15px] leading-relaxed text-ink-700">{settings.areaLabel}</p>
-            </LabelCard>
-            <LabelCard title="Pour décrire un événement">
-              <p className="mt-2 text-[15px] leading-relaxed text-ink-700">Le formulaire guidé est plus rapide qu’un email : date, lieu, effectifs par âge, et {settings.ownerFirstName} vous rappelle.</p>
-              <a href="/demander-un-devis" className="specimen-link mt-3 inline-block text-[15px] font-semibold text-sage-800">
-                Parler de mon événement
-              </a>
-            </LabelCard>
+            )}
           </div>
-        </div>
+        </Container>
       </Section>
     </>
   );

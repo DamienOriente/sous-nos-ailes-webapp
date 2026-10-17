@@ -1,0 +1,181 @@
+/*
+ * Professional public pages. Templates set their colours through CSS custom
+ * properties (`--pg-*`, computed in modules/pages/domain/theme.ts with
+ * light-dark()) and their type through `--pg-font-heading` / `--pg-font-body`.
+ * Everything else is Tailwind in the template components; this file only holds
+ * what utilities cannot express: colour-scheme wiring, textures, keyframes.
+ */
+@import "@fontsource-variable/cormorant";
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/caveat";
+@import "@fontsource-variable/bricolage-grotesque";
+
+.pg-root {
+  color-scheme: light;
+  background: var(--pg-bg);
+  color: var(--pg-text);
+  font-family: var(--pg-font-body);
+  font-feature-settings: "kern", "liga";
+  -webkit-font-smoothing: antialiased;
+  --pg-accent-soft: color-mix(in oklab, var(--pg-accent) 12%, var(--pg-bg));
+  --pg-accent-softer: color-mix(in oklab, var(--pg-accent) 6%, var(--pg-bg));
+}
+.dark .pg-root {
+  color-scheme: dark;
+}
+.pg-root h1,
+.pg-root h2,
+.pg-root h3,
+.pg-root .pg-heading {
+  font-family: var(--pg-font-heading);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.pg-root :focus-visible {
+  outline: 2px solid var(--pg-accent);
+  outline-offset: 3px;
+}
+.pg-root a {
+  text-underline-offset: 0.18em;
+}
+.pg-root img {
+  display: block;
+}
+.pg-root ::selection {
+  background: color-mix(in oklab, var(--pg-accent) 30%, transparent);
+}
+
+/* Anchored navigation: hide the scrollbar but keep horizontal scrolling. */
+.pg-scroll-x {
+  scrollbar-width: none;
+  overflow-x: auto;
+}
+.pg-scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Textures (decorative, aria-hidden by the markup) ─────────────────────── */
+.pg-tex-linen {
+  background-image: repeating-linear-gradient(0deg, color-mix(in oklab, var(--pg-text) 4%, transparent) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, color-mix(in oklab, var(--pg-text) 3%, transparent) 0 1px, transparent 1px 3px);
+}
+.pg-tex-dots {
+  background-image: radial-gradient(color-mix(in oklab, var(--pg-accent) 35%, transparent) 1.2px, transparent 1.3px);
+  background-size: 18px 18px;
+}
+.pg-tex-grid {
+  background-image: linear-gradient(color-mix(in oklab, var(--pg-text) 7%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, var(--pg-text) 7%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.pg-tex-tiles {
+  background-image: linear-gradient(45deg, color-mix(in oklab, var(--pg-accent) 10%, transparent) 25%, transparent 25%, transparent 75%, color-mix(in oklab, var(--pg-accent) 10%, transparent) 75%),
+    linear-gradient(45deg, color-mix(in oklab, var(--pg-accent) 10%, transparent) 25%, transparent 25%, transparent 75%, color-mix(in oklab, var(--pg-accent) 10%, transparent) 75%);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+}
+.pg-tex-velvet {
+  background-image: radial-gradient(ellipse at 50% 0%, color-mix(in oklab, var(--pg-accent) 22%, transparent), transparent 60%),
+    repeating-linear-gradient(90deg, color-mix(in oklab, #000 18%, transparent) 0 2px, transparent 2px 26px);
+}
+.pg-tex-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.pg-tex-paper {
+  background-image: repeating-linear-gradient(180deg, transparent 0 31px, color-mix(in oklab, var(--pg-accent) 14%, transparent) 31px 32px);
+}
+.pg-glow {
+  background: radial-gradient(60% 50% at 20% 10%, color-mix(in oklab, var(--pg-accent) 45%, transparent), transparent 70%),
+    radial-gradient(40% 40% at 85% 30%, color-mix(in oklab, var(--pg-accent) 30%, transparent), transparent 70%);
+}
+
+/* Dotted leaders for menu-style lists (table-gourmande). */
+.pg-leaders {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+}
+.pg-leaders::after {
+  content: "";
+  flex: 1;
+  order: 1;
+  border-bottom: 2px dotted color-mix(in oklab, var(--pg-text) 35%, transparent);
+  transform: translateY(-0.3em);
+}
+.pg-leaders > :last-child {
+  order: 2;
+}
+
+/* Masonry via CSS columns. */
+.pg-masonry {
+  columns: 2;
+  column-gap: 1rem;
+}
+@media (min-width: 768px) {
+  .pg-masonry {
+    columns: 3;
+  }
+}
+.pg-masonry > * {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+/* Film strip perforations (argentique). */
+.pg-film {
+  position: relative;
+  padding: 1.25rem 0;
+  background: color-mix(in oklab, var(--pg-text) 88%, var(--pg-bg));
+}
+.pg-film::before,
+.pg-film::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0.75rem;
+  background-image: radial-gradient(circle, var(--pg-bg) 0 3px, transparent 3.5px);
+  background-size: 1.5rem 0.75rem;
+  background-position: 0.5rem 0;
+}
+.pg-film::before {
+  top: 0.25rem;
+}
+.pg-film::after {
+  bottom: 0.25rem;
+}
+
+/* Decorative tilt for collage layouts; off when motion is reduced (static anyway). */
+.pg-tilt-a {
+  transform: rotate(-2deg);
+}
+.pg-tilt-b {
+  transform: rotate(1.5deg);
+}
+.pg-tilt-c {
+  transform: rotate(-1deg);
+}
+
+@keyframes pg-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.pg-marquee {
+  display: flex;
+  width: max-content;
+  animation: pg-marquee 40s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pg-marquee {
+    animation: none;
+  }
+}

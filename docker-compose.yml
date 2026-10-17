@@ -1,26 +1,75 @@
-# Local demo stack: app + PostgreSQL + Mailpit, bound to localhost only.
-# Start:  docker compose up --build
-# Stop:   docker compose down          (keeps data)
-# Wipe:   docker compose down -v       (destroys database + secrets)
+# Local development stack, bound to localhost only.
+#   Start infra only:  docker compose up -d db redis minio mailpit clamav
+#   Full stack:        docker compose --profile app up --build
+#   Stop:              docker compose down          (keeps data)
+#   Wipe:              docker compose down -v       (destroys data)
+# Ports are chosen to avoid the other Compose projects running on this machine.
 
-name: les-petits-invites
+name: sous-nos-ailes
 
 services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: lpi
-      POSTGRES_PASSWORD: lpi
-      POSTGRES_DB: lpi
+      POSTGRES_USER: sna
+      POSTGRES_PASSWORD: sna
+      POSTGRES_DB: sna
+    command: ["postgres", "-c", "max_connections=200", "-c", "log_min_duration_statement=500"]
     ports:
-      - "127.0.0.1:5440:5432"
+      - "127.0.0.1:5450:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U lpi -d lpi"]
+      test: ["CMD-SHELL", "pg_isready -U sna -d sna"]
       interval: 5s
       timeout: 5s
       retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "127.0.0.1:6390:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: sna-minio
+      MINIO_ROOT_PASSWORD: sna-minio-local-only
+    ports:
+      - "127.0.0.1:9010:9000"
+      - "127.0.0.1:9011:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Creates the private buckets at startup (idempotent).
+  minio-init:
+    image: minio/minio:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 sna-minio sna-minio-local-only &&
+      mc mb --ignore-existing local/sna-files &&
+      mc mb --ignore-existing local/sna-quarantine &&
+      mc anonymous set none local/sna-files &&
+      mc anonymous set none local/sna-quarantine &&
+      echo buckets-ready"
+    restart: "no"
 
   mailpit:
     image: axllent/mailpit:latest
@@ -28,47 +77,80 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: "1"
       MP_SMTP_AUTH_ALLOW_INSECURE: "1"
     ports:
-      - "127.0.0.1:8026:8025"
-      - "127.0.0.1:1026:1025"
+      - "127.0.0.1:8027:8025"
+      - "127.0.0.1:1027:1025"
     healthcheck:
       test: ["CMD", "/mailpit", "readyz"]
       interval: 5s
       timeout: 5s
       retries: 20
 
+  clamav:
+    image: clamav/clamav-debian:stable
+    environment:
+      CLAMAV_NO_FRESHCLAMD: "false"
+      CLAMD_STARTUP_TIMEOUT: "1800"
+    ports:
+      - "127.0.0.1:3310:3310"
+    volumes:
+      - clamav-data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 60
+      start_period: 300s
+
   migrate:
+    profiles: ["app"]
     build:
       context: .
       target: migrator
     environment:
       APP_ENV: local
-      DEMO_MODE: "true"
-      DATABASE_URL: postgresql://lpi:lpi@db:5432/lpi
+      DATABASE_URL: postgresql://sna:sna@db:5432/sna
+      SEED_DEMO: "true"
     depends_on:
       db:
         condition: service_healthy
     restart: "no"
 
   app:
+    profiles: ["app"]
     build:
       context: .
       target: runner
+    env_file:
+      - path: .env.docker
+        required: false
     environment:
       APP_ENV: local
       DEMO_MODE: "true"
       INDEXING_ENABLED: "false"
-      APP_URL: http://localhost:3100
-      DATABASE_URL: postgresql://lpi:lpi@db:5432/lpi
+      APP_URL: http://localhost:3200
+      DATABASE_URL: postgresql://sna:sna@db:5432/sna
+      REDIS_URL: redis://redis:6379
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
-      MAIL_FROM: "Les Petits Invités <no-reply@example.test>"
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: sna-minio
+      S3_SECRET_KEY: sna-minio-local-only
+      S3_BUCKET: sna-files
+      S3_QUARANTINE_BUCKET: sna-quarantine
+      S3_FORCE_PATH_STYLE: "true"
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: "3310"
     ports:
-      - "127.0.0.1:3100:3000"
+      - "127.0.0.1:3200:3000"
     volumes:
       - app-secrets:/app/.secrets
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
       mailpit:
         condition: service_healthy
       migrate:
@@ -80,14 +162,50 @@ services:
       retries: 12
       start_period: 20s
 
+  worker:
+    profiles: ["app"]
+    build:
+      context: .
+      target: worker
+    env_file:
+      - path: .env.docker
+        required: false
+    environment:
+      APP_ENV: local
+      DEMO_MODE: "true"
+      APP_URL: http://localhost:3200
+      DATABASE_URL: postgresql://sna:sna@db:5432/sna
+      REDIS_URL: redis://redis:6379
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: sna-minio
+      S3_SECRET_KEY: sna-minio-local-only
+      S3_BUCKET: sna-files
+      S3_QUARANTINE_BUCKET: sna-quarantine
+      S3_FORCE_PATH_STYLE: "true"
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: "3310"
+    volumes:
+      - app-secrets:/app/.secrets
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
 volumes:
   db-data:
+  redis-data:
+  minio-data:
+  clamav-data:
   app-secrets:
 
-# Dedicated subnet: the host already runs many Compose projects and Docker's
-# default address pools are exhausted. 10.213.44.0/24 is unused on this machine.
+# Dedicated subnet: Docker's default address pools are exhausted on this host.
 networks:
   default:
     ipam:
       config:
-        - subnet: 10.213.44.0/24
+        - subnet: 10.213.45.0/24

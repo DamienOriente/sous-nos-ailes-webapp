@@ -1,89 +1,112 @@
-# Les Petits Invités — avec Marie
+# Sous Nos Ailes — sousnosailes.fr
 
-Application web de garde d’enfants événementielle (mariages, fêtes privées, événements professionnels) : site public éditorial, demande de devis guidée, espace de gestion pour Marie, espace client, espace intervenant·e, espace partenaire.
+Plateforme de mise en relation et de coordination pour évènements privés et professionnels (mariages, baptêmes, anniversaires, séminaires), spécialisée **garde d'enfants et animation**. Les organisateurs trouvent des professionnels vérifiés, réunissent leur équipe et pilotent le jour J depuis un seul espace ; les professionnels publient une page, reçoivent des demandes et disposent d'outils métier.
 
-> **Mode démonstration.** Le nom est provisoire, toutes les données sont fictives (adresses `example.test`), aucun email réel n’est envoyé : ils sont consultables dans Mailpit. Voir [docs/avant-mise-en-service.md](docs/avant-mise-en-service.md) avant toute exploitation réelle.
+Monolithe modulaire **Next.js 16 (App Router)** · **PostgreSQL 17** (Drizzle) · **Redis** (BullMQ, rate limiting) · **S3** (MinIO en local) · **ClamAV** · **Mailpit** (SMTP local). UI en français, code en anglais.
+
+Documentation détaillée dans [`docs/`](docs/) : [architecture](docs/architecture.md), [modèle de domaine](docs/domain-model.md), [base de données](docs/database.md), [sécurité](docs/security.md), [modèle de menaces](docs/threat-model.md), [permissions](docs/rbac-permissions.md), [RGPD](docs/privacy.md), [revue juridique](docs/legal-review.md), [intégrations](docs/integrations.md), [déploiement](docs/deployment.md), [sauvegardes](docs/backup-restore.md), [tests](docs/testing.md), [guide utilisateur](docs/user-guide.md), [guide admin](docs/admin-guide.md), [exploitation](docs/operations.md).
 
 ## Prérequis
 
-- macOS Apple Silicon (testé), Docker Desktop avec Docker Compose v2.
-- Pour le mode développement hors Docker : Node.js ≥ 22.12 et pnpm 12 (`corepack enable` ou `npm i -g pnpm@12`). Note : pnpm 12 peut exécuter les scripts avec un Node géré par lui-même (ici 26.5.1) ; l’image Docker utilise Node 22.
+- Node.js ≥ 22.12, pnpm 12 (`corepack enable`)
+- Docker Desktop (Postgres, Redis, MinIO, Mailpit, ClamAV)
+- Ports libres : **3200** (app), 5450 (Postgres), 6390 (Redis), 9010/9011 (MinIO API/console), 8027 (Mailpit UI) / 1027 (SMTP), 3310 (ClamAV)
 
-Ports utilisés (tous liés à `127.0.0.1`) : application **3100**, PostgreSQL **5440**, Mailpit **8026** (interface) / **1026** (SMTP).
-
-## Démarrer tout avec Docker (recommandé)
-
-```bash
-docker compose up --build
-```
-
-Le service `migrate` applique les migrations et le seed de démonstration, puis l’application démarre.
-
-- Application : http://localhost:3100
-- Boîte email locale (Mailpit) : http://localhost:8026
-- Arrêt : `docker compose down` (les données sont conservées dans un volume) · remise à zéro complète : `docker compose down -v`
-
-## Développement hors Docker
-
-Le conteneur `app` et `pnpm dev` écoutent tous deux sur le port 3100 : arrêtez l’un avant de lancer l’autre (`docker compose stop app`).
+## Installation
 
 ```bash
-docker compose up -d db mailpit
-cp .env.example .env
+git clone <repo> sous-nos-ailes && cd sous-nos-ailes
+cp .env.example .env                       # valeurs locales par défaut, aucun secret réel
+docker compose up -d db redis minio minio-init mailpit clamav
 pnpm install
-pnpm db:deploy      # migrations
-pnpm db:seed        # données de démonstration (idempotent, non destructif)
-pnpm dev            # http://localhost:3100
+pnpm db:migrate                            # applique src/db/migrations
+pnpm db:seed                               # données de référence + comptes/fiches/évènements de démo (DEMO_MODE=true)
+pnpm dev                                   # http://localhost:3200
+pnpm worker                                # dans un second terminal : files, e-mails, rappels, synchro agenda, rétention
 ```
 
-Le secret de session est généré au premier lancement dans `.secrets/session.key` (ignoré par git, permissions 600).
+ClamAV met plusieurs minutes à charger ses signatures au premier démarrage ; les envois de fichiers restent « en quarantaine » tant que le démon n'est pas prêt. En local on peut mettre `CLAMAV_ENABLED=false` (jamais en production).
 
-## Comptes de démonstration (mode local uniquement)
+Stack complète en conteneurs (build inclus) : `docker compose --profile app up --build` (app sur 3200, migrations + seed automatiques).
 
-| Rôle | Email | Mot de passe |
-|---|---|---|
-| Marie (administration) | marie@example.test | demo-marie-2026 |
-| Client 1 | camille.durand@example.test | demo-client-2026 |
-| Client 2 | thomas.lefevre@example.test | demo-client-2026 |
-| Intervenant·es | alix.moreau@, berenice.petit@, chloe.garnier@, dorian.robin@, elsa.nguyen@example.test | demo-intervenant-2026 |
-| Partenaire (Domaine des Tilleuls) | contact@domaine-des-tilleuls.example.test | demo-partenaire-2026 |
+## Configuration
 
-Les comptes réels (clients, intervenants, partenaires) se connectent par **lien magique** envoyé par email (page `/connexion`). Le formulaire mot de passe n’apparaît qu’en `DEMO_MODE`, lui-même refusé si `APP_ENV=production`.
+Toutes les variables sont documentées dans [`.env.example`](.env.example) et validées au démarrage par `src/lib/env.ts` (Zod). Points clés :
 
-## Commandes
-
-| Commande | Rôle |
+| Variable | Rôle |
 |---|---|
-| `pnpm dev` | serveur de développement (port 3100) |
-| `pnpm build` / `pnpm start` | build et serveur de production |
-| `pnpm typecheck` | génération Prisma + types Next + `tsc` |
-| `pnpm lint` | ESLint |
-| `pnpm test` | tests Vitest (unitaires + intégration sur la base locale) |
-| `pnpm test:e2e` | parcours Playwright (serveur sur 3100 + Mailpit requis ; `E2E_BASE_URL=http://localhost:3101 pnpm test:e2e` pour viser un autre serveur) |
-| `pnpm db:migrate` | créer/appliquer une migration en dev |
-| `pnpm db:deploy` | appliquer les migrations |
-| `pnpm db:seed` | seed reproductible, non destructif |
-| `pnpm db:reset -- --yes` | **détruit toutes les données** puis re-seed (refusé en production) |
+| `APP_ENV` | `local` / `test` / `production`. En production : `DEMO_MODE` refusé, `BETTER_AUTH_SECRET`, `DATA_ENCRYPTION_KEY` et `APP_URL` en https obligatoires |
+| `DEMO_MODE` | comptes et données fictives, bannière « démonstration », paiement simulé |
+| `INDEXING_ENABLED` | `robots` index/noindex — reste `false` jusqu'à la checklist de mise en ligne |
+| `DATABASE_URL`, `REDIS_URL` | Postgres et Redis |
+| `S3_*` | stockage objet (MinIO local, Scaleway/OVH en prod), deux buckets : fichiers et quarantaine |
+| `CLAMAV_*` | antivirus (clamd) |
+| `SMTP_*`, `MAIL_FROM` | e-mails transactionnels (Mailpit local, relais SMTP en prod) |
+| `STRIPE_*` | facturation — **mode test uniquement** ; absent ⇒ fournisseur `mock` étiqueté |
+| `GOOGLE_*`, `MICROSOFT_*` | synchronisation d'agenda (optionnelle) |
 
-## Parcours de visite (5 minutes)
+Secrets locaux : sans `BETTER_AUTH_SECRET` / `DATA_ENCRYPTION_KEY`, des clés aléatoires sont générées dans `.secrets/` (ignoré par git). En production ils viennent de l'environnement (Coolify).
 
-1. Accueil → « Parler de mon événement » : remplir la demande guidée (5 étapes, récapitulatif). Noter la référence `LPI-…`, ouvrir Mailpit : accusé de réception + notification à Marie.
-2. Se connecter en Marie → Tableau de bord → ouvrir la demande → préparer une proposition (lignes calculées par le moteur tarifaire), la transmettre.
-3. Se connecter en client (camille.durand@example.test) → espace client → « Cette proposition me convient ».
-4. Marie → fiche événement → proposer la mission à des intervenant·es (suggestions expliquées) ; se connecter en Alix pour accepter, en Chloé pour refuser.
-5. Marie → affecter les personnes acceptantes ; tenter d’affecter Alix sur `LPI-DEMO-0006` (même soir) : le conflit bloque. Confirmer `LPI-DEMO-0003` est impossible tant que l’équipe est incomplète.
-6. Lieux partenaires → fiche publique, lien d’apport `/p/tilleuls` (dépose un cookie technique, préremplit le formulaire) ; espace partenaire (statistiques agrégées, QR, kit imprimable).
+## Services et composants
 
-## Documentation
+| Composant | Commande | Rôle |
+|---|---|---|
+| Application Next.js | `pnpm dev` / `pnpm start` | routes publiques, espace `/app`, back-office `/admin`, route handlers `/api/*` |
+| Worker BullMQ | `pnpm worker` | files `files-scan`, `email-outbox`, `reminders`, `calendar-sync`, `retention` (cron 03:00 Europe/Paris), `generic` |
+| Postgres 17 | docker | 100 tables, schéma Drizzle `src/db/schema/*` |
+| Redis 7 | docker | queues, rate limiting, cache de session better-auth |
+| MinIO | docker | buckets `sna-files` (fichiers sains) et `sna-quarantine` |
+| ClamAV | docker | analyse antivirus de chaque fichier déposé |
+| Mailpit | docker | boîte de réception locale http://localhost:8027 |
 
-- [docs/architecture.md](docs/architecture.md) — couches, flux, sécurité
-- [docs/decisions.md](docs/decisions.md) — décisions techniques et sources consultées
-- [docs/avant-mise-en-service.md](docs/avant-mise-en-service.md) — validations nécessaires avant exploitation réelle
-- [docs/donnees-personnelles.md](docs/donnees-personnelles.md) — inventaire, conservation, export, suppression
-- [docs/tests.md](docs/tests.md) — bilan des tests exécutés
-- [docs/assets.md](docs/assets.md) — provenance des visuels
-- [docs/progress.md](docs/progress.md) — avancement
+## Migrations et seed
 
-## Périmètre exclu (V1)
+- `pnpm db:migrate` applique `src/db/migrations/*.sql` (drizzle-orm migrator, table `drizzle.__drizzle_migrations`).
+- `pnpm db:generate` génère une migration depuis le schéma (`drizzle-kit generate`). Ne jamais utiliser `drizzle-kit push` ailleurs qu'en local.
+- `pnpm db:seed` : données de référence idempotentes (24 catégories de métiers, 4 offres + fonctionnalités, catalogue d'outils, modèles de check-lists, clés `configuration_settings`), puis, si `DEMO_MODE=true`, les comptes et données de démo (`src/db/seed/*.ts`). Refusé si `APP_ENV=production`.
+- `pnpm db:reset` : vide le schéma puis migre et seed (local uniquement).
 
-Paiement en ligne, signature électronique certifiée, facturation comptable, chat temps réel, application mobile, géolocalisation, dossiers médicaux ou suivi nominatif d’enfants, marketplace ouverte, scraping, prospection automatisée, chatbot, intégration Odoo.
+## Comptes de démonstration
+
+Mot de passe commun : **`Demo-SousNosAiles-2026!`** (défini dans `src/db/seed/context.ts`). Tous les e-mails sont en `@sousnosailes.test` et marqués `is_demo`.
+
+| Compte | E-mail | Rôle / usage |
+|---|---|---|
+| Louis Marchand | louis@sousnosailes.test | organisateur, propriétaire du mariage de démo |
+| Lisa Marchand | lisa@sousnosailes.test | coorganisatrice |
+| Paul Nguyen | paul@sousnosailes.test | second organisateur (baptême, séminaire) — tests d'isolation |
+| Camille Ferrand | camille.planner@sousnosailes.test | wedding planner |
+| Marie Delcourt | marie.garde@sousnosailes.test | garde d'enfants évènementielle |
+| Nora Benali | nora.nounou@sousnosailes.test | personnel de garde |
+| Sofia Martins | sofia.anim@sousnosailes.test | animation pour enfants |
+| Julien Rossi · Hélène Vasseur · Théo Lambert · Inès Garnier | julien.traiteur@ · helene.domaine@ · theo.dj@ · ines.photo@sousnosailes.test | traiteur, domaine, DJ, photographe |
+| Modération | moderateur@sousnosailes.test | rôle `moderator` |
+| Administration | admin@sousnosailes.test | rôle `admin` |
+| Super admin | superadmin@sousnosailes.test | rôle `super_admin` (break-glass) |
+
+## Vérifications
+
+```bash
+pnpm typecheck           # next typegen + tsc --noEmit
+pnpm lint                # eslint
+pnpm test                # unitaires (vitest, projet "unit")
+pnpm test:integration    # services contre la base locale (sériel)
+pnpm build && pnpm test:e2e   # Playwright (desktop + mobile), axe-core sur les pages publiques
+pnpm check               # typecheck + lint + test
+```
+
+Contre un `pnpm dev` déjà lancé : `E2E_NO_SERVER=1 pnpm playwright test e2e/public.spec.ts --project=desktop`.
+
+## Scripts utiles
+
+| Script | Rôle |
+|---|---|
+| `scripts/backup.sh` | pg_dump chiffré (age ou openssl) + copie hors site S3 + miroir du bucket fichiers |
+| `scripts/restore.sh <fichier\|offsite:latest> [url]` | restauration (refuse une base qui n'est pas `*restore*`/`*test*` sans `RESTORE_CONFIRM=yes`) |
+| `scripts/test-restore.sh` | exercice de restauration dans `sna_restore_test` + comparaison des tables |
+| `scripts/generate-permissions-matrix.ts` | régénère `docs/rbac-permissions.md` depuis le catalogue de permissions |
+| `scripts/load-test.ts` | charge simple sur les routes publiques |
+
+## Licence et statut
+
+Projet privé en phase de lancement. Les documents juridiques servis par le site sont des **brouillons à valider par un professionnel du droit** (liste des points ouverts dans [docs/legal-review.md](docs/legal-review.md)).

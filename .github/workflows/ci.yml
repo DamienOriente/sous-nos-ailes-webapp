@@ -47,6 +47,9 @@ jobs:
           path: |
             .next
             !.next/cache
+          # .next is a hidden directory: excluded by default since upload-artifact v4.4.
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 1
 
   integration-e2e:

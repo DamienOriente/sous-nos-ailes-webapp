@@ -41,16 +41,6 @@ jobs:
           APP_ENV: build
           SKIP_ENV_VALIDATION: "1"
         run: pnpm build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: next-build
-          path: |
-            .next
-            !.next/cache
-          # .next is a hidden directory: excluded by default since upload-artifact v4.4.
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 1
 
   integration-e2e:
     name: Integration and end-to-end tests
@@ -123,10 +113,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Create storage buckets
         run: pnpm tsx scripts/ensure-buckets.ts
-      - uses: actions/download-artifact@v4
-        with:
-          name: next-build
-          path: .next
+      - name: Build (same job as the E2E run)
+        # `.next/node_modules/*` are symlinks into the pnpm store; transferring the build as an
+        # artifact copies them and breaks external packages (sharp) at runtime, so we build here.
+        env:
+          SKIP_ENV_VALIDATION: "1"
+        run: pnpm build
       - name: Migrate and seed demo data
         run: pnpm db:migrate && pnpm db:seed
       - name: Integration tests (database)

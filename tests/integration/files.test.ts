@@ -5,6 +5,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import "./setup";
 import { db } from "@/db/client";
+import { env } from "@/lib/env";
 import { fileAccessLogs, files, fileScanResults, securityEvents, users } from "@/db/schema";
 import { NotFoundError, ValidationError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
@@ -17,7 +18,8 @@ import { BUCKETS, getObjectBuffer, objectExists, putObject } from "@/modules/fil
 
 /**
  * Scenario E — end-to-end against the local MinIO + ClamAV containers.
- * Requires `docker compose up -d db redis minio clamav` and CLAMAV_ENABLED=true.
+ * Requires `docker compose up -d db redis minio clamav`. With CLAMAV_ENABLED=false (CI) the
+ * antivirus assertions are skipped and the scan verdict is expected to be "skipped".
  */
 const EICAR = Buffer.from("X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*", "latin1");
 const run = randomUUID().slice(0, 8);
@@ -111,7 +113,8 @@ describe("Scenario E — secure file pipeline", () => {
     expect(await objectExists(BUCKETS.quarantine, quarantineKey(imageId))).toBe(false);
 
     const scans = await db.select().from(fileScanResults).where(eq(fileScanResults.fileId, imageId));
-    expect(scans.map((s) => `${s.engine}:${s.verdict}`).sort()).toEqual(["clamav:clean", "policy:clean"]);
+    // Without a scanner (CI) the policy still runs and the clamav verdict is recorded as "skipped" (never allowed in production).
+    expect(scans.map((s) => `${s.engine}:${s.verdict}`).sort()).toEqual([env.CLAMAV_ENABLED ? "clamav:clean" : "clamav:skipped", "policy:clean"]);
   });
 
   it("grants the owner a short-lived signed URL that actually serves the bytes", async () => {
@@ -148,14 +151,14 @@ describe("Scenario E — secure file pipeline", () => {
     expect(ev).toBeDefined();
   });
 
-  it("rejects the EICAR string uploaded as .txt (type not allowed) and ClamAV flags the bytes", async () => {
+  it.skipIf(!env.CLAMAV_ENABLED)("rejects the EICAR string uploaded as .txt (type not allowed) and ClamAV flags the bytes", async () => {
     await expect(createUpload(actorA, { scope: "user", scopeId: userA, purpose: "document", originalName: "eicar.txt", bytes: EICAR })).rejects.toBeInstanceOf(ValidationError);
     const verdict = await scanBuffer(EICAR);
     expect(verdict.verdict).toBe("infected");
     if (verdict.verdict === "infected") expect(verdict.signature.toLowerCase()).toContain("eicar");
   });
 
-  it("marks a quarantined infected file as infected, removes the bytes and never serves it", async () => {
+  it.skipIf(!env.CLAMAV_ENABLED)("marks a quarantined infected file as infected, removes the bytes and never serves it", async () => {
     // Bypass the static policy to reach the antivirus step with a known-bad payload.
     const id = randomUUID();
     await putObject(BUCKETS.quarantine, quarantineKey(id), EICAR, "application/pdf");

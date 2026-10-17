@@ -8,7 +8,7 @@ Trois niveaux, tous exécutés en CI (`.github/workflows/ci.yml`) et localement.
 | Intégration | Vitest (projet `integration`, sériel) | services contre la **base locale réelle** (Postgres + Redis + MinIO) : auth, fichiers (upload + scan), outbox, fiches, pages, modération, garde d'enfants, invitations, calendrier, billing, confidentialité | `pnpm test:integration` | ~1 min |
 | End-to-end | Playwright (`desktop` = Chrome, `mobile` = Pixel 7, specs `*.mobile.spec.ts`) + `@axe-core/playwright` | parcours complets contre le build (`pnpm start`) ou le dev server | `pnpm build && pnpm test:e2e` | 5–10 min |
 
-Règles : un service a au moins un test d'intégration ; chaque parcours livré a une spec Playwright ; la logique métier est testée sans IO ; les tests d'intégration nettoient leurs lignes (préfixe `itest-`) ; aucune dépendance à un service externe (Stripe/Google mockés, ClamAV réel en local, désactivé en CI).
+Règles : un service a au moins un test d'intégration ; chaque parcours livré a une spec Playwright ; la logique métier est testée sans IO ; les tests d'intégration nettoient leurs lignes (préfixe `itest-`) ; aucune dépendance à un service externe (Stripe/Google mockés, ClamAV réel en local, désactivé en CI : les trois assertions antivirus de `tests/integration/files.test.ts` sont alors ignorées et le verdict attendu est `skipped`, jamais toléré en production).
 
 ## Commandes utiles
 

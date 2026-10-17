@@ -6,10 +6,10 @@ import { ORGANIZER_EXAMPLE_SUMMARY, PROFESSIONAL_EXAMPLE_SUMMARY } from "@/compo
 import { DemoPhoto } from "@/components/shared/demo-photo";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { cn } from "@/lib/utils";
-import { categoryPhoto, eventPhoto } from "@/modules/media/demo-photos";
+import { showcasePhoto } from "@/modules/media/demo-photos";
 import type { PrimaryIntent } from "@/modules/identity/domain/profile";
 
-const OPTIONS: { intent: PrimaryIntent; icon: typeof PartyPopper; title: string; description: string; bullets: string[]; cta: string; example: string; photo: ReturnType<typeof eventPhoto>; Scene: typeof KidsCornerScene; tone: string }[] = [
+const OPTIONS: { intent: PrimaryIntent; icon: typeof PartyPopper; title: string; description: string; bullets: string[]; cta: string; example: string; photo: ReturnType<typeof showcasePhoto>; Scene: typeof KidsCornerScene; tone: string }[] = [
   {
     intent: "organizer",
     icon: PartyPopper,
@@ -18,7 +18,7 @@ const OPTIONS: { intent: PrimaryIntent; icon: typeof PartyPopper; title: string;
     bullets: ["Un espace par évènement, partagé avec vos coorganisateurs", "Recherche et mise en relation avec des professionnels vérifiés", "Garde d'enfants coordonnée en toute sécurité"],
     cta: "Créer mon évènement",
     example: ORGANIZER_EXAMPLE_SUMMARY,
-    photo: eventPhoto("wedding", 3),
+    photo: showcasePhoto("intentOrganiser"),
     Scene: KidsCornerScene,
     tone: "from-blush/80",
   },
@@ -30,7 +30,7 @@ const OPTIONS: { intent: PrimaryIntent; icon: typeof PartyPopper; title: string;
     bullets: ["Une fiche publique dans l'annuaire, modérée et vérifiable", "Demandes de contact et de devis centralisées", "Outils métier adaptés à votre spécialité"],
     cta: "Créer ma fiche pro",
     example: PROFESSIONAL_EXAMPLE_SUMMARY,
-    photo: categoryPhoto("garde-enfants-evenementielle", 1),
+    photo: showcasePhoto("intentProfessional"),
     Scene: StorefrontScene,
     tone: "from-sage-soft",
   },

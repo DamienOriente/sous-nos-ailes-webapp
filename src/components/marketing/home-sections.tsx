@@ -10,7 +10,7 @@ import { Container, Section } from "@/components/shared/section";
 import type { PublicCategory, PublicCounters } from "@/modules/analytics/application/public-counters";
 import type { DirectoryCard } from "@/modules/directory/application/directory-search";
 import type { EventShowcase, PublishedReview } from "@/modules/directory/application/public-showcase";
-import { categoryPhoto, demoPhoto, type PhotoTheme } from "@/modules/media/demo-photos";
+import { categoryPhoto, showcasePhoto, type ShowcaseSlot } from "@/modules/media/demo-photos";
 import { CategoryIcon } from "./category-icon";
 import { HeroSearch } from "./hero-search";
 import { Feather } from "./illustrations";
@@ -21,9 +21,9 @@ import { DemoLabel, PhotoFrame } from "./photo-frame";
 export function Hero({ categories, counters, isDemo }: { categories: PublicCategory[]; counters: PublicCounters; isDemo: boolean }) {
   const defaultSlug = categories.find((c) => c.slug === "garde-enfants-evenementielle")?.slug ?? categories.find((c) => c.isChildcare)?.slug ?? categories[0]?.slug ?? "garde-enfants-evenementielle";
   const showCounter = counters.publishedProfessionals > 0;
-  const main = demoPhoto("kids", 8);
-  const second = demoPhoto("wedding", 0);
-  const third = demoPhoto("toast", 0);
+  const main = showcasePhoto("heroMain");
+  const second = showcasePhoto("heroSecond");
+  const third = showcasePhoto("heroThird");
   return (
     <section className="relative overflow-hidden" aria-labelledby="hero-title">
       <Container size="wide" className="grid items-center gap-10 py-12 sm:py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 lg:py-20">
@@ -152,13 +152,6 @@ export function HowItWorks() {
 }
 
 // ── Categories ──────────────────────────────────────────────────────────────
-/** Hand-picked photo per childcare trade (the generic category mapping is for the long tail). */
-const CHILDCARE_PHOTOS: Record<string, { theme: PhotoTheme; index: number }> = {
-  "garde-enfants-evenementielle": { theme: "kids", index: 1 },
-  "baby-sitting": { theme: "kids", index: 7 },
-  "animation-enfants": { theme: "balloons", index: 0 },
-};
-
 export function Categories({ categories }: { categories: PublicCategory[] }) {
   const childcare = categories.filter((c) => c.isChildcare);
   const others = categories.filter((c) => !c.isChildcare);
@@ -177,9 +170,8 @@ export function Categories({ categories }: { categories: PublicCategory[] }) {
         </div>
         {childcare.length > 0 && (
           <ul className="mt-10 grid gap-4 sm:grid-cols-3">
-            {childcare.map((c, i) => {
-              const pick = CHILDCARE_PHOTOS[c.slug];
-              const photo = pick ? demoPhoto(pick.theme, pick.index) : categoryPhoto(c.slug, i);
+            {childcare.map((c) => {
+              const photo = categoryPhoto(c.slug, 0);
               return (
                 <li key={c.slug}>
                   <Link href={`/annuaire/${c.slug}`} className="group flex h-full flex-col overflow-hidden rounded-3xl border border-blush/70 bg-card transition-shadow hover:shadow-soft dark:border-blush">
@@ -204,8 +196,8 @@ export function Categories({ categories }: { categories: PublicCategory[] }) {
         {others.length > 0 && (
           <div className="mt-8 -mx-4 sm:-mx-6 lg:-mx-8">
             <ul className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 sm:px-6 lg:px-8 [scrollbar-width:thin]" aria-label="Autres métiers de l'évènementiel">
-              {others.map((c, i) => {
-                const photo = categoryPhoto(c.slug, i % 2);
+              {others.map((c) => {
+                const photo = categoryPhoto(c.slug, 0);
                 return (
                   <li key={c.slug} className="w-40 shrink-0 snap-start sm:w-44">
                     <Link href={`/annuaire/${c.slug}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary/60">
@@ -306,11 +298,11 @@ export function EventShowcaseSection({ event }: { event: EventShowcase | null })
 }
 
 // ── Journeys ────────────────────────────────────────────────────────────────
-const JOURNEYS: Array<{ who: string; title: string; photo: { theme: PhotoTheme; index: number }; corner: "tl" | "tr" | "bl"; moments: string[]; href: string; cta: string }> = [
+const JOURNEYS: Array<{ who: string; title: string; photo: ShowcaseSlot; corner: "tl" | "tr" | "bl"; moments: string[]; href: string; cta: string }> = [
   {
     who: "Organisatrice",
     title: "Lisa prépare son mariage avec 120 invités et 14 enfants",
-    photo: { theme: "wedding", index: 3 },
+    photo: "journeyOrganiser",
     corner: "tl",
     moments: ["Trouve une équipe de garde et un traiteur dans l'annuaire, envoie trois demandes de devis.", "Invite sa wedding planner et ses prestataires : chacun reçoit son accès, rien de plus.", "Le jour J, suit les arrivées des enfants et les réponses des invités depuis son téléphone."],
     href: "/organiser",
@@ -319,7 +311,7 @@ const JOURNEYS: Array<{ who: string; title: string; photo: { theme: PhotoTheme; 
   {
     who: "Professionnel",
     title: "Julien, traiteur, reçoit des demandes complètes",
-    photo: { theme: "food", index: 0 },
+    photo: "journeyProfessional",
     corner: "tr",
     moments: ["Publie sa fiche, relue par l'équipe sous 48 h ouvrées, avec les vérifications réellement effectuées.", "Reçoit la date, la ville, le nombre d'invités et d'enfants avant même de répondre.", "Consulte le planning du jour J et le plan de service de l'évènement où il intervient."],
     href: "/professionnels",
@@ -328,7 +320,7 @@ const JOURNEYS: Array<{ who: string; title: string; photo: { theme: PhotoTheme; 
   {
     who: "Garde d'enfants",
     title: "Marie et son équipe gardent neuf enfants pendant la réception",
-    photo: { theme: "kids", index: 4 },
+    photo: "journeyChildcare",
     corner: "bl",
     moments: ["Voit la liste des enfants : prénom, âge, personnes autorisées à venir les chercher.", "Déchiffre les consignes des parents uniquement avec leur consentement, accès journalisé.", "Enregistre chaque arrivée, chaque remise ; tout est anonymisé après l'évènement."],
     href: "/annuaire/garde-enfants-evenementielle",
@@ -346,7 +338,7 @@ export function Journeys() {
         </div>
         <div className="mt-12 space-y-14">
           {JOURNEYS.map((j, i) => {
-            const photo = demoPhoto(j.photo.theme, j.photo.index);
+            const photo = showcasePhoto(j.photo);
             const reverse = i % 2 === 1;
             return (
               <article key={j.who} className={`grid items-center gap-8 lg:grid-cols-2 lg:gap-14 ${reverse ? "lg:[&>figure]:order-2" : ""}`}>
@@ -524,7 +516,7 @@ export function Reviews({ reviews }: { reviews: PublishedReview[] }) {
 }
 
 // ── Cities ──────────────────────────────────────────────────────────────────
-const CITY_THEMES: PhotoTheme[] = ["venue", "terrace", "landscape", "reception", "flowers", "room", "seminar", "toast"];
+const CITY_SLOTS: ShowcaseSlot[] = ["city0", "city1", "city2", "city3"];
 
 export function Cities({ cities, isDemo }: { cities: PublicCounters["cities"]; isDemo: boolean }) {
   if (cities.length === 0) return null;
@@ -538,8 +530,8 @@ export function Cities({ cities, isDemo }: { cities: PublicCounters["cities"]; i
           </div>
         </div>
         <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {cities.slice(0, 8).map((c, i) => {
-            const photo = demoPhoto(CITY_THEMES[i % CITY_THEMES.length] ?? "venue", Math.floor(i / CITY_THEMES.length));
+          {cities.slice(0, 4).map((c, i) => {
+            const photo = showcasePhoto(CITY_SLOTS[i % CITY_SLOTS.length] ?? "city0");
             return (
               <li key={`${c.city}-${c.department ?? ""}`}>
                 <Link href={`/annuaire?city=${encodeURIComponent(c.city)}`} className="group relative block overflow-hidden rounded-2xl">

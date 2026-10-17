@@ -18,7 +18,7 @@ import type { EventRole } from "@/modules/authorization";
 import { zonedDateTimeToUtc } from "@/modules/events/application/event-service";
 import { buildChecklist } from "@/modules/events/domain/checklist";
 import { defaultCoverPhotoId } from "@/modules/events/domain/cover";
-import { eventPhoto } from "@/modules/media/demo-photos";
+import { eventPhoto, showcasePhoto } from "@/modules/media/demo-photos";
 import { buildDemoPdf, demoActor, slugFileName, uploadDemoFile } from "./_demo-files";
 import type { SeedContext } from "./context";
 
@@ -425,7 +425,7 @@ export async function seed(ctx: SeedContext): Promise<void> {
     const [existing] = await db.select({ id: events.id, coverPhotoId: events.coverPhotoId }).from(events).where(and(eq(events.ownerUserId, ownerId), eq(events.name, spec.name), eq(events.isDemo, true))).limit(1);
     const startsAt = zonedDateTimeToUtc(spec.eventDate, spec.startTime, tz);
     const endsAt = zonedDateTimeToUtc(spec.eventDate, spec.endTime, tz);
-    const coverPhotoId = eventPhoto(spec.type, spec.coverIndex).id || defaultCoverPhotoId(spec.type, spec.key);
+    const coverPhotoId = (spec.type === "wedding" ? showcasePhoto("eventWedding") : spec.type === "baptism" ? showcasePhoto("eventBaptism") : spec.type === "seminar" ? showcasePhoto("eventSeminar") : eventPhoto(spec.type, spec.coverIndex)).id || defaultCoverPhotoId(spec.type, spec.key);
     let eventId: string;
     if (existing) {
       eventId = existing.id;

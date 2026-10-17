@@ -9,7 +9,7 @@ import { DemoLabel, PhotoFrame } from "@/components/marketing/photo-frame";
 import { Container, Section } from "@/components/shared/section";
 import { Button } from "@/components/ui/button";
 import { getDemoEventShowcase, listFeaturedProfessionals } from "@/modules/directory/application/public-showcase";
-import { demoPhoto } from "@/modules/media/demo-photos";
+import { showcasePhoto } from "@/modules/media/demo-photos";
 
 export const metadata: Metadata = {
   title: "Organiser un évènement",
@@ -22,7 +22,7 @@ const STAGES = [
     step: 1,
     title: "Avant : trouver et comparer",
     Scene: SearchScene,
-    photo: demoPhoto("wedding", 4),
+    photo: showcasePhoto("organiserBefore"),
     items: [
       "Cherchez par métier et par zone dans l'annuaire ; la garde d'enfants est en tête, les autres métiers suivent.",
       "Chaque fiche indique ce qui a été vérifié, le périmètre d'intervention et une fourchette de prix quand le professionnel l'a renseignée.",
@@ -33,7 +33,7 @@ const STAGES = [
     step: 2,
     title: "Pendant la préparation : réunir l'équipe",
     Scene: TeamScene,
-    photo: demoPhoto("reception", 0),
+    photo: showcasePhoto("organiserDuring"),
     items: [
       "Créez l'évènement (mariage, baptême, anniversaire, séminaire…) : une liste de tâches adaptée au type d'évènement est proposée.",
       "Invitez coorganisateurs, wedding planner et prestataires avec un lien sécurisé. Chacun obtient un rôle et ne voit que ce qui le concerne.",
@@ -45,7 +45,7 @@ const STAGES = [
     step: 3,
     title: "Le jour J : vivre la fête",
     Scene: KidsCornerScene,
-    photo: demoPhoto("kids", 2),
+    photo: showcasePhoto("organiserDay"),
     items: [
       "Accueillez les invités au QR code (gratuit en version simple, personnalisé avec l'offre Plus) et suivez les présences.",
       "L'équipe de garde enregistre arrivées, départs et remises aux personnes autorisées ; vous avez la vue d'ensemble.",
@@ -57,7 +57,7 @@ const STAGES = [
 export default async function OrganizerPage() {
   const [showcase, featured] = await Promise.all([getDemoEventShowcase().catch(() => null), listFeaturedProfessionals(1).catch(() => [])]);
   const example = featured[0];
-  const hero = demoPhoto("wedding", 6);
+  const hero = showcasePhoto("organiserHero");
   return (
     <>
       <Section className="pb-10 sm:pb-10 lg:pb-10">

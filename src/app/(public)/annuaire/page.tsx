@@ -11,7 +11,7 @@ import { env } from "@/lib/env";
 import { getActor } from "@/lib/session";
 import { emptyStateSuggestions, searchDirectory } from "@/modules/directory/application/directory-search";
 import { parseSearchParams, toQueryString } from "@/modules/directory/domain/search-params";
-import { categoryPhoto, demoPhoto } from "@/modules/media/demo-photos";
+import { categoryPhoto, showcasePhoto } from "@/modules/media/demo-photos";
 import { listActiveCategories } from "@/modules/professionals/application/professional-service";
 
 export const metadata: Metadata = {
@@ -30,7 +30,7 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
   return (
     <Section className="py-8 sm:py-12">
       <Container size="wide" className="space-y-8">
-        <DirectoryHeader eyebrow="Annuaire" title="Des professionnels vérifiés pour votre évènement" photos={hasQuery ? [] : [demoPhoto("kids", 3), demoPhoto("reception", 1), demoPhoto("dj", 0)]}>
+        <DirectoryHeader eyebrow="Annuaire" title="Des professionnels vérifiés pour votre évènement" photos={hasQuery ? [] : [showcasePhoto("directoryA"), showcasePhoto("directoryB"), showcasePhoto("directoryC")]}>
           <p className="max-w-2xl text-muted-foreground text-pretty">Garde d'enfants et animation en priorité, puis tous les métiers de la réception. Chaque fiche est relue avant publication ; les vérifications affichées décrivent exactement ce que nous avons contrôlé.</p>
         </DirectoryHeader>
         <SearchFilters filters={filters} categories={categories.map((c) => ({ slug: c.slug, name: c.name, group: c.group }))} signedIn={Boolean(actor)} />
@@ -53,10 +53,10 @@ export default async function DirectoryPage({ searchParams }: { searchParams: Pr
             Parcourir par métier
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map((c, i) => (
+            {categories.map((c) => (
               <li key={c.slug}>
                 <Link href={`/annuaire/${c.slug}`} className="group flex items-center gap-3 rounded-2xl border bg-card p-2 pr-4 text-sm transition-colors hover:border-primary/60">
-                  <DemoPhoto photo={categoryPhoto(c.slug, i % 2)} width={240} height={240} sizes="56px" className="size-14 shrink-0 rounded-xl" alt="" />
+                  <DemoPhoto photo={categoryPhoto(c.slug, 0)} width={240} height={240} sizes="56px" className="size-14 shrink-0 rounded-xl" alt="" />
                   <span className="min-w-0">
                     <span className="flex items-center gap-1.5 font-medium">
                       <CategoryIcon icon={c.icon} className="size-3.5 shrink-0 text-primary" />

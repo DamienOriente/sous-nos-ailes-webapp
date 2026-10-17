@@ -5,7 +5,7 @@ import { eventDocuments, events, files, mediaAssets, professionalCategories, pro
 import { logger } from "@/lib/logger";
 import type { Actor } from "@/lib/session";
 import { createUpload } from "@/modules/files/application/upload-service";
-import { CATEGORY_PHOTO_THEMES, photosByTheme, unsplashUrl, type DemoPhoto } from "@/modules/media/demo-photos";
+import { categoryPhoto, CATEGORY_PHOTO_THEMES, photosByTheme, RESERVED_PHOTO_IDS, unsplashUrl, type DemoPhoto } from "@/modules/media/demo-photos";
 import { bindMediaToContent, type MediaLibrary } from "@/modules/pages/domain/media-binding";
 import { parseContent } from "@/modules/pages/domain/page-schema";
 import type { SeedContext } from "./context";
@@ -129,26 +129,36 @@ async function uploadInline(actor: Actor, input: { scope: "professional" | "even
 
 // ── Photo plan ──────────────────────────────────────────────────────────────
 /**
- * Distinct catalogue photos for a category, rotated by `offset` so two
- * listings of the same trade do not share the same cover. Deterministic.
+ * Global allocation: every catalogue photo goes to at most ONE listing and only
+ * within the themes of its trade. Covers are handed out first (one per listing),
+ * then gallery photos round by round, so a trade with few matching photos shares
+ * them fairly. A listing that runs out of relevant photos simply gets fewer.
  */
-function photoPlan(categorySlug: string, offset: number, count: number): DemoPhoto[] {
-  const themes = CATEGORY_PHOTO_THEMES[categorySlug] ?? ["reception"];
-  const pools = themes.map((t) => photosByTheme(t)).filter((p) => p.length > 0);
-  const all: DemoPhoto[] = [];
-  const seen = new Set<string>();
-  for (let round = 0; all.length < 40 && round < 12; round += 1) {
-    for (const pool of pools) {
-      const p = pool[round];
-      if (p && !seen.has(p.id)) {
-        seen.add(p.id);
-        all.push(p);
+function allocatePhotos(pros: Array<{ key: string; categorySlug: string; status: string }>): Map<string, { cover: DemoPhoto | null; gallery: DemoPhoto[] }> {
+  const used = new Set<string>();
+  const out = new Map(pros.map((p) => [p.key, { cover: null as DemoPhoto | null, gallery: [] as DemoPhoto[] }]));
+  /** Next free, non-reserved photo of the trade's themes; the trade's own showcase photo is allowed for galleries only. */
+  const take = (categorySlug: string, allowOwnCover: boolean): DemoPhoto | null => {
+    const ownCover = categoryPhoto(categorySlug, 0).id;
+    for (const theme of CATEGORY_PHOTO_THEMES[categorySlug] ?? []) {
+      const next = photosByTheme(theme).find((p) => !used.has(p.id) && (!RESERVED_PHOTO_IDS.has(p.id) || (allowOwnCover && p.id === ownCover)));
+      if (next) {
+        used.add(next.id);
+        return next;
       }
     }
+    return null;
+  };
+  const ordered = [...pros].sort((a, b) => Number(b.status === "published") - Number(a.status === "published"));
+  for (const pro of ordered) out.get(pro.key)!.cover = take(pro.categorySlug, false);
+  for (let round = 1; round <= 3; round += 1) {
+    for (const pro of ordered) {
+      if (pro.status !== "published" && round > 1) continue;
+      const photo = take(pro.categorySlug, true);
+      if (photo) out.get(pro.key)!.gallery.push(photo);
+    }
   }
-  if (all.length === 0) return [];
-  const start = offset % all.length;
-  return Array.from({ length: Math.min(count, all.length) }, (_, i) => all[(start + i) % all.length]!);
+  return out;
 }
 
 type DownloadResult = Map<string, Buffer | null>;
@@ -182,13 +192,11 @@ async function downloadPhotos(ids: string[]): Promise<DownloadResult> {
 
 type PlannedPicture = { kind: "cover" | "gallery"; photo: DemoPhoto; name: string; alt: string; caption: string; sortOrder: number };
 
-function picturesFor(key: string, displayName: string, categorySlug: string, offset: number, galleryCount: number): PlannedPicture[] {
-  const photos = photoPlan(categorySlug, offset, galleryCount + 1);
-  return photos.map((photo, i) =>
-    i === 0
-      ? { kind: "cover", photo, name: `${key}-cover-${photo.id}.jpg`, alt: `${displayName} — ${photo.alt} (photo de démonstration)`, caption: photo.alt, sortOrder: 0 }
-      : { kind: "gallery", photo, name: `${key}-galerie-${photo.id}.jpg`, alt: `${displayName} — ${photo.alt} (photo de démonstration)`, caption: photo.alt, sortOrder: i - 1 },
-  );
+function picturesFor(key: string, displayName: string, plan: { cover: DemoPhoto | null; gallery: DemoPhoto[] }): PlannedPicture[] {
+  const out: PlannedPicture[] = [];
+  if (plan.cover) out.push({ kind: "cover", photo: plan.cover, name: `${key}-cover-${plan.cover.id}.jpg`, alt: `${displayName} — ${plan.cover.alt} (photo de démonstration)`, caption: plan.cover.alt, sortOrder: 0 });
+  plan.gallery.forEach((photo, i) => out.push({ kind: "gallery", photo, name: `${key}-galerie-${photo.id}.jpg`, alt: `${displayName} — ${photo.alt} (photo de démonstration)`, caption: photo.alt, sortOrder: i }));
+  return out;
 }
 
 async function ensureMediaAsset(ctx: SeedContext, professionalId: string, fileId: string, kind: string, alt: string, caption: string | null, sortOrder: number): Promise<boolean> {
@@ -219,12 +227,8 @@ async function seedProfessionalMedia(ctx: SeedContext): Promise<{ created: numbe
 
   // 1. plan every picture, 2. find what already exists, 3. download only what is missing.
   const plans = new Map<string, PlannedPicture[]>();
-  for (const pro of pros) {
-    // Spread the covers: trades sharing a theme (childcare, baby-sitting, animation) must not all open on the same photo.
-    const offset = pro.index * 5;
-    const galleryCount = pro.status === "published" ? 4 + (pro.index % 3) : 2; // 4–6 for published, 2 for drafts
-    plans.set(pro.key, picturesFor(pro.key, pro.displayName, pro.categorySlug, offset, galleryCount));
-  }
+  const allocation = allocatePhotos(pros);
+  for (const pro of pros) plans.set(pro.key, picturesFor(pro.key, pro.displayName, allocation.get(pro.key) ?? { cover: null, gallery: [] }));
   const existingByPro = new Map<string, Map<string, string>>();
   const missingPhotoIds: string[] = [];
   for (const pro of pros) {
@@ -271,12 +275,7 @@ async function seedProfessionalMedia(ctx: SeedContext): Promise<{ created: numbe
     // Fallback (offline): generated gradients, only for the kinds without a single photograph.
     const fallback: Array<{ kind: "cover" | "gallery"; name: string; bytes: () => Promise<Buffer>; sortOrder: number; alt: string }> = [];
     if (!gotPhoto.cover) fallback.push({ kind: "cover", name: `${pro.key}-cover-generated.jpg`, bytes: () => renderJpeg(gradientSvg(1600, 900, palette, pro.displayName, pro.city ?? undefined)), sortOrder: 0, alt: `${pro.displayName} (visuel généré)` });
-    if (!gotPhoto.gallery) {
-      for (let g = 0; g < 3; g += 1) {
-        const p = PALETTES[(pro.index + g + 1) % PALETTES.length] ?? palette;
-        fallback.push({ kind: "gallery", name: `${pro.key}-galerie-generated-${g + 1}.jpg`, bytes: () => renderJpeg(gradientSvg(1200, 800, p, `Réalisation ${g + 1}`, pro.displayName)), sortOrder: g, alt: `${pro.displayName} — réalisation ${g + 1} (visuel généré)` });
-      }
-    }
+    // No generated gallery: a listing without relevant photographs simply has no gallery.
     for (const item of fallback) {
       let fileId = byName.get(item.name) ?? null;
       if (!fileId) {

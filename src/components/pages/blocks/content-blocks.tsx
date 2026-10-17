@@ -2,16 +2,15 @@ import { cn } from "@/lib/utils";
 import { richTextToPlain } from "@/modules/pages/domain/page-schema";
 import { labelFor, PRICE_UNITS } from "@/modules/professionals/domain/listing-schema";
 import { FaqAccordion } from "./faq-accordion";
-import { anchorOf, type BlockContext, type BlockProps, CtaButton, formatPrice, headingOr, Monogram, Picture, RichText, SectionHeading, Stars } from "./shared";
+import { anchorOf, type BlockProps, CtaButton, formatPrice, headingOr, Monogram, Picture, RichText, SectionHeading, Stars } from "./shared";
 
 /**
- * Pictures that can illustrate the services ("exemples de prestations"): the
- * page's own gallery, cycled so every card gets a different photo. Empty when
- * the page has no gallery, in which case the cards stay text-only.
+ * Service cards stay text-only: a service has no photograph of its own, and
+ * recycling the page's gallery here made the same picture appear several times
+ * on one page (and sometimes depict something else than the service).
  */
-function servicePictures(ctx: BlockContext): Array<{ fileId: string; alt: string }> {
-  const gallery = ctx.data.content.find((b) => b.type === "gallery" && !b.hidden);
-  return gallery && gallery.type === "gallery" ? gallery.props.images.map((img) => ({ fileId: img.fileId, alt: img.alt })) : [];
+function servicePictures(): Array<{ fileId: string; alt: string }> {
+  return [];
 }
 
 /** About: prose | two-column | with-image | pullquote | boxed */
@@ -99,7 +98,7 @@ export function ServicesBlock({ block, ctx, variant = "cards" }: BlockProps<"ser
     ) : null;
   }
 
-  const pictures = servicePictures(ctx);
+  const pictures = servicePictures();
   const head = (
     <div className="mb-8 max-w-2xl">
       <SectionHeading>

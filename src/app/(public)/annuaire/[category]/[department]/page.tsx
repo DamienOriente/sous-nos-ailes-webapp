@@ -68,7 +68,7 @@ export default async function CategoryGeoPage({ params, searchParams }: Props) {
       <Container size="wide" className="space-y-8">
         <CategoryJsonLd title={title} path={path} items={result.items} breadcrumbs={breadcrumbs} />
         <Breadcrumbs items={breadcrumbs} />
-        <DirectoryHeader eyebrow={deptName && geo.kind === "city" ? `${cat.group} · ${deptName}` : cat.group} title={title} photos={[categoryPhoto(cat.slug, 1)]}>
+        <DirectoryHeader eyebrow={deptName && geo.kind === "city" ? `${cat.group} · ${deptName}` : cat.group} title={title} photos={[categoryPhoto(cat.slug, 0)]}>
           <CategoryIntro categoryName={cat.name} categoryDescription={cat.description} isChildcare={cat.isChildcare} geo={ctx} total={result.total} />
         </DirectoryHeader>
         <SearchFilters filters={filters} categories={categories.map((c) => ({ slug: c.slug, name: c.name, group: c.group }))} action={path} lockedCategory lockedGeo signedIn={Boolean(actor)} />

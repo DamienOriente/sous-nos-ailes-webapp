@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { env } from "@/lib/env";
 import { listFeaturedProfessionals } from "@/modules/directory/application/public-showcase";
-import { demoPhoto } from "@/modules/media/demo-photos";
+import { showcasePhoto } from "@/modules/media/demo-photos";
 import { VERIFICATION_KIND_LABELS, VERIFICATION_KINDS } from "@/modules/professionals/domain/verification";
 
 export const metadata: Metadata = {
@@ -40,7 +40,7 @@ const ONBOARDING = [
 
 export default async function ProfessionalsLandingPage() {
   const featured = await listFeaturedProfessionals(2).catch(() => []);
-  const hero = demoPhoto("photo", 1);
+  const hero = showcasePhoto("professionalsHero");
   return (
     <>
       <Section className="bg-gradient-to-b from-sage-soft/40 to-background">

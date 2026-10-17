@@ -48,7 +48,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     { name: "Annuaire", path: "/annuaire" },
     { name: cat.name, path },
   ];
-  const photos = [categoryPhoto(cat.slug, 0), categoryPhoto(cat.slug, 1), categoryPhoto(cat.slug, 2)].filter((p, i, arr) => arr.findIndex((o) => o.id === p.id) === i);
+  // One exact, reserved photo per trade: never a photo that a listing on the page also shows.
+  const photos = [categoryPhoto(cat.slug, 0)];
   return (
     <Section className="py-8 sm:py-12">
       <Container size="wide" className="space-y-8">

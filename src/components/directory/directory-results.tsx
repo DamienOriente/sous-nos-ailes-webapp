@@ -72,7 +72,8 @@ export function DirectoryResults({
           </div>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="results-grid">
-            {result.items.map((p) => (
+            {/* A listing already shown in the sponsored block is not repeated below (same card, same photo twice). */}
+            {result.items.filter((p) => !result.sponsored.some((s) => s.id === p.id)).map((p) => (
               <li key={p.id}>
                 <ProfessionalCard professional={p} signedIn={signedIn} />
               </li>

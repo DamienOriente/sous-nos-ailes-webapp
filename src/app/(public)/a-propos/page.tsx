@@ -4,7 +4,7 @@ import { WingsScene } from "@/components/illustrations";
 import { Feather } from "@/components/marketing/illustrations";
 import { PhotoFrame } from "@/components/marketing/photo-frame";
 import { Container, Section } from "@/components/shared/section";
-import { demoPhoto } from "@/modules/media/demo-photos";
+import { showcasePhoto } from "@/modules/media/demo-photos";
 
 export const metadata: Metadata = {
   title: "À propos",
@@ -20,7 +20,7 @@ const COMMITMENTS = [
 ];
 
 export default function AboutPage() {
-  const photo = demoPhoto("family", 3);
+  const photo = showcasePhoto("about");
   return (
     <>
       <Section>

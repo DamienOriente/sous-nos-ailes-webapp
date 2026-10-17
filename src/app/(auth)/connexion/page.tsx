@@ -4,7 +4,7 @@ import { AuthCard, AuthLink, AuthPanel, AuthSplit } from "@/components/auth/auth
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { WingsScene } from "@/components/illustrations";
 import { getActor } from "@/lib/session";
-import { eventPhoto } from "@/modules/media/demo-photos";
+import { showcasePhoto } from "@/modules/media/demo-photos";
 import { safeNextPath } from "@/modules/identity/domain/auth";
 
 export const metadata: Metadata = { title: "Connexion" };
@@ -27,7 +27,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
     <AuthSplit
       panel={
         <AuthPanel
-          photo={eventPhoto("wedding", 6)}
+          photo={showcasePhoto("login")}
           scene={<WingsScene />}
           promise="Vos évènements, vos fiches et vos échanges au même endroit."
           benefits={["Retrouvez chaque évènement avec son équipe, son budget et ses invités", "Suivez les demandes reçues sur vos fiches professionnelles", "Une garde d'enfants coordonnée, du brief à la remise aux parents"]}

@@ -30,9 +30,9 @@ export function bindMediaToContent(content: PageContent, library: MediaLibrary):
         return portrait ? { ...b, props: { ...b.props, imageFileId: portrait.fileId, imageAlt: portrait.alt } } : b;
       }
       case "gallery": {
-        const kept = b.props.images.filter((img) => known.has(img.fileId));
+        const kept = b.props.images.filter((img) => known.has(img.fileId) && img.fileId !== portrait?.fileId);
         const have = new Set(kept.map((i) => i.fileId));
-        const added = library.gallery.filter((g) => !have.has(g.fileId)).map((g) => ({ fileId: g.fileId, alt: g.alt, ...(g.caption ? { caption: g.caption } : {}) }));
+        const added = library.gallery.filter((g) => !have.has(g.fileId) && g.fileId !== portrait?.fileId).map((g) => ({ fileId: g.fileId, alt: g.alt, ...(g.caption ? { caption: g.caption } : {}) }));
         const images = [...kept, ...added].slice(0, 24);
         return { ...b, props: { ...b.props, images } };
       }

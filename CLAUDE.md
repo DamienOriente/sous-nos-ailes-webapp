@@ -67,6 +67,7 @@ Règles :
 - `DemoBanner` (lit `@/lib/env` → `node:fs`) n'est pas exporté par le barrel `@/components/shared` : l'importer depuis `@/components/shared/demo-banner` (serveur seulement). Un composant client qui tirerait `env` via un barrel fait planter Turbopack.
 - Drizzle : dans une sous-requête `sql`…`` corrélée, référencer la table externe par `${table}.col`, pas `${table.col}` (rendu non qualifié dans un select mono-table, donc masqué par l'alias interne → compteur à 0).
 - Next 16 `next/image` : une URL locale avec query string (`/api/files/<id>/public?v=medium`) exige `images.localPatterns`, sinon 500 ; les images du pipeline fichiers sont rendues `unoptimized` (variantes WebP déjà produites côté serveur).
+- Photos de démo : une photo n'est attribuée qu'à une seule fiche, uniquement dans les thèmes de son métier, et les photos vitrine (`RESERVED_PHOTO_IDS`) ne sont jamais données aux fiches ; vérifier toute nouvelle photo à l'œil avant de la cataloguer (docs/assets.md).
 - Images Docker : `minio/minio` doit être pré-tiré (quay.io inaccessible depuis ce poste) ; `clamav/clamav-debian:stable` pour arm64.
 
 ## État d'avancement

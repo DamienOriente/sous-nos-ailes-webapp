@@ -13,6 +13,18 @@ async function main() {
     credentials: { accessKeyId: process.env.S3_ACCESS_KEY ?? "sna-minio", secretAccessKey: process.env.S3_SECRET_KEY ?? "sna-minio-local-only" },
   });
   const buckets = [process.env.S3_BUCKET ?? "sna-files", process.env.S3_QUARANTINE_BUCKET ?? "sna-quarantine"];
+  // The storage service may still be starting (CI): wait up to ~60 s.
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await client.send(new HeadBucketCommand({ Bucket: buckets[0]! }));
+      break;
+    } catch (err) {
+      const name = (err as { name?: string }).name ?? "";
+      if (name === "NotFound" || name === "NoSuchBucket" || (err as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 404) break;
+      if (attempt >= 30) throw err;
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
   for (const Bucket of buckets) {
     try {
       await client.send(new HeadBucketCommand({ Bucket }));

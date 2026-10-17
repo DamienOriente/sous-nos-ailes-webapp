@@ -71,6 +71,15 @@ jobs:
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 3s --health-retries 20
+      minio:
+        # Public, multi-arch image that starts the server by default (GitHub services cannot pass a command).
+        # quay.io/minio/minio and docker.io/minio/minio no longer allow anonymous pulls.
+        image: bitnamilegacy/minio:2025.7.23-debian-12-r5
+        env:
+          MINIO_ROOT_USER: sna-minio
+          MINIO_ROOT_PASSWORD: sna-minio-local-only
+          MINIO_DEFAULT_BUCKETS: sna-files,sna-quarantine
+        ports: ["9010:9000"]
       mailpit:
         image: axllent/mailpit:latest
         env:
@@ -101,16 +110,6 @@ jobs:
         run: |
           echo "BETTER_AUTH_SECRET=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
           echo "DATA_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
-      - name: Start MinIO (object storage)
-        # GitHub `services:` cannot pass a command; MinIO needs `server /data`.
-        run: |
-          docker run -d --name minio -p 9010:9000 \
-            -e MINIO_ROOT_USER=sna-minio -e MINIO_ROOT_PASSWORD=sna-minio-local-only \
-            quay.io/minio/minio:latest server /data
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:9010/minio/health/live >/dev/null; then echo "minio ready"; break; fi
-            sleep 2
-          done
       - uses: pnpm/action-setup@v4
         with:
           run_install: false

@@ -106,6 +106,9 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
     cookieCache: { enabled: true, maxAge: 5 * 60 },
+    // Redis (secondaryStorage) is only a cache: sessions survive a Redis restart or flush,
+    // and the admin/account pages can list them from the database.
+    storeSessionInDatabase: true,
   },
   rateLimit: {
     enabled: true,

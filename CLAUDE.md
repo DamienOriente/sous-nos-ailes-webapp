@@ -58,7 +58,7 @@ Règles :
 - pnpm 12 applique `minimumReleaseAge` (24 h) : un paquet publié le jour même est refusé → reculer d'une version, ne pas désactiver la politique.
 - shadcn CLI 4.22 échoue sur le même contrôle ; 4.21.5 fonctionne. Les composants importent `cn` depuis le paquet npm `cn` (ajouté par shadcn), notre `@/lib/utils` expose aussi `cn`.
 - `server-only` ne doit pas être importé par les modules utilisés par les scripts/workers (tsx) : réservé à `lib/session.ts` et aux fichiers Next.
-- better-auth avec `secondaryStorage` (Redis) : les sessions vivent dans Redis, la table `sessions` reste vide → lire via `auth.api.listSessions`, jamais la table.
+- better-auth avec `secondaryStorage` (Redis) : `storeSessionInDatabase: true` est activé, sinon les sessions ne vivent que dans Redis et un `FLUSHALL`/redémarrage déconnecte tout le monde (vécu le 2026-10-17). Lire les sessions via `auth.api.listSessions`, jamais la table directement.
 - Zod 4 : `z.email().trim()` valide avant de trimmer → utiliser `z.string().trim().pipe(z.email())`.
 - BullMQ 6 : un `jobId` ne doit pas contenir `:`.
 - better-auth rate-limit `/sign-in/email` 5/min/IP compte aussi les connexions réussies : derrière un NAT, à revoir avant prod (clé e-mail+IP ou max plus élevé).

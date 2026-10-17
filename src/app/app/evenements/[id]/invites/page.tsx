@@ -66,7 +66,7 @@ export default async function GuestsPage({ params, searchParams }: { params: Pro
               <GuestFormDialog
                 eventId={id}
                 groups={groupOptions}
-                onSubmit={(values) => createGuestAction(id, values)}
+                onSubmit={createGuestAction.bind(null, id)}
                 trigger={
                   <Button size="sm">
                     <Plus className="size-4" aria-hidden="true" /> Ajouter un invité

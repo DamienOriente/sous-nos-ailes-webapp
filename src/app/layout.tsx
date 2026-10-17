@@ -27,7 +27,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning data-scroll-behavior="smooth">
       {/* suppressHydrationWarning: browser extensions (ColorZilla, Grammarly…) add attributes to <body> before React hydrates. */}
       <body className="min-h-dvh bg-background text-foreground" suppressHydrationWarning>
         <ThemeProvider nonce={nonce}>

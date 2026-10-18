@@ -13,13 +13,18 @@ export function DemoSubmit({ value, name, role }: { value: string; name: string;
       name="account"
       value={value}
       disabled={pending}
-      aria-label={`Se connecter en tant que ${name}, ${role}`}
       className={cn(
         "flex w-full flex-col items-start rounded-lg border bg-background px-3 py-2 text-left transition-colors duration-150 hover:border-foreground/30 hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-wait disabled:opacity-60",
       )}
     >
-      <span className="text-sm font-medium">{mine ? "Connexion…" : name}</span>
-      <span className="text-xs text-muted-foreground">{role}</span>
+      <span className="text-sm font-medium">
+        <span className="sr-only">Se connecter en tant que </span>
+        {mine ? "Connexion…" : name}
+      </span>
+      <span className="text-xs text-muted-foreground">
+        <span className="sr-only">, </span>
+        {role}
+      </span>
     </button>
   );
 }

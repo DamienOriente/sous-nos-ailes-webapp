@@ -206,6 +206,7 @@ export const IMAGE_MAX_DIMENSION = 12_000;
 export const IMAGE_MAX_PIXELS = 50_000_000; // 50 Mpx: above this a decompressed bitmap exceeds 200 MB
 export const IMAGE_VARIANTS = [
   { name: "thumb", width: 320 },
+  { name: "card", width: 640 },
   { name: "medium", width: 1024 },
   { name: "large", width: 1920 },
 ] as const;
@@ -216,7 +217,7 @@ export const FILE_STATUS_LABELS: Record<FileStatus, string> = {
   quarantined: "En attente d'analyse",
   scanning: "Analyse en cours",
   clean: "Vérifié",
-  infected: "Infecté — supprimé",
+  infected: "Infecté, supprimé",
   rejected: "Refusé",
   deleted: "Supprimé",
 };

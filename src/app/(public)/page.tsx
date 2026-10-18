@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Categories, Cities, EventShowcaseSection, Faq, FeaturedProfessionals, FinalCta, Hero, HOME_FAQ, HowItWorks, Journeys, PricingSummary, Reviews, Tools, Trust, ValueProposition } from "@/components/marketing/home-sections";
+import { Categories, Cities, EventShowcaseSection, Faq, FeaturedProfessionals, FinalCta, Hero, HOME_FAQ, HowItWorks, Journeys, PricingSummary, Reviews, Trust } from "@/components/marketing/home-sections";
 import { env, isDemo } from "@/lib/env";
 import { getActiveCategories, getPublicCounters } from "@/modules/analytics/application/public-counters";
 import { getDemoEventShowcase, listFeaturedProfessionals, listPublishedReviews } from "@/modules/directory/application/public-showcase";
 
 export const metadata: Metadata = {
-  title: { absolute: "Sous Nos Ailes — Garde d'enfants et professionnels pour vos évènements" },
-  description: "Trouvez des professionnels vérifiés de la garde d'enfants, de l'animation et de l'évènementiel, puis coordonnez toute votre équipe depuis un seul espace. Gratuit pour commencer.",
+  title: { absolute: "Sous Nos Ailes : garde d'enfants et professionnels pour vos évènements" },
+  description: "Annuaire de professionnels de la garde d'enfants, de l'animation et de l'évènementiel, et un espace commun pour coordonner l'équipe : planning, invités, enfants, messages. Gratuit pour commencer.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "fr_FR",
     url: "/",
     siteName: "Sous Nos Ailes",
-    title: "Sous Nos Ailes — Garde d'enfants et professionnels pour vos évènements",
-    description: "Les enfants sont pris en charge. Vous pouvez profiter de la fête.",
+    title: "Sous Nos Ailes : garde d'enfants et professionnels pour vos évènements",
+    description: "Garde d'enfants et animation pour mariages, baptêmes et séminaires, et l'espace pour coordonner toute l'équipe.",
   },
 };
 
@@ -63,14 +63,12 @@ export default async function HomePage() {
       {/* JSON-LD is a data block, not executable: CSP does not apply to it. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()).replace(/</g, "\\u003c") }} />
       <Hero categories={categories} counters={counters} isDemo={isDemo} />
-      <ValueProposition />
       <HowItWorks />
       <Categories categories={categories} />
       <FeaturedProfessionals professionals={featured} />
       <EventShowcaseSection event={showcase} />
-      <Journeys />
+      <Journeys event={showcase} />
       <Trust />
-      <Tools />
       <Reviews reviews={reviews} />
       <Cities cities={counters.cities} isDemo={isDemo} />
       <PricingSummary />

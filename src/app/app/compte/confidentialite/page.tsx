@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Download } from "lucide-react";
 import { DeleteAccountButton, ResetConsentButton } from "@/components/privacy/account-privacy-controls";
 import { CookiePreferences } from "@/components/privacy/cookie-preferences";
 import { DsrForm } from "@/components/privacy/dsr-form";
@@ -19,8 +18,8 @@ import { DSR_KIND_LABELS, DSR_STATUS_LABELS, dueTone } from "@/modules/privacy/d
 export const metadata: Metadata = { title: "Confidentialité de mon compte" };
 
 const PURPOSE_LABELS: Record<string, string> = {
-  cookies_analytics: "Cookies — mesure d'audience",
-  cookies_marketing: "Cookies — marketing",
+  cookies_analytics: "Cookies : mesure d'audience",
+  cookies_marketing: "Cookies : marketing",
   marketing_emails: "E-mails marketing",
   terms: "Conditions d'utilisation",
   privacy_policy: "Politique de confidentialité",
@@ -38,7 +37,6 @@ export default async function AccountPrivacyPage() {
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Mon compte"
         title="Confidentialité et données personnelles"
         description="Exportez vos données, exercez vos droits, consultez vos consentements. Tout ce qui est ici vous concerne vous, et seulement vous."
       />
@@ -58,7 +56,6 @@ export default async function AccountPrivacyPage() {
         </details>
         <Button asChild className="mt-4 rounded-full">
           <a href="/app/compte/confidentialite/export" download>
-            <Download className="size-4" aria-hidden="true" />
             Télécharger (JSON)
           </a>
         </Button>

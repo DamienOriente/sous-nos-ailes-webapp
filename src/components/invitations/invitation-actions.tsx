@@ -1,7 +1,6 @@
 "use client";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Ban, BellRing, Link2, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -62,17 +61,17 @@ export function InvitationActions({
             })
           }
         >
-          <Link2 className="size-4" aria-hidden="true" /> Copier le lien RSVP
+           Copier le lien RSVP
         </Button>
       )}
       {status === "draft" && (
         <Button size="sm" disabled={pending || !hasEmail} title={hasEmail ? undefined : "Ajoutez un e-mail pour envoyer"} onClick={() => run(() => onSend(eventId, invitationId), "Invitation envoyée (e-mail en file d'attente).")}>
-          <Send className="size-4" aria-hidden="true" /> Envoyer par e-mail
+           Envoyer par e-mail
         </Button>
       )}
       {(status === "sent" || status === "viewed") && hasEmail && (
         <Button variant="outline" size="sm" disabled={pending || reminderCount >= 2} onClick={() => run(() => onRemind(eventId, invitationId), "Relance envoyée.")}>
-          <BellRing className="size-4" aria-hidden="true" /> Relancer ({reminderCount}/2)
+           Relancer ({reminderCount}/2)
         </Button>
       )}
       {!terminal && (
@@ -88,7 +87,7 @@ export function InvitationActions({
           }}
           trigger={
             <Button variant="destructive" size="sm">
-              <Ban className="size-4" aria-hidden="true" /> Révoquer
+               Révoquer
             </Button>
           }
         />
@@ -107,8 +106,8 @@ export function InvitationActions({
           return res;
         }}
         trigger={
-          <Button variant="ghost" size="sm">
-            <Trash2 className="size-4" aria-hidden="true" /> Supprimer
+          <Button variant="outline" size="sm">
+             Supprimer
           </Button>
         }
       />

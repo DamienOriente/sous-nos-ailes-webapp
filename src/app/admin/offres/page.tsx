@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
 import { ActionForm, ActionSubmit } from "@/components/admin/action-form";
 import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
 import { PageHeader } from "@/components/shared/page-header";
@@ -43,7 +42,7 @@ export default async function OffersPage() {
   const featureKeys = Object.keys(FEATURES) as FeatureKey[];
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Monétisation" title="Offres et abonnements" description="Prix, activation et matrice des fonctionnalités. Modifier un plan ne change jamais un abonnement en cours : les abonnés conservent leur prix jusqu'à résiliation." />
+      <PageHeader title="Offres et abonnements" description="Prix, activation et matrice des fonctionnalités. Modifier un plan ne change jamais un abonnement en cours : les abonnés conservent leur prix jusqu'à résiliation." />
       <TwoFactorBanner show={twoFactorWarning} />
       <OffersSubnav current="/admin/offres" />
       <div className="grid gap-6 lg:grid-cols-2">
@@ -60,8 +59,7 @@ export default async function OffersPage() {
               </div>
             </div>
             {p.activeSubscriptions > 0 && (
-              <p className="flex items-start gap-2 rounded-lg bg-warning/15 px-3 py-2 text-xs">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+              <p className="rounded-lg bg-warning/15 px-3 py-2 text-xs">
                 {p.activeSubscriptions} abonnement(s) actif(s) sur ce plan. Un changement de prix ne les modifie pas (nouveau prix Stripe créé au prochain paiement) ; la modification est journalisée.
               </p>
             )}

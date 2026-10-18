@@ -1,4 +1,3 @@
-import { CalendarClock, CreditCard, ShieldCheck } from "lucide-react";
 import { ActionForm, ActionSubmit, type FormAction } from "@/components/admin/action-form";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card } from "@/components/ui/card";
@@ -31,7 +30,6 @@ export function SubscriptionCard({
     <Card className="gap-5 p-6" data-testid="subscription-card">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">Votre offre</p>
           <h2 className="text-xl font-semibold" data-testid="current-plan">
             {effective.planName}
           </h2>
@@ -42,21 +40,15 @@ export function SubscriptionCard({
 
       {subscription && (
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
-          <div className="flex items-start gap-2">
-            <CalendarClock className="mt-0.5 size-4 text-muted-foreground" aria-hidden="true" />
-            <div>
-              <dt className="text-muted-foreground">{subscription.cancelAtPeriodEnd ? "Actif jusqu'au" : "Prochain renouvellement"}</dt>
-              <dd className="font-medium" data-testid="period-end">
-                {subscription.currentPeriodEnd ? formatDateFr(subscription.currentPeriodEnd) : "—"}
-              </dd>
-            </div>
+          <div>
+            <dt className="text-muted-foreground">{subscription.cancelAtPeriodEnd ? "Actif jusqu'au" : "Prochain renouvellement"}</dt>
+            <dd className="font-medium" data-testid="period-end">
+              {subscription.currentPeriodEnd ? formatDateFr(subscription.currentPeriodEnd) : "Non renseigné"}
+            </dd>
           </div>
-          <div className="flex items-start gap-2">
-            <CreditCard className="mt-0.5 size-4 text-muted-foreground" aria-hidden="true" />
-            <div>
-              <dt className="text-muted-foreground">Moyen de paiement</dt>
-              <dd className="font-medium">{provider === "stripe" ? "Géré par Stripe" : "Paiement simulé (démonstration)"}</dd>
-            </div>
+          <div>
+            <dt className="text-muted-foreground">Moyen de paiement</dt>
+            <dd className="font-medium">{provider === "stripe" ? "Géré par Stripe" : "Paiement simulé (démonstration)"}</dd>
           </div>
         </dl>
       )}
@@ -89,23 +81,21 @@ export function SubscriptionCard({
             </ActionForm>
           )}
           <ActionForm action={actions.portal} className="space-y-0">
-            <ActionSubmit variant="ghost" pendingLabel="Ouverture…">
+            <ActionSubmit variant="outline" pendingLabel="Ouverture…">
               {provider === "stripe" ? "Gérer le paiement et les factures" : "Gérer (portail simulé)"}
             </ActionSubmit>
           </ActionForm>
           {provider === "mock" && subscription.provider === "mock" && (
             <ActionForm action={actions.simulateEnd} successMessage="Fin de période simulée." className="space-y-0">
               <input type="hidden" name="subscriptionId" value={subscription.id} />
-              <ActionSubmit variant="ghost" size="sm" pendingLabel="Simulation…">
+              <ActionSubmit variant="outline" size="sm" pendingLabel="Simulation…">
                 Simuler la fin de période
               </ActionSubmit>
             </ActionForm>
           )}
         </div>
       )}
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <ShieldCheck className="size-3.5" aria-hidden="true" /> Paiement sécurisé par Stripe. Résiliation en ligne en 2 clics, effective à l'échéance.
-      </p>
+      <p className="text-xs text-muted-foreground">Paiement par Stripe. Résiliation en ligne, effective à l'échéance.</p>
     </Card>
   );
 }

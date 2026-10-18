@@ -1,4 +1,3 @@
-import { Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -29,16 +28,13 @@ Marie`;
 export const SERVICE_EXAMPLE = {
   name: "Soirée complète avec coin sieste",
   description: "De l'apéritif à 2 h du matin : dîner des enfants, film, histoires et coucher dans des lits parapluie fournis.",
-  price: "720 € par évènement · 8 h · 0–12 ans · jusqu'à 15 enfants",
+  price: "720 € par évènement, 8 h, 0 à 12 ans, jusqu'à 15 enfants",
 };
 
 export function ExampleFrame({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <aside className={cn("rounded-2xl border border-gold/50 bg-gold/10 p-5", className)} aria-label={title}>
-      <p className="flex items-center gap-2 text-sm font-semibold">
-        <Lightbulb className="size-4 text-gold" aria-hidden="true" />
-        {title}
-      </p>
+    <aside className={cn("rounded-2xl border bg-muted/40 p-5", className)} aria-label={title}>
+      <p className="text-sm font-semibold">{title}</p>
       <div className="mt-3 space-y-3 text-sm">{children}</div>
     </aside>
   );
@@ -52,7 +48,7 @@ export function DescriptionExample({ className }: { className?: string }) {
           <p className="text-xs font-medium text-muted-foreground">Avant</p>
           <p className="mt-1 text-muted-foreground">« {DESCRIPTION_EXAMPLE.bad} »</p>
         </div>
-        <div className="rounded-xl bg-background p-4 ring-1 ring-primary/30">
+        <div className="rounded-xl border bg-background p-4">
           <p className="text-xs font-medium text-primary">Après</p>
           <p className="mt-1">« {DESCRIPTION_EXAMPLE.good} »</p>
         </div>

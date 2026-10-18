@@ -1,7 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, HelpCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,18 +39,17 @@ export function RsvpForm({ token, guests, previous, onSubmit }: { token: string;
 
   if (done) {
     return (
-      <div role="status" className="rounded-2xl border border-success/40 bg-success/10 p-6 text-center">
-        <Check className="mx-auto mb-2 size-8 text-success" aria-hidden="true" />
+      <div role="status" className="rounded-2xl bg-success/10 p-6 text-center">
         <p className="font-medium">Merci, votre réponse a bien été enregistrée.</p>
         <p className="mt-1 text-sm text-muted-foreground">Vous pouvez revenir sur ce lien pour la modifier.</p>
       </div>
     );
   }
 
-  const choices: Array<{ value: "accepted" | "declined" | "maybe"; label: string; icon: typeof Check; tone: string }> = [
-    { value: "accepted", label: "Je serai présent(e)", icon: Check, tone: "border-success bg-success/10 text-success" },
-    { value: "maybe", label: "Peut-être", icon: HelpCircle, tone: "border-warning bg-warning/15 text-warning-foreground" },
-    { value: "declined", label: "Je ne pourrai pas venir", icon: X, tone: "border-destructive bg-destructive/10 text-destructive" },
+  const choices: Array<{ value: "accepted" | "declined" | "maybe"; label: string; tone: string }> = [
+    { value: "accepted", label: "Je serai présent(e)", tone: "border-success bg-success/10 text-success" },
+    { value: "maybe", label: "Peut-être", tone: "border-warning bg-warning/15 text-warning-foreground" },
+    { value: "declined", label: "Je ne pourrai pas venir", tone: "border-destructive bg-destructive/10 text-destructive" },
   ];
 
   return (
@@ -68,7 +66,7 @@ export function RsvpForm({ token, guests, previous, onSubmit }: { token: string;
           {choices.map((c) => (
             <label key={c.value} className={cn("flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 p-3 text-sm font-medium transition-colors", status === c.value ? c.tone : "border-border hover:bg-muted")}>
               <input type="radio" name="status" value={c.value} className="sr-only" checked={status === c.value} onChange={() => setStatus(c.value)} />
-              <c.icon className="size-4" aria-hidden="true" /> {c.label}
+              {c.label}
             </label>
           ))}
         </div>
@@ -92,7 +90,7 @@ export function RsvpForm({ token, guests, previous, onSubmit }: { token: string;
                       role="radio"
                       aria-checked={perGuest[g.id] === v}
                       onClick={() => setPerGuest((p) => ({ ...p, [g.id]: v }))}
-                      className={cn("rounded-full border px-3 py-1 text-xs", perGuest[g.id] === v ? (v === "accepted" ? "border-success bg-success/15 text-success" : "border-destructive bg-destructive/10 text-destructive") : "hover:bg-muted")}
+                      className={cn("rounded-md border px-3 py-1 text-xs", perGuest[g.id] === v ? (v === "accepted" ? "border-success bg-success/15 text-success" : "border-destructive bg-destructive/10 text-destructive") : "hover:bg-muted")}
                     >
                       {v === "accepted" ? "Présent(e)" : "Absent(e)"}
                     </button>

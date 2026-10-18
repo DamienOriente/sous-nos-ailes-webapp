@@ -34,7 +34,7 @@ export default async function TemplatePreviewPage({ params, searchParams }: { pa
       <div className="border-b bg-background">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="outline" size="sm">
               <Link href="/templates">
                 <ArrowLeft aria-hidden="true" />
                 Tous les templates
@@ -42,10 +42,10 @@ export default async function TemplatePreviewPage({ params, searchParams }: { pa
             </Button>
             <div>
               <p className="font-semibold">
-                {template.name} <span className="text-xs font-normal text-muted-foreground">· {template.universe} · {template.isFree ? "inclus dans l'offre gratuite" : "Premium"}</span>
+                {template.name} <span className="text-xs font-normal text-muted-foreground">({template.universe}, {template.isFree ? "inclus dans l'offre gratuite" : "Premium"})</span>
               </p>
               <p className="text-xs text-muted-foreground">
-                {FONT_PAIRINGS[template.fontPairing].name} · contenu fictif de démonstration
+                {FONT_PAIRINGS[template.fontPairing].name}, contenu fictif de démonstration
               </p>
             </div>
           </div>

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Eye, Inbox, Reply, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -27,10 +26,10 @@ export default async function StatsPage({ params }: { params: Promise<{ id: stri
         </p>
       )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Vues de la page publique" value={stats.pageViews} icon={Eye} hint="Depuis la publication" />
-        <StatCard label="Demandes reçues" value={stats.inquiriesTotal} icon={Inbox} hint={`${stats.last30DaysInquiries} sur 30 jours`} />
-        <StatCard label="Taux de réponse" value={stats.responseRate === null ? "—" : `${stats.responseRate} %`} icon={Reply} hint="Demandes ayant reçu une action" tone={stats.responseRate !== null && stats.responseRate < 50 ? "warning" : "default"} />
-        <StatCard label="Conversion" value={stats.inquiriesTotal ? `${Math.round((((stats.inquiriesByStatus.confirmed ?? 0) + (stats.inquiriesByStatus.accepted ?? 0)) / stats.inquiriesTotal) * 100)} %` : "—"} icon={TrendingUp} hint="Demandes acceptées ou confirmées" />
+        <StatCard label="Vues de la page publique" value={stats.pageViews} hint="Depuis la publication" />
+        <StatCard label="Demandes reçues" value={stats.inquiriesTotal} hint={`${stats.last30DaysInquiries} sur 30 jours`} />
+        <StatCard label="Taux de réponse" value={stats.responseRate === null ? "n/d" : `${stats.responseRate} %`} hint="Demandes ayant reçu une action" tone={stats.responseRate !== null && stats.responseRate < 50 ? "warning" : "default"} />
+        <StatCard label="Conversion" value={stats.inquiriesTotal ? `${Math.round((((stats.inquiriesByStatus.confirmed ?? 0) + (stats.inquiriesByStatus.accepted ?? 0)) / stats.inquiriesTotal) * 100)} %` : "n/d"} hint="Demandes acceptées ou confirmées" />
       </div>
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <Card>
@@ -55,7 +54,7 @@ export default async function StatsPage({ params }: { params: Promise<{ id: stri
             <CardDescription>Temps médian avant votre première action sur une demande.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="font-heading text-4xl font-semibold tabular-nums">{timeline.medianResponseHours === null ? "—" : timeline.medianResponseHours < 1 ? "< 1 h" : timeline.medianResponseHours < 48 ? `${Math.round(timeline.medianResponseHours)} h` : `${Math.round(timeline.medianResponseHours / 24)} j`}</p>
+            <p className="font-heading text-4xl font-semibold tabular-nums">{timeline.medianResponseHours === null ? "n/d" : timeline.medianResponseHours < 1 ? "< 1 h" : timeline.medianResponseHours < 48 ? `${Math.round(timeline.medianResponseHours)} h` : `${Math.round(timeline.medianResponseHours / 24)} j`}</p>
             <p className="text-sm text-muted-foreground text-pretty">{timeline.medianResponseHours === null ? "Mesuré dès votre première réponse." : timeline.medianResponseHours <= 24 ? "Sous 24 h : c'est ce qui compte le plus dans le classement de l'annuaire." : "Au-delà de 24 h, une première réponse rapide, même pour demander des précisions, améliore votre classement."}</p>
             <p className="text-xs text-muted-foreground">Vues de la page : compteur cumulé depuis la publication ({stats.pageViews}) ; l'historique des vues n'est pas conservé.</p>
           </CardContent>

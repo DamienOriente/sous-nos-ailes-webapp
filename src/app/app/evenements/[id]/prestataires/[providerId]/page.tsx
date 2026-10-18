@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, ExternalLink, FileText } from "lucide-react";
+import { ChevronLeft, ExternalLink } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { eventBudgetLines } from "@/db/schema";
@@ -50,9 +50,9 @@ export default async function ProviderDetailPage({ params, searchParams }: { par
       {ajout === "1" && <FormMessage success="Professionnel ajouté à votre présélection. Il n'a pas encore été contacté : envoyez-lui une demande ou une invitation." />}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <p className="text-xs font-semibold tracking-wide text-primary uppercase">{provider.categoryName ?? "Catégorie non précisée"}</p>
           <h1 className="font-heading text-2xl font-semibold">{provider.displayName}</h1>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span>{provider.categoryName ?? "Catégorie non précisée"}</span>
             <StatusBadge tone={PROVIDER_STATUS_TONES[provider.status]}>{PROVIDER_STATUS_LABELS[provider.status]}</StatusBadge>
             <span>{provider.isExternal ? "Prestataire externe (fiche privée, jamais publiée)" : "Professionnel de la plateforme"}</span>
             {provider.proSlug && (
@@ -133,7 +133,7 @@ export default async function ProviderDetailPage({ params, searchParams }: { par
               ) : provider.pendingInvitationId ? (
                 <>
                   <p className="text-muted-foreground">
-                    Invitation envoyée{provider.pendingInvitationEmail ? ` à ${provider.pendingInvitationEmail}` : ""}, valable jusqu'au {provider.pendingInvitationExpiresAt ? formatDateFr(provider.pendingInvitationExpiresAt) : "—"}.
+                    Invitation envoyée{provider.pendingInvitationEmail ? ` à ${provider.pendingInvitationEmail}` : ""}, valable jusqu'au {provider.pendingInvitationExpiresAt ? formatDateFr(provider.pendingInvitationExpiresAt) : "n/d"}.
                   </p>
                   {canInvite && <InviteDialog eventId={id} eventProfessionalId={providerId} defaultEmail={provider.externalEmail} defaultName={provider.isExternal ? provider.displayName : null} categorySlug={provider.categorySlug} categories={categories} action={inviteProviderAction} triggerLabel="Renvoyer une invitation" />}
                 </>
@@ -153,20 +153,20 @@ export default async function ProviderDetailPage({ params, searchParams }: { par
               <CardContent className="space-y-2 text-sm">
                 <p className="flex justify-between">
                   <span className="text-muted-foreground">Devis</span>
-                  <span className="tabular-nums">{provider.quoteCents !== null ? formatEuros(provider.quoteCents) : "—"}</span>
+                  <span className="tabular-nums">{provider.quoteCents !== null ? formatEuros(provider.quoteCents) : "n/d"}</span>
                 </p>
                 <p className="flex justify-between">
                   <span className="text-muted-foreground">Ligne budget</span>
-                  <span>{linkedLine?.label ?? "—"}</span>
+                  <span>{linkedLine?.label ?? "Aucune"}</span>
                 </p>
                 {provider.quoteFileId && (
                   <a href={privateFileHref(provider.quoteFileId)} className="inline-flex items-center gap-1.5 text-primary hover:underline" target="_blank" rel="noreferrer">
-                    <FileText className="size-4" aria-hidden="true" /> Devis (fichier)
+                     Devis (fichier)
                   </a>
                 )}
                 {provider.contractFileId && (
                   <a href={privateFileHref(provider.contractFileId)} className="inline-flex items-center gap-1.5 text-primary hover:underline" target="_blank" rel="noreferrer">
-                    <FileText className="size-4" aria-hidden="true" /> Contrat (fichier)
+                     Contrat (fichier)
                   </a>
                 )}
                 <div className="pt-2">

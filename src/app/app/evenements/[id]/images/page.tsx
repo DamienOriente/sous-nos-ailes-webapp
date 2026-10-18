@@ -1,4 +1,3 @@
-import { Camera, MapPin, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -14,7 +13,7 @@ import { formatDateTime } from "@/modules/calendar/domain/datetime";
 import { getImagesOverview } from "@/modules/trade-tools/application/images-service";
 import { addShotAction, deleteShotAction, saveImageBriefAction, toggleConsentAction } from "./actions";
 
-export const metadata = { title: "Photo / vidéo — Sous Nos Ailes" };
+export const metadata = { title: "Photo / vidéo" };
 
 export default async function ImagesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = await params;
@@ -26,7 +25,7 @@ export default async function ImagesPage({ params }: { params: Promise<{ id: str
   const { brief, moments, locations } = data;
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Outil métier" title="Photo et vidéo" description="Brief, moments à ne pas manquer, lieux de prise de vue, coordonnées utiles et suivi des autorisations de diffusion. Aucune donnée tierce au-delà de ce que l'organisateur saisit." />
+      <PageHeader title="Photo et vidéo" description="Brief, moments à ne pas manquer, lieux de prise de vue, coordonnées utiles et suivi des autorisations de diffusion. Aucune donnée tierce au-delà de ce que l'organisateur saisit." />
       <div className="grid gap-6 lg:grid-cols-2">
         <ToolSection title="Brief">
           <ActionForm action={saveImageBriefAction.bind(null, eventId)} successMessage="Brief enregistré.">
@@ -36,7 +35,7 @@ export default async function ImagesPage({ params }: { params: Promise<{ id: str
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="usefulContacts">Coordonnées utiles le jour J</Label>
-              <Textarea id="usefulContacts" name="usefulContacts" rows={3} defaultValue={brief?.usefulContacts ?? ""} placeholder="Témoin référent : Prénom — 06…" />
+              <Textarea id="usefulContacts" name="usefulContacts" rows={3} defaultValue={brief?.usefulContacts ?? ""} placeholder="Témoin référent : Prénom, 06…" />
             </div>
           </ActionForm>
         </ToolSection>
@@ -49,12 +48,11 @@ export default async function ImagesPage({ params }: { params: Promise<{ id: str
                 {moments.map((m) => (
                   <li key={m.id} className="flex items-start justify-between gap-3 py-2">
                     <div className="flex items-start gap-3">
-                      <Camera className="mt-1 size-4 text-primary" aria-hidden="true" />
                       <div>
                         <div className="font-medium">{m.title}</div>
                         <div className="text-sm text-muted-foreground">{[m.startsAt ? formatDateTime(m.startsAt, timezone) : null, m.location, m.notes].filter(Boolean).join(" · ")}</div>
-                        <ActionButton action={toggleConsentAction.bind(null, eventId, m.id, !m.releaseConsentCollected)} variant="ghost" size="xs" className={m.releaseConsentCollected ? "text-success" : "text-muted-foreground"}>
-                          {m.releaseConsentCollected ? "✓ Autorisation de diffusion recueillie" : "Autorisation de diffusion : à recueillir"}
+                        <ActionButton action={toggleConsentAction.bind(null, eventId, m.id, !m.releaseConsentCollected)} variant="outline" size="xs">
+                          {m.releaseConsentCollected ? "Autorisation de diffusion recueillie" : "Autorisation de diffusion : à recueillir"}
                         </ActionButton>
                       </div>
                     </div>
@@ -72,7 +70,6 @@ export default async function ImagesPage({ params }: { params: Promise<{ id: str
                 {locations.map((l) => (
                   <li key={l.id} className="flex items-start justify-between gap-3 py-2">
                     <div className="flex items-start gap-3">
-                      <MapPin className="mt-1 size-4 text-primary" aria-hidden="true" />
                       <div>
                         <div className="font-medium">{l.title}</div>
                         {l.notes && <div className="text-sm text-muted-foreground">{l.notes}</div>}
@@ -92,7 +89,7 @@ export default async function ImagesPage({ params }: { params: Promise<{ id: str
 
 function ShotDialog({ kind, eventId }: { kind: "moment" | "location"; eventId: string }) {
   return (
-    <ActionDialog trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter</Button>} title={kind === "moment" ? "Moment à capturer" : "Lieu de prise de vue"} action={addShotAction.bind(null, eventId)} successMessage="Ajouté.">
+    <ActionDialog trigger={<Button size="sm">Ajouter</Button>} title={kind === "moment" ? "Moment à capturer" : "Lieu de prise de vue"} action={addShotAction.bind(null, eventId)} successMessage="Ajouté.">
       <input type="hidden" name="kind" value={kind} />
       <div className="space-y-1.5">
         <Label htmlFor={`sh-title-${kind}`}>{kind === "moment" ? "Moment *" : "Lieu *"}</Label>

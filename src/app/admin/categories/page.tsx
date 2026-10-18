@@ -14,7 +14,7 @@ export default async function CategoriesPage() {
   const rows = await listCategoriesAdmin(actor);
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Catalogue" title="Catégories et métiers" description="Une catégorie utilisée par des fiches ne se supprime pas : désactivez-la pour la masquer." actions={<Button asChild><Link href="/admin/categories/nouvelle">Nouvelle catégorie</Link></Button>} />
+      <PageHeader title="Catégories et métiers" description="Une catégorie utilisée par des fiches ne se supprime pas : désactivez-la pour la masquer." actions={<Button asChild><Link href="/admin/categories/nouvelle">Nouvelle catégorie</Link></Button>} />
       <TwoFactorBanner show={twoFactorWarning} />
       <AdminTable
         rows={rows}

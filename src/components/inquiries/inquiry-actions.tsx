@@ -119,7 +119,7 @@ export function InquiryActions({ professionalId, inquiryId, status, replyAction,
             <div className="space-y-2">
               <Label>Devis PDF (facultatif)</Label>
               <FileUpload scope="professional" scopeId={professionalId} purpose="quote" accept="application/pdf" onUploaded={setQuoteFile} label={quoteFile ? `Remplacer ${quoteFile.originalName}` : "Joindre le devis"} />
-              {quoteFile && <p className="text-xs text-muted-foreground">{quoteFile.originalName} — analysé avant mise à disposition.</p>}
+              {quoteFile && <p className="text-xs text-muted-foreground">{quoteFile.originalName} : analysé avant mise à disposition.</p>}
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="quote-note">Détail du devis</Label>

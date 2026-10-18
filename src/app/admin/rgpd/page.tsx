@@ -6,7 +6,6 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck } from "lucide-react";
 import { formatDateFr } from "@/lib/utils";
 import { requireActor } from "@/lib/session";
 import { canGlobal } from "@/modules/authorization";
@@ -33,7 +32,6 @@ export default async function AdminRgpdPage({ searchParams }: { searchParams: Pr
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Administration"
         title="RGPD et demandes"
         description="Demandes d'exercice de droits (accès, rectification, effacement…) à traiter sous un mois. Chaque changement de statut est journalisé."
         actions={
@@ -65,7 +63,7 @@ export default async function AdminRgpdPage({ searchParams }: { searchParams: Pr
         ))}
       </nav>
       {rows.length === 0 ? (
-        <EmptyState icon={ShieldCheck} title="Aucune demande dans cette vue" description="Les demandes déposées depuis l'espace des utilisateurs ou créées par la politique de rétention apparaissent ici." />
+        <EmptyState title="Aucune demande dans cette vue" description="Les demandes déposées depuis l'espace des utilisateurs ou créées par la politique de rétention apparaissent ici." />
       ) : (
         <div className="overflow-hidden rounded-2xl border bg-card">
           <Table>

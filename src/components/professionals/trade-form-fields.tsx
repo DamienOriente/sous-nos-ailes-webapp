@@ -85,7 +85,7 @@ function TradeFieldInput({ field: f, value, name }: { field: TradeField; value: 
             <Textarea id={id} name={name} defaultValue={typeof value === "string" ? value : ""} placeholder={f.placeholder} maxLength={f.maxLength} rows={3} aria-describedby={describedBy} />
           ) : f.type === "select" ? (
             <select id={id} name={name} defaultValue={typeof value === "string" ? value : ""} className="h-9 w-full rounded-lg border bg-background px-3 text-sm" aria-describedby={describedBy}>
-              <option value="">— Choisir —</option>
+              <option value="">Choisir</option>
               {f.options.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}

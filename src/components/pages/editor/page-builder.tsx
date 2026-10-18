@@ -167,7 +167,7 @@ export function PageBuilder({ professionalId, initial, templates }: { profession
         </div>
         <div className="flex items-center gap-2">
           {initial.published && (
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="outline" size="sm">
               <Link href={`/pro/${initial.slug}`} target="_blank" rel="noopener">
                 <ExternalLink aria-hidden="true" /> Page publiée
               </Link>

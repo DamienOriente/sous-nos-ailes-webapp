@@ -1,11 +1,9 @@
-import { MailWarning } from "lucide-react";
 import { ResendVerification } from "@/components/auth/resend-verification";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function EmailVerificationBanner({ email }: { email: string }) {
   return (
     <Alert className="border-warning/50 bg-warning/15 text-warning-foreground">
-      <MailWarning aria-hidden="true" />
       <AlertTitle>Confirmez votre adresse e-mail</AlertTitle>
       <AlertDescription className="gap-3 text-warning-foreground/90">
         <p>

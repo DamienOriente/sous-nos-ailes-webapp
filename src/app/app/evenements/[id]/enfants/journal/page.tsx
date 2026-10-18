@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ScrollText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
@@ -10,7 +9,7 @@ import { formatDateTime } from "@/modules/calendar/domain/datetime";
 import { listAccessLogs } from "@/modules/childcare/application/children-service";
 import { guardPage } from "@/components/childcare/page-guard";
 
-export const metadata = { title: "Journal d'accès — Sous Nos Ailes" };
+export const metadata = { title: "Journal d'accès" };
 
 const ACTION_LABELS: Record<string, string> = { view_sensitive: "Consultation santé", edit_sensitive: "Saisie santé", withdraw_consent: "Retrait du consentement", export: "Export" };
 
@@ -23,14 +22,10 @@ export default async function AccessLogPage({ params }: { params: Promise<{ id: 
   });
   return (
     <div className="space-y-6">
-      <Button asChild variant="ghost" size="sm">
-        <Link href={`/app/evenements/${eventId}/enfants`}>
-          <ArrowLeft className="size-4" aria-hidden="true" /> Enfants
-        </Link>
-      </Button>
-      <PageHeader eyebrow="Garde d'enfants" title="Journal d'accès aux informations de santé" description="Qui a consulté ou modifié quoi, quand et pourquoi. Le contenu des informations n'apparaît jamais ici." />
+      <Link href={`/app/evenements/${eventId}/enfants`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Enfants</Link>
+      <PageHeader title="Journal d'accès aux informations de santé" description="Qui a consulté ou modifié quoi, quand et pourquoi. Le contenu des informations n'apparaît jamais ici." />
       {logs.length === 0 ? (
-        <EmptyState icon={ScrollText} title="Aucun accès enregistré" description="Chaque consultation ou saisie d'information de santé sera listée ici." />
+        <EmptyState title="Aucun accès enregistré" description="Chaque consultation ou saisie d'information de santé sera listée ici." />
       ) : (
         <div className="overflow-x-auto rounded-2xl border bg-card">
           <Table>
@@ -54,7 +49,7 @@ export default async function AccessLogPage({ params }: { params: Promise<{ id: 
                     </Link>
                   </TableCell>
                   <TableCell>{ACTION_LABELS[l.action] ?? l.action}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{l.purpose ?? "—"}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{l.purpose ?? "Non renseigné"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

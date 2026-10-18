@@ -2,7 +2,7 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Table gourmande — caterers, pastry. The page reads like a restaurant card:
+ * Table gourmande: caterers, pastry. The page reads like a restaurant card:
  * centred hero, a double rule, services with dotted leaders, a photo ribbon,
  * all set in Fraunces for body and titles.
  */

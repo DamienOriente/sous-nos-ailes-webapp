@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AlertTriangle, LogIn } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import type { ActionResult } from "@/lib/errors";
@@ -60,18 +59,18 @@ export function RosterTable({
                   <div className="text-xs text-muted-foreground">{c.guardianPhone}</div>
                 </TableCell>
                 <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">
-                  {c.expectedArrivalAt ? formatTime(c.expectedArrivalAt, timezone) : "—"} → {c.expectedDepartureAt ? formatTime(c.expectedDepartureAt, timezone) : "—"}
+                  {c.expectedArrivalAt ? formatTime(c.expectedArrivalAt, timezone) : "n/d"} à {c.expectedDepartureAt ? formatTime(c.expectedDepartureAt, timezone) : "n/d"}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {c.hasAllergies && (
                       <StatusBadge tone="warning" dot={false}>
-                        <AlertTriangle className="size-3" aria-hidden="true" /> Allergies
+                         Allergies
                       </StatusBadge>
                     )}
                     {c.hasHealthNotes && <StatusBadge tone="warning" dot={false}>Santé</StatusBadge>}
                     {c.dietaryPreference && <StatusBadge tone="neutral" dot={false}>{c.dietaryPreference}</StatusBadge>}
-                    {!c.hasAllergies && !c.hasHealthNotes && !c.dietaryPreference && <span className="text-xs text-muted-foreground">—</span>}
+                    {!c.hasAllergies && !c.hasHealthNotes && !c.dietaryPreference && <span className="text-xs text-muted-foreground">Rien à signaler</span>}
                   </div>
                 </TableCell>
                 <TableCell className="hidden text-sm md:table-cell">{c.assignees.length ? c.assignees.map((a) => a.name).join(", ") : <span className="text-xs text-muted-foreground">Non affecté</span>}</TableCell>
@@ -82,7 +81,7 @@ export function RosterTable({
                   <TableCell className="text-right">
                     {c.presence === "expected" && onCheckIn && (
                       <ActionButton action={onCheckIn.bind(null, c.id)} successMessage={`${c.firstName} enregistré·e présent·e.`}>
-                        <LogIn className="size-4" aria-hidden="true" /> Arrivée
+                         Arrivée
                       </ActionButton>
                     )}
                   </TableCell>

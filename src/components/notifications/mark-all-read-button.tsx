@@ -1,5 +1,4 @@
 "use client";
-import { CheckCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -25,7 +24,6 @@ export function MarkAllReadButton({ action, disabled }: { action: () => Promise<
         })
       }
     >
-      <CheckCheck className="size-4" aria-hidden="true" />
       Tout marquer comme lu
     </Button>
   );

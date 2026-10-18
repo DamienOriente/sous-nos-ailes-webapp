@@ -1,7 +1,6 @@
 "use client";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, FileUp, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -99,7 +98,6 @@ export function CsvImportWizard(props: Props) {
     <div className="space-y-6">
       <div className="rounded-2xl border border-dashed bg-card/60 p-6">
         <Label htmlFor="csv-file" className="flex cursor-pointer flex-col items-center gap-2 text-center">
-          <FileUp className="size-8 text-primary" aria-hidden="true" />
           <span className="font-medium">{fileName || "Choisir un fichier CSV"}</span>
           <span className="text-xs text-muted-foreground">Séparateur « ; » ou « , », en-têtes en français ou en anglais, {MAX_ROWS} lignes maximum.</span>
         </Label>
@@ -114,7 +112,7 @@ export function CsvImportWizard(props: Props) {
             {inFileDuplicates > 0 && <span className="text-warning-foreground">{inFileDuplicates} doublon(s) dans le fichier</span>}
             {preview.truncated && (
               <span className="flex items-center gap-1 text-destructive">
-                <AlertTriangle className="size-4" aria-hidden="true" /> {preview.totalRows} lignes détectées : seules les {MAX_ROWS} premières seront importées.
+                 {preview.totalRows} lignes détectées : seules les {MAX_ROWS} premières seront importées.
               </span>
             )}
           </div>
@@ -148,9 +146,9 @@ export function CsvImportWizard(props: Props) {
                   <TableRow key={d.line}>
                     <TableCell className="text-muted-foreground">{d.line}</TableCell>
                     <TableCell>{`${d.firstName} ${d.lastName}`.trim() || ("company" in d ? d.company : "")}</TableCell>
-                    <TableCell>{d.email ?? "—"}</TableCell>
-                    <TableCell>{d.phone ?? "—"}</TableCell>
-                    <TableCell>{"category" in d ? (d.category ?? "—") : d.groupName ?? "—"}</TableCell>
+                    <TableCell>{d.email ?? "Non renseigné"}</TableCell>
+                    <TableCell>{d.phone ?? "Non renseigné"}</TableCell>
+                    <TableCell>{"category" in d ? (d.category ?? "Non renseignée") : d.groupName ?? "Non renseigné"}</TableCell>
                     {"isChild" in d && <TableCell>{d.isChild ? `oui${d.ageYears !== null ? ` (${d.ageYears} ans)` : ""}` : "non"}</TableCell>}
                   </TableRow>
                 ))}
@@ -184,7 +182,6 @@ export function CsvImportWizard(props: Props) {
             </div>
           )}
           <Button onClick={submit} disabled={pending || count === 0}>
-            <Upload className="size-4" aria-hidden="true" />
             {pending ? "Import en cours…" : `Importer ${count} ligne(s)`}
           </Button>
         </div>

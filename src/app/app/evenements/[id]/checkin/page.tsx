@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { CheckCircle2, QrCode, ShieldAlert, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -11,7 +10,7 @@ import { requireEventPermission } from "@/modules/authorization";
 import { CHECKIN_RESULT_LABELS } from "@/modules/invitations/domain/tokens";
 import { getCheckinStats, listCheckins } from "@/modules/invitations/application/invitation-service";
 
-export const metadata = { title: "Contrôle d'accès — Sous Nos Ailes" };
+export const metadata = { title: "Contrôle d'accès" };
 export const dynamic = "force-dynamic";
 
 export default async function CheckinPage({ params }: { params: Promise<{ id: string }> }) {
@@ -26,12 +25,12 @@ export default async function CheckinPage({ params }: { params: Promise<{ id: st
   const [stats, history] = await Promise.all([getCheckinStats(actor, id), listCheckins(actor, id, 50)]);
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Jour J" title="Contrôle d'accès" description="Validez les QR codes des invitations à l'entrée. Un code accepté une fois est ensuite signalé comme déjà utilisé. L'identité n'est jamais déduite du code : vérifiez-la si nécessaire." />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Entrées validées" value={stats.accepted} icon={CheckCircle2} tone="success" />
-        <StatCard label="Personnes présentes (est.)" value={stats.presentPersons} icon={Users} />
-        <StatCard label="Doublons" value={stats.duplicate} icon={ShieldAlert} tone="warning" />
-        <StatCard label="QR émis" value={stats.invitationsWithQr} icon={QrCode} hint={`${stats.rejected} refus`} />
+      <PageHeader title="Contrôle d'accès" description="Validez les QR codes des invitations à l'entrée. Un code accepté une fois est ensuite signalé comme déjà utilisé. L'identité n'est jamais déduite du code : vérifiez-la si nécessaire." />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Entrées validées" value={stats.accepted} />
+        <StatCard label="Personnes présentes (est.)" value={stats.presentPersons} />
+        <StatCard label="Doublons" value={stats.duplicate} />
+        <StatCard label="QR émis" value={stats.invitationsWithQr} hint={`${stats.rejected} refus`} />
       </div>
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <CheckinConsole eventId={id} />
@@ -49,7 +48,7 @@ export default async function CheckinPage({ params }: { params: Promise<{ id: st
                     <div className="min-w-0">
                       <p className="truncate font-medium">{h.recipientName ?? "Code inconnu"}</p>
                       <p className="text-xs text-muted-foreground">
-                        {CHECKIN_RESULT_LABELS[h.result].split(" — ")[0]}
+                        {CHECKIN_RESULT_LABELS[h.result].split(" : ")[0]}
                         {h.scannedByName ? ` · ${h.scannedByName}` : ""}
                       </p>
                     </div>

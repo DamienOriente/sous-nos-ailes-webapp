@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
-import { Inbox } from "lucide-react";
 import { db } from "@/db/client";
 import { inquiries, professionals } from "@/db/schema";
 import { EmptyState, PageHeader, StatusBadge } from "@/components/shared";
@@ -28,7 +27,7 @@ export default async function EventInquiriesPage({ params }: { params: Promise<{
     <div className="space-y-6">
       <PageHeader title="Demandes commerciales" description="Les demandes de contact, de disponibilité ou de devis envoyées aux professionnels pour cet évènement." />
       {rows.length === 0 ? (
-        <EmptyState icon={Inbox} title="Aucune demande" description="Depuis une fiche de l'annuaire, envoyez une demande en précisant cet évènement : elle apparaîtra ici." />
+        <EmptyState title="Aucune demande" description="Depuis une fiche de l'annuaire, envoyez une demande en précisant cet évènement : elle apparaîtra ici." />
       ) : (
         <ul className="divide-y rounded-2xl border bg-card">
           {rows.map((r) => (

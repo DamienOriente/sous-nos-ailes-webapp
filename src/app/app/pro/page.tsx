@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { CategoryIcon } from "@/components/professionals/category-icons";
 import { VerificationBadge } from "@/components/directory/verification-badge";
 import { requireActor } from "@/lib/session";
 import { formatDateFr } from "@/lib/utils";
@@ -21,13 +19,11 @@ export default async function ProListingsPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Espace professionnel"
         title="Mes fiches pro"
         description="Vos fiches dans l'annuaire, leur statut de validation et leur avancement."
         actions={
           <Button asChild>
             <Link href="/onboarding/professionnel">
-              <Plus className="size-4" aria-hidden="true" />
               Créer une fiche
             </Link>
           </Button>
@@ -35,7 +31,6 @@ export default async function ProListingsPage() {
       />
       {listings.length === 0 ? (
         <EmptyState
-          icon={Store}
           title="Aucune fiche pour le moment"
           description="Créez votre fiche en cinq étapes : métier, identité, activité, présentation, récapitulatif. Elle est relue par notre équipe avant publication."
           action={
@@ -48,23 +43,18 @@ export default async function ProListingsPage() {
         <ul className="grid gap-4 sm:grid-cols-2">
           {listings.map((l) => (
             <li key={l.id}>
-              <Card className="h-full gap-3 p-5 transition-shadow hover:shadow-soft">
+              <Card className="h-full gap-3 p-5">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                      <CategoryIcon icon={l.categoryIcon} className="size-5" />
-                    </span>
-                    <div>
-                      <h2 className="font-heading text-lg leading-tight font-semibold">
-                        <Link href={`/app/pro/${l.id}`} className="hover:underline">
-                          {l.displayName || "Fiche sans nom"}
-                        </Link>
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        {l.categoryName}
-                        {l.city ? ` · ${l.city}` : ""}
-                      </p>
-                    </div>
+                  <div>
+                    <h2 className="font-heading text-lg leading-tight font-semibold">
+                      <Link href={`/app/pro/${l.id}`} className="hover:underline">
+                        {l.displayName || "Fiche sans nom"}
+                      </Link>
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {l.categoryName}
+                      {l.city ? ` · ${l.city}` : ""}
+                    </p>
                   </div>
                   <StatusBadge tone={STATUS_TONES[l.status]}>{STATUS_LABELS[l.status]}</StatusBadge>
                 </div>

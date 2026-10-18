@@ -19,7 +19,7 @@ export function renderEmail(content: EmailContent): { subject: string; html: str
   const html = `<!doctype html><html lang="fr"><body style="margin:0;background:#f7f4ee;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" style="max-width:560px;background:#fff;border-radius:16px;padding:32px" cellspacing="0" cellpadding="0">
-<tr><td><p style="margin:0 0 24px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:#6b8f71;font-weight:700">Sous Nos Ailes</p>
+<tr><td><p style="margin:0 0 24px;font-size:16px;color:#2f3437;font-weight:700">Sous Nos Ailes</p>
 <h1 style="margin:0 0 20px;font-size:22px;line-height:1.3;color:#2f3437">${escapeHtml(content.heading)}</h1>
 ${paragraphsHtml}${ctaHtml}
 <hr style="border:none;border-top:1px solid #e7e2d9;margin:24px 0"><p style="margin:0;font-size:12px;color:#8a8f98">${escapeHtml(footer)}<br>${escapeHtml(env.APP_URL)}</p>

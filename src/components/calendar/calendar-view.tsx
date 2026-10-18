@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ChevronLeft, ChevronRight, ExternalLink, Pencil, Repeat, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -41,11 +41,11 @@ export type ClientOccurrence = {
 export type CalendarViewKind = "day" | "week" | "month" | "agenda";
 
 const KIND_COLORS: Record<EntryKind, string> = {
-  event: "bg-primary/15 text-primary border-primary/30",
-  service: "bg-gold/20 text-foreground border-gold/40",
-  availability: "bg-success/15 text-success border-success/30",
+  event: "bg-primary/15 text-primary",
+  service: "bg-gold/20 text-foreground",
+  availability: "bg-success/15 text-success",
   unavailability: "bg-muted text-muted-foreground border-border line-through",
-  reminder: "bg-sky/20 text-foreground border-sky/40",
+  reminder: "bg-sky/20 text-foreground",
   other: "bg-secondary text-secondary-foreground border-border",
 };
 
@@ -163,7 +163,7 @@ export function CalendarView({
         <div className="flex items-center gap-2">
           {conflictCount > 0 && (
             <StatusBadge tone="warning">
-              <AlertTriangle className="size-3" aria-hidden="true" /> {conflictCount} conflit{conflictCount > 1 ? "s" : ""}
+               {conflictCount} conflit{conflictCount > 1 ? "s" : ""}
             </StatusBadge>
           )}
           <div role="tablist" aria-label="Vue" className="inline-flex rounded-lg border p-0.5">
@@ -192,7 +192,7 @@ export function CalendarView({
                 </StatusBadge>
                 {selected.conflict && (
                   <StatusBadge tone="warning">
-                    <AlertTriangle className="size-3" aria-hidden="true" /> Conflit
+                     Conflit
                   </StatusBadge>
                 )}
               </DialogTitle>
@@ -203,7 +203,7 @@ export function CalendarView({
             </DialogHeader>
             {selected.recurring && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Repeat className="size-4" aria-hidden="true" /> {describeRRule(selected.rrule)}
+                 {describeRRule(selected.rrule)}
               </p>
             )}
             {selected.description && <p className="whitespace-pre-wrap text-sm">{selected.description}</p>}
@@ -220,7 +220,7 @@ export function CalendarView({
                   <EntryDialog
                     trigger={
                       <Button variant="outline" size="sm">
-                        <Pencil className="size-4" aria-hidden="true" /> Modifier
+                         Modifier
                       </Button>
                     }
                     timezone={timezone}
@@ -254,7 +254,7 @@ export function CalendarView({
                   <ConfirmDialog
                     trigger={
                       <Button variant="destructive" size="sm">
-                        <Trash2 className="size-4" aria-hidden="true" /> Supprimer
+                         Supprimer
                       </Button>
                     }
                     title={selected.recurring ? "Supprimer toute la série ?" : "Supprimer cette entrée ?"}
@@ -295,25 +295,24 @@ function Chip({ o, tz, onSelect, compact = false }: { o: ClientOccurrence; tz: s
       onClick={() => onSelect(o)}
       className={cn("flex w-full items-center gap-1.5 rounded-md border px-2 py-1 text-left text-xs transition-colors hover:brightness-95", KIND_COLORS[o.kind], o.conflict && "ring-1 ring-warning")}
       data-testid="calendar-occurrence"
-      aria-label={`${o.title}, ${o.allDay ? "journée entière" : fmtTime(o.start, tz)}`}
+      aria-label={`${o.title}, ${o.allDay ? "journée entière" : fmtTime(o.start, tz)}${o.conflict ? ", en conflit" : ""}`}
     >
       {!o.allDay && <span className="shrink-0 tabular-nums">{fmtTime(o.start, tz)}</span>}
       <span className={cn("truncate", !compact && "font-medium")}>{o.title}</span>
-      {o.recurring && <Repeat className="ml-auto size-3 shrink-0 opacity-70" aria-hidden="true" />}
-      {o.conflict && <AlertTriangle className="size-3 shrink-0 text-warning-foreground" aria-hidden="true" />}
+      {o.recurring && <span className="ml-auto shrink-0 text-[11px] opacity-70">récurrent</span>}
     </button>
   );
 }
 
 function AgendaView({ occurrences, tz, onSelect }: { occurrences: ClientOccurrence[]; tz: string; onSelect: (o: ClientOccurrence) => void }) {
-  if (!occurrences.length) return <IllustratedEmpty scene={CalendarScene} compact title="Rien de prévu sur cette période" description="Vos prestations, disponibilités et évènements s'affichent ici ; les entrées liées à un évènement se créent depuis son espace. Changez de période avec les flèches ou créez une entrée." example="Repérage lumière au domaine — samedi 29 mai, 17:00 → 19:30" testId="calendar-empty" />;
+  if (!occurrences.length) return <IllustratedEmpty scene={CalendarScene} compact title="Rien de prévu sur cette période" description="Vos prestations, disponibilités et évènements s'affichent ici ; les entrées liées à un évènement se créent depuis son espace. Changez de période avec les flèches ou créez une entrée." example="Repérage lumière au domaine, samedi 29 mai, de 17:00 à 19:30" testId="calendar-empty" />;
   const groups = new Map<string, ClientOccurrence[]>();
   for (const o of occurrences) groups.set(o.dayKey, [...(groups.get(o.dayKey) ?? []), o]);
   return (
     <ol className="space-y-4">
       {[...groups.entries()].map(([day, items]) => (
         <li key={day}>
-          <h3 className="mb-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">{fmtDay(day)}</h3>
+          <h3 className="mb-1.5 text-xs font-semibold text-muted-foreground">{fmtDay(day)}</h3>
           <ul className="space-y-1.5">
             {items.map((o) => (
               <li key={o.id}>
@@ -378,7 +377,7 @@ function MonthView({ days, dateKey, byDay, tz, todayKey, onSelect, onDay }: { da
   const month = dateKey.slice(0, 7);
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <div className="hidden grid-cols-7 border-b text-center text-xs font-semibold text-muted-foreground uppercase sm:grid">
+      <div className="hidden grid-cols-7 border-b text-center text-xs font-semibold text-muted-foreground sm:grid">
         {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((d) => (
           <div key={d} className="py-2">
             {d}

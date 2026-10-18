@@ -2,7 +2,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Archive, Hash, Lock, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { FormMessage } from "@/components/shared/form-message";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ export function ChannelSidebar({ eventId, activeChannelId, channels, canManage, 
       <SearchBox eventId={eventId} search={actions.search} />
       <nav className="space-y-1">
         <div className="flex items-center justify-between px-2">
-          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Canaux</p>
+          <p className="text-xs font-semibold text-muted-foreground">Canaux</p>
           {canManage && <CreateChannelDialog eventId={eventId} members={members} action={actions.createChannel} />}
         </div>
         <ul className="space-y-0.5">
@@ -38,8 +38,10 @@ export function ChannelSidebar({ eventId, activeChannelId, channels, canManage, 
                 aria-current={c.id === activeChannelId ? "page" : undefined}
                 className={cn("flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm", c.id === activeChannelId ? "bg-accent font-medium text-accent-foreground" : "text-foreground/80 hover:bg-muted")}
               >
-                {c.kind === "general" ? <Hash className="size-3.5 shrink-0" aria-hidden="true" /> : c.isMember ? <Hash className="size-3.5 shrink-0" aria-hidden="true" /> : <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />}
-                <span className="min-w-0 flex-1 truncate">{c.name}</span>
+                                <span className="min-w-0 flex-1 truncate">
+                  <span className="text-muted-foreground">#</span> {c.name}
+                </span>
+                {c.kind !== "general" && !c.isMember && <span className="text-xs text-muted-foreground">privé</span>}
                 {c.unread > 0 && <span className="rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">{c.unread}</span>}
               </Link>
             </li>
@@ -52,7 +54,6 @@ export function ChannelSidebar({ eventId, activeChannelId, channels, canManage, 
               {archived.map((c) => (
                 <li key={c.id}>
                   <Link href={`/app/evenements/${eventId}/messages/${c.id}`} className={cn("flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted", c.id === activeChannelId && "bg-accent")}>
-                    <Archive className="size-3.5" aria-hidden="true" />
                     <span className="truncate">{c.name}</span>
                   </Link>
                 </li>
@@ -187,7 +188,7 @@ function CreateChannelDialog({ eventId, members, action }: { eventId: string; me
           )}
           <FormMessage error={error} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending}>

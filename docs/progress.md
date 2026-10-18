@@ -158,3 +158,19 @@ Dernière mise à jour : 2026-10-17 (fin de la mission V1). Preuves : `pnpm test
 | Espaces évènements : couverture, tableau de bord visuel, états vides illustrés, chips d'exemples réels, seed riche | ✅ | `e2e/vitality.spec.ts`, intégration events |
 | Onboarding illustré avec « Utiliser cet exemple », pages auth en écran partagé, `/app` avec prochaines actions, paywalls avec aperçus React, admin avec sparklines | ✅ | `e2e/auth`, `premium`, `admin` |
 | Images du pipeline fichiers via `next/image` optimisé | 🟡 | rendues `unoptimized` (variantes WebP côté serveur) ; `images.localPatterns` à évaluer |
+
+
+## Vitesse des pages (2026-10-18)
+
+Lighthouse mobile (4G lente simulée, build de production, Chrome headless), avant puis après :
+
+| Page | Score | LCP | CLS |
+|------|-------|-----|-----|
+| / | 91 puis 92 | 3,3 s puis 3,3 s | 0 |
+| /annuaire | 94 puis 93 | 2,9 s puis 3,2 s | 0 |
+| /annuaire/traiteur | 90 puis 93 | 3,5 s puis 3,2 s | 0 |
+| /pro/marie-delcourt-garde-enfants | 79 puis 88 | 5,1 s puis 3,8 s | 0,083 puis 0 |
+| /organiser | 89 puis 93 | 3,6 s puis 3,2 s | 0 |
+| /tarifs | 93 puis 92 | 3,1 s puis 3,4 s | 0,055 puis 0 |
+
+Les mesures varient de quelques points d'un passage à l'autre. L'objectif de 2,5 s pour le LCP n'est pas atteint en mobile simulé ; le reste du temps est le coût du premier octet de CSS et de la photo principale.

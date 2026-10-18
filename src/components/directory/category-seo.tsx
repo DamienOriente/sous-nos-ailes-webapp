@@ -7,7 +7,7 @@ export type GeoContext = { kind: "department" | "city"; name: string; slug: stri
 
 /** "Garde d'enfants évènementielle à Toulouse" / "en Haute-Garonne" / "en France". */
 export function geoTitle(categoryName: string, geo: GeoContext): string {
-  if (!geo) return `${categoryName} : professionnels vérifiés en France`;
+  if (!geo) return `${categoryName} en France`;
   if (geo.kind === "city") return `${categoryName} à ${geo.name}`;
   const name = geo.name;
   const prep = /^(Haut|Bas|Nord|Pas|Lot|Loir|Cher|Gard|Gers|Jura|Var|Tarn|Rhône|Doubs|Calvados|Cantal|Finistère|Loiret|Morbihan|Puy|Territoire|Val-d|Val-de)/i.test(name) && !/^(Haute|Hautes)/.test(name) ? "dans le " : /^(Alpes|Ardennes|Bouches|Côtes|Deux|Hautes|Landes|Pyrénées|Vosges|Yvelines)/.test(name) ? "dans les " : /^(Ain|Aisne|Allier|Ariège|Aube|Aude|Aveyron|Eure|Hérault|Indre|Isère|Orne|Oise|Yonne)$/.test(name) ? "dans l'" : "en ";
@@ -20,7 +20,7 @@ export function CategoryIntro({ categoryDescription, isChildcare, geo, total }: 
     <div className="max-w-3xl space-y-3 text-muted-foreground text-pretty">
       <p>
         {categoryDescription ? `${categoryDescription} ` : ""}
-        {total > 0 ? `${total} professionnel${total > 1 ? "s" : ""} ${total > 1 ? "proposent" : "propose"} ce service ${where}.` : `Nous référençons des professionnels ${where}.`} Chaque fiche a été relue par notre équipe avant publication et indique précisément les vérifications effectuées (immatriculation, assurance, qualifications) — jamais une « certification ».
+        {total > 0 ? `${total} professionnel${total > 1 ? "s" : ""} ${total > 1 ? "proposent" : "propose"} ce service ${where}.` : `Nous référençons des professionnels ${where}.`} Chaque fiche est relue par notre équipe avant publication. Elle indique précisément les vérifications effectuées (immatriculation, assurance, qualifications), jamais une « certification ».
       </p>
       {isChildcare && <p>Pour la garde d'enfants, regardez le ratio d'encadrement déclaré, les tranches d'âge accueillies et les justificatifs examinés. Vous pourrez ensuite inscrire vos enfants et transmettre les consignes de manière sécurisée depuis votre évènement.</p>}
     </div>
@@ -31,7 +31,7 @@ export function CategoryFaq({ categoryName, isChildcare, geo }: { categoryName: 
   const items = faqItems(categoryName, isChildcare, geo);
   return (
     <section aria-labelledby="faq-title" className="max-w-3xl space-y-3">
-      <h2 id="faq-title" className="font-heading text-xl font-semibold">
+      <h2 id="faq-title" className="font-heading text-2xl font-semibold">
         Questions fréquentes
       </h2>
       <Accordion type="single" collapsible>

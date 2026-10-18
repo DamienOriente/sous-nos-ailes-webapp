@@ -2,7 +2,7 @@
 import { useEffect, useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
-import { Check, Copy, Download, Loader2, ShieldCheck, ShieldOff } from "lucide-react";
+import { Check, Copy, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { recordTwoFactorChangeAction } from "@/app/app/compte/securite/actions";
 import { describeAuthFailure } from "@/components/auth/auth-client-error";
@@ -121,13 +121,9 @@ export function TwoFactorSettings({ enabled, required }: { enabled: boolean; req
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         {enabled ? (
-          <StatusBadge tone="success">
-            <ShieldCheck className="size-3.5" aria-hidden="true" /> Activée
-          </StatusBadge>
+          <StatusBadge tone="success">Activée</StatusBadge>
         ) : (
-          <StatusBadge tone={required ? "danger" : "neutral"}>
-            <ShieldOff className="size-3.5" aria-hidden="true" /> Désactivée
-          </StatusBadge>
+          <StatusBadge tone={required ? "danger" : "neutral"}>Désactivée</StatusBadge>
         )}
         <p className="text-sm text-muted-foreground">Code temporaire généré par une application (TOTP) demandé à chaque nouvelle connexion.</p>
       </div>
@@ -139,13 +135,13 @@ export function TwoFactorSettings({ enabled, required }: { enabled: boolean; req
               <Button variant="outline" onClick={() => setStep({ kind: "password", intent: "backup" })}>
                 Régénérer les codes de secours
               </Button>
-              <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setStep({ kind: "password", intent: "disable" })}>
+              <Button variant="destructive" onClick={() => setStep({ kind: "password", intent: "disable" })}>
                 Désactiver
               </Button>
             </>
           ) : (
             <Button onClick={() => setStep({ kind: "password", intent: "enable" })}>
-              <ShieldCheck aria-hidden="true" /> Activer la double authentification
+              Activer la double authentification
             </Button>
           )}
         </div>
@@ -168,7 +164,7 @@ export function TwoFactorSettings({ enabled, required }: { enabled: boolean; req
               {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
               Continuer
             </Button>
-            <Button type="button" variant="ghost" onClick={reset} disabled={pending}>
+            <Button type="button" variant="outline" onClick={reset} disabled={pending}>
               Annuler
             </Button>
           </div>
@@ -187,14 +183,14 @@ export function TwoFactorSettings({ enabled, required }: { enabled: boolean; req
           <FormMessage error={error} />
           <div className="space-y-2">
             <Label htmlFor={ids.code}>Code de vérification</Label>
-            <Input id={ids.code} autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} autoFocus required value={code} onChange={(e) => setCode(e.target.value)} className="max-w-48 text-center text-lg tracking-[0.3em] tabular-nums" aria-invalid={error ? true : undefined} />
+            <Input id={ids.code} autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} autoFocus required value={code} onChange={(e) => setCode(e.target.value)} className="max-w-48 text-center text-lg tabular-nums" aria-invalid={error ? true : undefined} />
           </div>
           <div className="flex gap-2">
             <Button type="submit" disabled={pending} aria-busy={pending}>
               {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
               Confirmer l'activation
             </Button>
-            <Button type="button" variant="ghost" onClick={reset} disabled={pending}>
+            <Button type="button" variant="outline" onClick={reset} disabled={pending}>
               Annuler
             </Button>
           </div>
@@ -227,7 +223,7 @@ function QrCode({ uri }: { uri: string }) {
         // eslint-disable-next-line @next/next/no-img-element -- data URL generated locally
         <img src={src} alt="QR code à scanner avec votre application d'authentification" width={200} height={200} className="rounded-lg border bg-white p-2" />
       ) : (
-        <div className="size-[200px] animate-pulse rounded-lg bg-muted" aria-hidden="true" />
+        <div className="size-[200px] rounded-lg bg-muted" aria-hidden="true" />
       )}
     </div>
   );
@@ -241,7 +237,7 @@ function ManualKey({ secret }: { secret: string | null }) {
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">Clé à saisir manuellement :</p>
       <div className="flex items-center gap-2">
-        <code className="flex-1 rounded-md bg-muted px-3 py-2 font-mono text-sm tracking-wider break-all">{grouped}</code>
+        <code className="flex-1 rounded-md bg-muted px-3 py-2 font-mono text-sm break-all">{grouped}</code>
         <Button
           type="button"
           variant="outline"
@@ -270,14 +266,14 @@ function BackupCodes({ codes, onDone, fresh }: { codes: string[]; onDone: () => 
   return (
     <div className="space-y-4 rounded-xl border border-warning/50 bg-warning/10 p-4">
       <div>
-        <h3 className="font-heading text-base font-semibold">{fresh ? "Double authentification activée — vos codes de secours" : "Nouveaux codes de secours"}</h3>
+        <h3 className="font-heading text-base font-semibold">{fresh ? "Double authentification activée : vos codes de secours" : "Nouveaux codes de secours"}</h3>
         <p className="text-sm text-muted-foreground text-pretty">
           Conservez ces codes dans un endroit sûr (gestionnaire de mots de passe). Chaque code ne sert qu'une fois et vous permet de vous connecter si vous perdez votre téléphone. <strong>Ils ne seront plus affichés.</strong>
         </p>
       </div>
       <ul className="grid grid-cols-2 gap-2 font-mono text-sm sm:grid-cols-3" aria-label="Codes de secours">
         {codes.map((c) => (
-          <li key={c} className="rounded-md bg-background px-3 py-1.5 text-center tracking-wider">
+          <li key={c} className="rounded-md bg-background px-3 py-1.5 text-center">
             {c}
           </li>
         ))}
@@ -299,7 +295,7 @@ function BackupCodes({ codes, onDone, fresh }: { codes: string[]; onDone: () => 
           <Copy aria-hidden="true" /> Copier
         </Button>
         <Button type="button" variant="outline" size="sm" asChild>
-          <a href={`data:text/plain;charset=utf-8,${encodeURIComponent(`Sous Nos Ailes — codes de secours\n\n${text}\n`)}`} download="sous-nos-ailes-codes-de-secours.txt">
+          <a href={`data:text/plain;charset=utf-8,${encodeURIComponent(`Sous Nos Ailes : codes de secours\n\n${text}\n`)}`} download="sous-nos-ailes-codes-de-secours.txt">
             <Download aria-hidden="true" /> Télécharger
           </a>
         </Button>

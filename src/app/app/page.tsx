@@ -14,7 +14,7 @@ export default async function AppHomePage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Mon espace" title={`Bonjour ${dashboard.firstName}`} description={dashboard.isEmpty ? "Votre espace est prêt. Par où souhaitez-vous commencer ?" : "Voici l'essentiel de votre activité."} />
+      <PageHeader title={`Bonjour ${dashboard.firstName}`} description={dashboard.isEmpty ? "Votre espace est prêt. Par où souhaitez-vous commencer ?" : "Voici l'essentiel de votre activité."} />
       {!dashboard.emailVerified && <EmailVerificationBanner email={actor.email} />}
       {dashboard.twoFactorRequiredButMissing && <TwoFactorRequiredAlert compact />}
       <WelcomeBanner dashboard={dashboard} />

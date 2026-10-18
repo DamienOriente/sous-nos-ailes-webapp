@@ -69,7 +69,7 @@ export async function submitReport(input: ReportInput, ctx: PublicFormContext, e
   if (!limit.allowed) throw new RateLimitedError("Trop de signalements envoyés. Réessayez dans une heure.");
 
   const reporterEmail = input.reporterEmail ? input.reporterEmail : null;
-  const summary = `${REPORT_RESOURCE_LABELS[input.resourceType]} — ${REPORT_REASON_LABELS[input.reason]}`;
+  const summary = `${REPORT_RESOURCE_LABELS[input.resourceType]} : ${REPORT_REASON_LABELS[input.reason]}`;
   const { caseId } = await openModerationCase(
     { kind: "report", resourceType: input.resourceType, resourceId: input.resourceRef.slice(0, 200), openedByUserId: ctx.userId ?? null, summary },
     executor,

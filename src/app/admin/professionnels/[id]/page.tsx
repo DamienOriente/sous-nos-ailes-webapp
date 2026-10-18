@@ -32,10 +32,10 @@ export default async function ProfessionalAdminDetail({ params }: { params: Prom
   const status = pro.status as ProfessionalStatus;
   return (
     <div className="space-y-6">
+      <Link href="/admin/professionnels" className="text-sm text-muted-foreground hover:underline">Retour aux professionnels</Link>
       <PageHeader
-        eyebrow={<Link href="/admin/professionnels" className="hover:underline">← Professionnels</Link>}
         title={pro.displayName}
-        description={`${pro.categoryName} · ${[pro.city, pro.department].filter(Boolean).join(", ") || "—"} · propriétaire ${pro.ownerName} (${pro.ownerEmail})`}
+        description={`${pro.categoryName} · ${[pro.city, pro.department].filter(Boolean).join(", ") || "Non renseignée"} · propriétaire ${pro.ownerName} (${pro.ownerEmail})`}
         actions={
           <>
             <StatusBadge tone={STATUS_TONES[status]}>{STATUS_LABELS[status]}</StatusBadge>
@@ -60,10 +60,10 @@ export default async function ProfessionalAdminDetail({ params }: { params: Prom
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
               <div><dt className="text-muted-foreground">Slug</dt><dd>{pro.slug}</dd></div>
               <div><dt className="text-muted-foreground">Complétude</dt><dd>{pro.completenessScore} %</dd></div>
-              <div><dt className="text-muted-foreground">Niveau de vérification</dt><dd>{pro.verificationLevel} — {verificationLevelLabel(pro.verificationLevel)}</dd></div>
+              <div><dt className="text-muted-foreground">Niveau de vérification</dt><dd>{pro.verificationLevel} : {verificationLevelLabel(pro.verificationLevel)}</dd></div>
               <div><dt className="text-muted-foreground">Avis</dt><dd>{pro.reviewCount} avis{pro.averageRating ? ` · ${pro.averageRating.toFixed(1)}/5` : ""}</dd></div>
               <div><dt className="text-muted-foreground">Publiée le</dt><dd>{dateTime(pro.publishedAt)}</dd></div>
-              <div><dt className="text-muted-foreground">Motif du statut</dt><dd>{pro.statusReason ?? "—"}</dd></div>
+              <div><dt className="text-muted-foreground">Motif du statut</dt><dd>{pro.statusReason ?? "Non renseigné"}</dd></div>
             </dl>
             {pro.tagline && <p className="font-medium">{pro.tagline}</p>}
             {pro.description && <p className="whitespace-pre-wrap text-sm">{pro.description}</p>}
@@ -87,7 +87,7 @@ export default async function ProfessionalAdminDetail({ params }: { params: Prom
               <ul className="divide-y text-sm">
                 {pro.documents.map((doc) => (
                   <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                    <span>{DOCUMENT_KIND_LABELS[doc.kind as DocumentKind]}{doc.label ? ` — ${doc.label}` : ""} · {doc.status}</span>
+                    <span>{DOCUMENT_KIND_LABELS[doc.kind as DocumentKind]}{doc.label ? ` : ${doc.label}` : ""} · {doc.status}</span>
                     <a href={privateFileHref(doc.fileId)} className="underline" target="_blank" rel="noopener noreferrer">Ouvrir</a>
                   </li>
                 ))}

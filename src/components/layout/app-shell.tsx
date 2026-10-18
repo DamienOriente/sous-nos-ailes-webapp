@@ -13,13 +13,13 @@ import { AppNavLinks, type NavItem } from "./app-nav-links";
 import { SignOutButton } from "./sign-out-button";
 
 const PRIMARY_NAV: NavItem[] = [
-  { href: "/app", label: "Accueil", icon: "home", exact: true },
-  { href: "/app/evenements", label: "Mes évènements", icon: "party" },
-  { href: "/app/pro", label: "Mes fiches pro", icon: "store" },
-  { href: "/app/calendrier", label: "Calendrier", icon: "calendar" },
-  { href: "/app/contacts", label: "Contacts", icon: "contacts" },
-  { href: "/app/notifications", label: "Notifications", icon: "bell" },
-  { href: "/app/compte", label: "Mon compte", icon: "settings" },
+  { href: "/app", label: "Accueil", exact: true },
+  { href: "/app/evenements", label: "Mes évènements" },
+  { href: "/app/pro", label: "Mes fiches pro" },
+  { href: "/app/calendrier", label: "Calendrier" },
+  { href: "/app/contacts", label: "Contacts" },
+  { href: "/app/notifications", label: "Notifications" },
+  { href: "/app/compte", label: "Mon compte" },
 ];
 
 /**
@@ -44,13 +44,13 @@ export function AppShell({
       <AppNavLinks items={nav} />
       {secondaryNav && secondaryNav.items.length > 0 && (
         <div>
-          <p className="mb-2 px-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">{secondaryNav.title}</p>
+          <p className="mb-2 px-3 text-sm font-semibold text-foreground">{secondaryNav.title}</p>
           <AppNavLinks items={secondaryNav.items} />
         </div>
       )}
       {showAdmin && (
         <div className="mt-auto">
-          <AppNavLinks items={[{ href: "/admin", label: "Administration", icon: "shield" }]} />
+          <AppNavLinks items={[{ href: "/admin", label: "Administration" }]} />
         </div>
       )}
     </div>
@@ -66,7 +66,7 @@ export function AppShell({
           <div className="flex-1 overflow-y-auto">{sidebar}</div>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-background/85 px-4 backdrop-blur sm:px-6">
+          <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-background px-4 sm:px-6">
             <div className="flex items-center gap-2 lg:hidden">
               <Sheet>
                 <SheetTrigger asChild>

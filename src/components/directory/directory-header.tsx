@@ -6,12 +6,11 @@ import type { DemoPhoto as DemoPhotoEntry } from "@/modules/media/demo-photos";
  * the right (always an illustration from the demo catalogue, labelled as such,
  * never a professional's own picture).
  */
-export function DirectoryHeader({ eyebrow, title, children, photos }: { eyebrow?: string; title: string; children?: React.ReactNode; photos: DemoPhotoEntry[] }) {
+export function DirectoryHeader({ title, children, photos }: { title: string; children?: React.ReactNode; photos: DemoPhotoEntry[] }) {
   const [first, ...rest] = photos;
   return (
     <header className="grid items-center gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)] lg:gap-10">
       <div className="space-y-3">
-        {eyebrow && <p className="text-sm font-medium text-primary">{eyebrow}</p>}
         <h1 className="font-heading text-3xl font-semibold text-balance sm:text-4xl">{title}</h1>
         {children}
       </div>

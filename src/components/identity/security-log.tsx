@@ -1,4 +1,3 @@
-import { History } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
 import { formatDateFr } from "@/lib/utils";
@@ -9,7 +8,7 @@ const TONE: Record<SecurityEventView["severity"], StatusTone> = { info: "neutral
 
 export function SecurityLog({ events, timezone }: { events: SecurityEventView[]; timezone: string }) {
   if (events.length === 0) {
-    return <EmptyState icon={History} title="Aucune activité enregistrée" description="Les connexions, changements de mot de passe et réglages de sécurité apparaîtront ici." className="py-8" />;
+    return <EmptyState title="Aucune activité enregistrée" description="Les connexions, changements de mot de passe et réglages de sécurité apparaîtront ici." className="py-8" />;
   }
   return (
     <ol className="divide-y rounded-xl border">

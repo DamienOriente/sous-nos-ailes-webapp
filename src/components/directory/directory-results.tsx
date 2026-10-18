@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { EmptyNestScene } from "@/components/illustrations";
@@ -24,17 +23,16 @@ export function DirectoryResults({
   return (
     <div className="space-y-8">
       {result.sponsored.length > 0 && (
-        <section aria-labelledby="sponsored-title" className="rounded-2xl border border-gold/50 bg-gold/10 p-4 sm:p-5" data-testid="sponsored-block">
+        <section aria-labelledby="sponsored-title" className="rounded-2xl border bg-muted/50 p-4 sm:p-6" data-testid="sponsored-block">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 id="sponsored-title" className="text-sm font-semibold">
               Sponsorisé
             </h2>
-            <Link href="/classements-sponsorises" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-              <Info className="size-3.5" aria-hidden="true" />
+            <Link href="/classements-sponsorises" className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">
               Pourquoi ces résultats apparaissent ici
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             {result.sponsored.map((p) => (
               <ProfessionalCard key={p.id} professional={p} signedIn={signedIn} sponsored />
             ))}
@@ -48,30 +46,34 @@ export function DirectoryResults({
             {result.total === 0 ? "Aucun résultat" : result.total === 1 ? "1 professionnel" : `${result.total} professionnels`}
             {result.origin ? ` · distance depuis ${result.origin.label}` : ""}
           </h2>
-          <p className="text-xs text-muted-foreground">Classement : pertinence métier, proximité, disponibilité, complétude, vérifications. Les sponsorisés sont séparés et étiquetés.</p>
+          <p className="text-xs text-muted-foreground">Ordre des résultats : métier, proximité, disponibilité, fiche complète, vérifications. Les résultats sponsorisés sont séparés et étiquetés.</p>
         </div>
         {result.items.length === 0 ? (
-          <div role="status" className="grid items-center gap-6 rounded-3xl border border-dashed bg-card/60 p-6 sm:p-8 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)]">
+          <div role="status" className="grid items-center gap-6 rounded-3xl border border-dashed bg-card p-6 sm:p-8 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)]">
             <EmptyNestScene className="mx-auto max-w-[16rem]" />
             <div>
-              <h3 className="text-lg font-semibold">Le nid est vide pour cette recherche</h3>
-              <p className="mt-1 max-w-md text-sm leading-6 text-muted-foreground text-pretty">Élargissez le rayon, retirez un critère ou explorez les métiers déjà présents. Les professionnels sont ajoutés chaque semaine.</p>
-              <div className="mt-5 flex flex-wrap gap-2">
+              <h3 className="text-lg font-semibold">Aucun professionnel ne correspond à cette recherche</h3>
+              <p className="mt-1 max-w-md text-sm leading-6 text-muted-foreground text-pretty">Élargissez le rayon, retirez un critère ou choisissez un métier déjà présent dans l'annuaire.</p>
+              <div className="mt-5">
                 <Button asChild variant="outline" size="sm">
                   <Link href="/annuaire">Réinitialiser les filtres</Link>
                 </Button>
-                {suggestions.slice(0, 5).map((s) => (
-                  <Button key={s.slug} asChild variant="ghost" size="sm">
-                    <Link href={`/annuaire/${s.slug}`}>
-                      {s.name} ({s.count})
-                    </Link>
-                  </Button>
-                ))}
               </div>
+              {suggestions.length > 0 && (
+                <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+                  {suggestions.slice(0, 5).map((s) => (
+                    <li key={s.slug}>
+                      <Link href={`/annuaire/${s.slug}`} className="text-primary underline-offset-4 hover:underline">
+                        {s.name} ({s.count})
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="results-grid">
+          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-testid="results-grid">
             {/* A listing already shown in the sponsored block is not repeated below (same card, same photo twice). */}
             {result.items.filter((p) => !result.sponsored.some((s) => s.id === p.id)).map((p) => (
               <li key={p.id}>

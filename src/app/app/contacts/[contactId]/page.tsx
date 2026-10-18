@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,15 +39,10 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-6">
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link href="/app/contacts">
-          <ArrowLeft className="size-4" aria-hidden="true" /> Tous les contacts
-        </Link>
-      </Button>
+      <Link href="/app/contacts" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Tous les contacts</Link>
       <PageHeader
-        eyebrow={contact.category ? CONTACT_CATEGORY_LABELS[contact.category as ContactCategory] ?? contact.category : "Contact"}
         title={name}
-        description={contact.company && (contact.firstName || contact.lastName) ? contact.company : undefined}
+        description={[contact.category ? CONTACT_CATEGORY_LABELS[contact.category as ContactCategory] ?? contact.category : null, contact.company && (contact.firstName || contact.lastName) ? contact.company : null].filter(Boolean).join(" · ") || undefined}
         actions={
           <>
             <ContactFormDialog
@@ -55,7 +50,7 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
               onSubmit={(values) => update(values)}
               trigger={
                 <Button variant="outline" size="sm">
-                  <Pencil className="size-4" aria-hidden="true" /> Modifier
+                   Modifier
                 </Button>
               }
             />
@@ -66,7 +61,7 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
               onConfirm={remove}
               trigger={
                 <Button variant="destructive" size="sm">
-                  <Trash2 className="size-4" aria-hidden="true" /> Supprimer
+                   Supprimer
                 </Button>
               }
             />
@@ -82,18 +77,18 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
               <div>
                 <dt className="text-muted-foreground">E-mail</dt>
-                <dd>{contact.email ? <a href={`mailto:${contact.email}`} className="underline-offset-2 hover:underline">{contact.email}</a> : "—"}</dd>
+                <dd>{contact.email ? <a href={`mailto:${contact.email}`} className="underline-offset-2 hover:underline">{contact.email}</a> : "Non renseigné"}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">Téléphone</dt>
-                <dd>{contact.phone ? <a href={`tel:${contact.phone}`} className="underline-offset-2 hover:underline">{contact.phone}</a> : "—"}</dd>
+                <dd>{contact.phone ? <a href={`tel:${contact.phone}`} className="underline-offset-2 hover:underline">{contact.phone}</a> : "Non renseigné"}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">Tags</dt>
                 <dd className="flex flex-wrap gap-1">
-                  {contact.tags.length === 0 && "—"}
+                  {contact.tags.length === 0 && "Aucun"}
                   {contact.tags.map((t) => (
-                    <Badge key={t} variant="secondary" className="rounded-full">
+                    <Badge key={t} variant="outline" className="rounded-full">
                       {t}
                     </Badge>
                   ))}
@@ -105,7 +100,7 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-muted-foreground">Notes</dt>
-                <dd className="whitespace-pre-wrap">{contact.notes ?? "—"}</dd>
+                <dd className="whitespace-pre-wrap">{contact.notes ?? "Aucune"}</dd>
               </div>
             </dl>
           </CardContent>

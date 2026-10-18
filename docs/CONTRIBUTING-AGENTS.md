@@ -56,3 +56,28 @@ Socle disponible :
 - Règles inchangées : fichiers partagés interdits, pas de `drizzle-kit generate`, `pnpm tsc --noEmit` et `pnpm lint` verts, tests existants verts (`pnpm test`, suites d'intégration/E2E touchées), aucune donnée inventée présentée comme réelle (démo = `isDemo`, étiquetée).
 
 Socle « exemples » réutilisable (ajouté par le chantier vitalité) : `src/components/illustrations/{public-scenes,app-scenes,pro-scenes,event-scenes}.tsx`, `src/modules/tools/domain/tool-examples.ts` (un exemple par outil), `src/components/professionals/listing-examples.ts` (fiches d'exemple par métier), `FEATURE_PREVIEWS` dans `src/components/billing/tool-previews.tsx` (mini-rendus React des outils premium), `src/modules/identity/domain/next-actions.ts` (prochaines actions dérivées des données).
+
+## Chantier « un site qui ne fait pas généré par IA » (2026-10-18)
+
+Demande du propriétaire : le site ne doit pas faire « vibecodé ». Liste à faire disparaître, **dans tout ce que voit un utilisateur** (pages, composants, textes, e-mails, métadonnées, données de démonstration du seed) :
+
+1. **Icônes Lucide décoratives** : plus d'icône dans une pastille/tuile/cercle, sur une carte, un titre de section, une étape, une liste d'avantages, un état vide, une carte de chiffre. On garde uniquement les icônes **fonctionnelles** (entrées de navigation, chevrons, fermer, recherche, menu, copier, télécharger, lien externe, case cochée/alerte d'un formulaire, bouton icône seule avec `aria-label`). À la place : typographie (étapes numérotées « 1 », « 2 »), photos, illustrations SVG existantes, texte. `CategoryIcon` / `icon` de catalogue : ne plus les afficher.
+2. **Dégradés** : aucun dégradé de fond, de titre, de bouton, de carte. Aplats unis avec les tokens. Seul reste autorisé : le voile sombre derrière un texte posé sur une photo (lisibilité), le plus discret possible.
+3. **Émojis et glyphes décoratifs** (✦ ⚠ ★ ↑ ↓…) dans les titres et l'interface : remplacer par des mots ou rien. (Les émojis dans les messages de conversation de démonstration restent naturels, mais pas dans des titres.)
+4. **Glassmorphism** : pas de `backdrop-blur`, pas de fond translucide sur flou. Fonds opaques.
+5. **Bordures colorées** : bordure neutre (`border`) uniquement ; pas de trait d'accent à gauche/en haut (`border-l-2 border-primary`…), pas de `border-blush/gold/sage…` décoratifs sur les cartes. Les états sélectionné/focus/erreur gardent leur couleur.
+6. **Animations** : transitions de couleur ≤ 150 ms ; pas de zoom/translation/élévation au survol ; aucune animation d'entrée ni apparition au scroll.
+7. **Surtitres/badges au-dessus des titres** : plus de petit texte en capitales espacées ou de pastille au-dessus d'un `h1`/`h2`. Le titre commence la section. (`PageHeader` ignore déjà `eyebrow` ; retire aussi les `<p className="… uppercase tracking-…">` placés avant des titres et les pastilles « Nouveau »/« Démo » collées aux titres.)
+8. **Buzzwords** : français simple et concret, des faits plutôt que des promesses. Bannis : tout-en-un, révolutionner, puissant, seamless, écosystème, boostez, optimisez, propulsez, expérience inédite, solution complète, next level, « en un clin d'œil », « sereinement » en refrain, séries de trois bénéfices au même rythme. Dis ce que la fonctionnalité fait, pour qui, avec un exemple chiffré ou nommé quand il existe.
+9. **Espacement régulier** : utiliser `Container`/`Section` (`src/components/shared/section.tsx`, py-14 sm:py-20) pour les sections de pages ; un seul espace titre→contenu (`mt-8`), grilles de cartes `gap-6`, padding de carte `p-6` (`p-4` pour les cartes denses de l'app). Pas de mélange de `py-8/10/12/16/24` entre sections voisines.
+10. **Fade-in au scroll** : aucun (vérifier).
+11. **Graphiques** : barres/séries CSS ou SVG maison avec libellés et valeurs, pas de composant de graphique générique.
+12. **Polices** : Fraunces (titres) + Figtree (texte) ; Space Grotesk supprimée ; pas de nouvelle famille.
+13. **Grain/dégradés texturés** : aucun.
+14. **Tirets cadratins « — » (U+2014)** : interdits dans tout texte visible (titres, descriptions, `metadata`, e-mails, gabarits juridiques, données de démonstration du seed, textes d'exemple). Remplacer au cas par cas par une virgule, deux-points, point, parenthèses ou « · » ; valeur vide « — » → « Non renseigné » (texte) ou « n/d » (chiffre). Les noms d'affichage du seed (« Marie Delcourt — Garde d'enfants ») deviennent « Marie Delcourt, garde d'enfants évènementielle ». Ne touche pas aux commentaires de code ni à `docs/`.
+15. **Boutons** : actions visibles = `default` (principale) ou `outline` (secondaire) ou lien texte ; `variant="ghost"` seulement pour un bouton icône seule dans une barre d'outils. Survol = changement de couleur opaque.
+16. **Pas d'élévation** : aucun `hover:shadow-*`, `hover:-translate-*`, `hover:scale-*`.
+
+Fichiers partagés (ne pas modifier, signale le diff) : `src/components/ui/*`, `src/components/shared/{page-header,stat-card,empty-state,section}.tsx`, `src/app/globals.css`, `src/app/layout.tsx`, `package.json`.
+Après modification : `pnpm tsc --noEmit`, `pnpm lint`, `pnpm test`, et mets à jour les specs Playwright dont les libellés changent (`E2E_NO_SERVER=1 pnpm playwright test <spec> --project=desktop --output <dossier isolé>`, serveur de dev déjà lancé sur 3200). Les tirets cadratins changent des libellés : cherche-les dans `e2e/`. Ne relance pas `pnpm db:seed` en parallèle d'un autre agent : seul l'agent « seeds » le fait.
+Vérifie chaque point par `grep` sur ta zone avant de rendre ton rapport (donne les comptes avant/après).

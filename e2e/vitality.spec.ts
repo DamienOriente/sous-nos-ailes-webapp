@@ -18,7 +18,7 @@ test.beforeAll(async () => {
   pool = new Pool({ connectionString: DATABASE_URL, max: 2 });
   ({ eventId: bareEventId } = await ensureFixtureEvent());
   const r = await pool.query<{ id: string }>(`select id from events where name = 'Mariage de Louis et Lisa' and is_demo and deleted_at is null limit 1`);
-  if (!r.rows[0]) throw new Error("demo wedding missing — run pnpm db:seed");
+  if (!r.rows[0]) throw new Error("demo wedding missing, run pnpm db:seed");
   richEventId = r.rows[0].id;
   // The bare event starts empty every run.
   await pool.query(`delete from event_milestones where event_id = $1`, [bareEventId]);
@@ -55,7 +55,7 @@ test("liste des évènements et tableau de bord vivants (photos, moments, progre
   await expect(page.getByTestId("dashboard-providers").locator("li").first()).toBeVisible();
   await expect(page.getByTestId("dashboard-kids")).toContainText("Marie Delcourt");
   await expect(page.getByTestId("dashboard-messages").locator("li")).toHaveCount(5);
-  await expect(page.getByRole("heading", { name: "Météo de l'organisation" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Points d'attention" })).toBeVisible();
   await page.waitForLoadState("networkidle");
   await page.screenshot({ path: `${SHOTS}/dashboard.png`, fullPage: true });
 
@@ -89,7 +89,7 @@ test("états vides illustrés et exemples réels (moments classiques, budget typ
   await expect(page.getByRole("cell", { name: "Imprévus (5 %)", exact: true })).toBeVisible();
 
   await page.goto(`${base}/taches`);
-  await expect(page.getByTestId("tasks-empty")).toContainText("Réserver le traiteur — avant le 12 mars", { timeout: 60_000 });
+  await expect(page.getByTestId("tasks-empty")).toContainText("Réserver le traiteur avant le 12 mars", { timeout: 60_000 });
   await page.getByTestId("add-suggested-tasks").click();
   await expect(page.getByText(/tâches ajoutées/)).toBeVisible();
   await expect(page.getByText("Prévoir le plan B en cas de pluie")).toBeVisible();

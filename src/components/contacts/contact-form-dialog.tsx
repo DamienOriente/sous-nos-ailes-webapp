@@ -148,7 +148,7 @@ export function ContactFormDialog({
             </div>
             <FormMessage error={error} />
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
                 Annuler
               </Button>
               <Button type="submit" disabled={pending}>

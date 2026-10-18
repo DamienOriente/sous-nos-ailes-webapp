@@ -175,7 +175,7 @@ export async function sendQuote(actor: Actor, professionalId: string, inquiryId:
     if (inquiry.status !== "quoted" && !canTransitionInquiry(inquiry.status, "quoted")) throw new ConflictError("Impossible d'envoyer un devis à ce stade.");
     if (input.quoteCents < 0) throw new ValidationError("Montant invalide.");
     await tx.update(inquiries).set({ status: "quoted", quoteCents: input.quoteCents, quoteNote: input.quoteNote || null, quoteFileId: input.quoteFileId ?? null }).where(eq(inquiries.id, inquiryId));
-    await tx.insert(inquiryEvents).values({ inquiryId, actorUserId: actor.userId, fromStatus: inquiry.status === "quoted" ? null : inquiry.status, toStatus: inquiry.status === "quoted" ? null : "quoted", note: `Devis : ${(input.quoteCents / 100).toFixed(2)} €${input.quoteNote ? ` — ${input.quoteNote.slice(0, 500)}` : ""}` });
+    await tx.insert(inquiryEvents).values({ inquiryId, actorUserId: actor.userId, fromStatus: inquiry.status === "quoted" ? null : inquiry.status, toStatus: inquiry.status === "quoted" ? null : "quoted", note: `Devis : ${(input.quoteCents / 100).toFixed(2)} €${input.quoteNote ? ` : ${input.quoteNote.slice(0, 500)}` : ""}` });
     const amount = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(input.quoteCents / 100);
     await enqueueEmail(
       {

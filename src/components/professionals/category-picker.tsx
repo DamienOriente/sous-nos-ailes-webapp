@@ -1,6 +1,5 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CategoryIcon } from "@/components/professionals/category-icons";
 import { cn } from "@/lib/utils";
 
 export type CategoryOption = { id: string; slug: string; name: string; group: string; description: string | null; isChildcare: boolean; icon: string };
@@ -25,11 +24,11 @@ export function CategoryPicker({ categories, groups, primaryId, secondaryIds, sy
             if (!items.length) return null;
             return (
               <div key={g}>
-                <p className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">{g}</p>
+                <p className="mb-2 text-sm font-semibold">{g}</p>
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {items.map((c) => {
                     return (
-                      <label key={c.id} className={cn("flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring")}>
+                      <label key={c.id} className={cn("flex cursor-pointer items-start rounded-xl border p-3 transition-colors duration-150 hover:bg-muted has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring")}>
                         <input
                           type="radio"
                           name="primaryCategoryId"
@@ -44,7 +43,6 @@ export function CategoryPicker({ categories, groups, primaryId, secondaryIds, sy
                             router.replace(`?${next.toString()}`, { scroll: false });
                           }}
                         />
-                        <CategoryIcon icon={c.icon} className="mt-0.5 size-4 shrink-0 text-primary" />
                         <span>
                           <span className="block text-sm font-medium">{c.name}</span>
                           {c.description && <span className="block text-xs text-muted-foreground">{c.description}</span>}

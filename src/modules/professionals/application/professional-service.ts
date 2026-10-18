@@ -298,7 +298,7 @@ export async function submitForReview(actor: Actor, professionalId: string): Pro
     if (!canTransition(listing.status, "pending_review", "owner")) throw new ConflictError("Cette fiche ne peut pas être soumise dans son état actuel.");
     if (!listing.displayName || !listing.city) throw new ValidationError("Renseignez au moins le nom commercial et la ville avant de soumettre.");
     const { completeness } = await recomputeDerived(professionalId, tx);
-    if (completeness.score < SUBMISSION_MIN_SCORE) throw new ValidationError(`Complétez votre fiche (au moins ${SUBMISSION_MIN_SCORE} % — actuellement ${completeness.score} %).`);
+    if (completeness.score < SUBMISSION_MIN_SCORE) throw new ValidationError(`Complétez votre fiche (au moins ${SUBMISSION_MIN_SCORE} %, actuellement ${completeness.score} %).`);
     await tx.update(professionals).set({ status: "pending_review", statusReason: null }).where(eq(professionals.id, professionalId));
     await tx
       .insert(professionalVerifications)
@@ -378,7 +378,7 @@ export async function setListingStatusAsModerator(actor: Actor, professionalId: 
   requireGlobalPermission(actor, "moderation.decide");
   const [listing] = await executor.select().from(professionals).where(and(eq(professionals.id, professionalId), isNull(professionals.deletedAt))).limit(1);
   if (!listing) throw new NotFoundError();
-  if (!canTransition(listing.status, to, "moderator")) throw new ConflictError(`Transition ${listing.status} → ${to} impossible.`);
+  if (!canTransition(listing.status, to, "moderator")) throw new ConflictError(`Transition de ${listing.status} à ${to} impossible.`);
   await executor
     .update(professionals)
     .set({ status: to, statusReason: reason ?? null, publishedAt: to === "published" ? (listing.publishedAt ?? new Date()) : listing.publishedAt })

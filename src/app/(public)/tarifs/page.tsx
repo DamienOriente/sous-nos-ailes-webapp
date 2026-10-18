@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
 import { BillingFaq } from "@/components/billing/billing-faq";
 import { LiveBillingBanner } from "@/components/billing/live-billing-banner";
 import { PlanComparison } from "@/components/billing/plan-comparison";
@@ -12,7 +11,7 @@ import { getActor } from "@/lib/session";
 import { getSetting } from "@/modules/admin/application/settings-service";
 import { listPlans } from "@/modules/billing/application/subscription-service";
 
-export const metadata: Metadata = { title: "Tarifs — Sous Nos Ailes", description: "Offres gratuites et Premium pour les organisateurs d'évènements et les professionnels. Sans engagement, résiliable en ligne." };
+export const metadata: Metadata = { title: "Tarifs", description: "Offres gratuites et payantes pour les organisateurs d'évènements et pour les professionnels. Sans engagement, résiliables en ligne." };
 
 export default async function PricingPage() {
   const [organizerPlans, professionalPlans, liveEnabled, actor] = await Promise.all([listPlans("organizer"), listPlans("professional"), getSetting<boolean>("billing.live_enabled", false), getActor()]);
@@ -34,20 +33,20 @@ export default async function PricingPage() {
   };
   return (
     <>
-      <Section className="pb-8">
-        <Container className="space-y-6">
-          <PageHeader eyebrow="Tarifs" title="Une offre claire, sans engagement" description="L'essentiel est gratuit pour organiser votre évènement ou publier votre fiche. Les offres payantes ajoutent les outils avancés ; vous les résiliez en ligne quand vous voulez." />
+      <Section className="pb-0 sm:pb-0">
+        <Container className="space-y-8">
+          <PageHeader title="Tarifs" description="L'essentiel est gratuit : organiser un évènement ou publier une fiche. Les offres payantes ajoutent des outils, sans engagement, et se résilient en ligne à tout moment." />
           <LiveBillingBanner show={showBanner} />
         </Container>
       </Section>
-      <Section className="pt-0" id="organisateurs">
-        <Container className="space-y-6">
+      <Section id="organisateurs">
+        <Container className="space-y-8">
           <h2 className="text-2xl font-semibold">Pour les organisateurs</h2>
           <PlanComparison plans={organizerPlans} renderCta={(plan) => renderPlanCta("organizer", plan)} />
         </Container>
       </Section>
-      <Section className="pt-0" id="professionnels">
-        <Container className="space-y-6">
+      <Section className="pt-0 sm:pt-0" id="professionnels">
+        <Container className="space-y-8">
           <h2 className="text-2xl font-semibold">Pour les professionnels</h2>
           <PlanComparison plans={professionalPlans} renderCta={(plan) => renderPlanCta("professional", plan)} />
           <p className="text-sm text-muted-foreground text-pretty">
@@ -59,12 +58,12 @@ export default async function PricingPage() {
           </p>
         </Container>
       </Section>
-      <Section className="pt-0" id="faq">
-        <Container size="narrow" className="space-y-6">
+      <Section className="pt-0 sm:pt-0" id="faq">
+        <Container size="narrow" className="space-y-8">
           <h2 className="text-2xl font-semibold">Questions sur la facturation</h2>
           <BillingFaq />
-          <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <ShieldCheck className="size-4" aria-hidden="true" /> Paiement sécurisé par Stripe. Conditions détaillées dans les{" "}
+          <p className="text-sm text-muted-foreground">
+            Paiement par Stripe. Conditions détaillées dans les{" "}
             <Link href="/cgv" className="underline">
               CGV
             </Link>

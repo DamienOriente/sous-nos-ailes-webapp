@@ -22,7 +22,8 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
   }
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow={<Link href="/admin/categories" className="hover:underline">← Catégories</Link>} title={c.name} description={`${c.usageCount} fiche(s) rattachée(s)`} />
+      <Link href="/admin/categories" className="text-sm text-muted-foreground hover:underline">Retour aux catégories</Link>
+      <PageHeader  title={c.name} description={`${c.usageCount} fiche(s) rattachée(s)`} />
       <Card className="p-6">
         <CategoryForm action={updateCategoryAction} submitLabel="Enregistrer" values={{ ...c, description: c.description }} />
       </Card>

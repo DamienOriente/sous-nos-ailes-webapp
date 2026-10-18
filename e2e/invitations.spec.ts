@@ -62,7 +62,7 @@ test("créer une invitation, générer le QR, valider côté staff (accepté pui
   await page.getByTestId("checkin-submit").click();
   const result = page.getByTestId("checkin-result");
   await expect(result).toHaveAttribute("data-result", "accepted");
-  await expect(result).toContainText("Invitation valide — vérifiez l'identité si nécessaire");
+  await expect(result).toContainText("Invitation valide : vérifiez l'identité si nécessaire");
   await expect(result).toContainText("E2E Pauline");
   await page.getByLabel("Code d'accès").fill(qrUrl);
   await page.getByTestId("checkin-submit").click();

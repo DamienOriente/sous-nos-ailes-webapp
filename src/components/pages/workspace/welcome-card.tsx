@@ -62,11 +62,11 @@ export function WelcomeCard({
       </div>
       {/* The thumbnail renders a real page with its own links: a stretched link covers the card instead of wrapping them. */}
       {preview && template ? (
-        <div className="group relative rounded-xl border bg-muted/40 p-2 transition-shadow focus-within:outline-2 hover:shadow-lift">
+        <div className="group relative rounded-xl border bg-muted/40 p-2 focus-within:outline-2">
           <TemplateThumbnail templateKey={preview.data.templateKey} data={preview.data} className="aspect-[4/3] w-full overflow-hidden rounded-lg border bg-background" />
           <p className="mt-2 flex items-center justify-between gap-2 px-1 text-xs text-muted-foreground">
             <span>
-              {preview.kind === "published" ? "Page publiée" : "Brouillon"} · version {preview.versionNumber} · {template.name}
+              {preview.kind === "published" ? "Page publiée" : "Brouillon"}, version {preview.versionNumber}, {template.name}
             </span>
             <Link
               href={preview.kind === "published" ? `/pro/${slug}` : `${baseHref}/page/apercu`}

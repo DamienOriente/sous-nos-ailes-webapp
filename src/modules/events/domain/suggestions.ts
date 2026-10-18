@@ -172,8 +172,8 @@ export function budgetTemplateLabel(expectedGuests: number | null): string {
 export const TASK_SECTIONS = ["Lieu", "Prestataires", "Enfants", "Invités", "Budget", "Décoration", "Dernière ligne droite", "Autres"] as const;
 
 export const TASK_EXAMPLES: Record<string, string[]> = {
-  Lieu: ["Visiter le lieu avec le traiteur — avant le 12 mars", "Vérifier le plan B en cas de pluie"],
-  Prestataires: ["Réserver le traiteur — avant le 12 mars", "Demander trois devis de photographe"],
+  Lieu: ["Visiter le lieu avec le traiteur avant le 12 mars", "Vérifier le plan B en cas de pluie"],
+  Prestataires: ["Réserver le traiteur avant le 12 mars", "Demander trois devis de photographe"],
   Enfants: ["Confirmer le nombre d'enfants au responsable de la garde", "Prévoir deux lits parapluie pour la sieste"],
   Invités: ["Relancer les invités sans réponse", "Imprimer les marque-places"],
   Budget: ["Vérifier les acomptes versés", "Mettre à jour le budget après le devis traiteur"],

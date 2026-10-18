@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Download, QrCode, RefreshCw } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +29,7 @@ export function QrPanel({ eventId, invitationId, hasToken, disabled, onGenerate 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <QrCode className="size-4 text-primary" aria-hidden="true" /> QR code d'accès
+           QR code d'accès
         </CardTitle>
         <CardDescription>Code anonyme à usage unique, validé à l'entrée par votre équipe. Il ne contient aucune donnée personnelle.</CardDescription>
       </CardHeader>
@@ -52,14 +52,14 @@ export function QrPanel({ eventId, invitationId, hasToken, disabled, onGenerate 
                   <Download className="size-4" aria-hidden="true" /> SVG
                 </a>
               </Button>
-              <Button variant="ghost" size="sm" disabled={pending} onClick={() => generate(true)}>
-                <RefreshCw className="size-4" aria-hidden="true" /> Régénérer
+              <Button variant="outline" size="sm" disabled={pending} onClick={() => generate(true)}>
+                 Régénérer
               </Button>
             </div>
           </div>
         ) : (
           <Button onClick={() => generate(false)} disabled={pending || disabled} data-testid="generate-qr">
-            <QrCode className="size-4" aria-hidden="true" /> {pending ? "Génération…" : hasToken ? "Afficher le QR code" : "Générer le QR code"}
+             {pending ? "Génération…" : hasToken ? "Afficher le QR code" : "Générer le QR code"}
           </Button>
         )}
       </CardContent>

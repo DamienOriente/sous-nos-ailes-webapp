@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, FileText, ShieldCheck } from "lucide-react";
 import { ActionForm, ActionSubmit } from "@/components/admin/action-form";
 import { dateTime } from "@/components/admin/admin-table";
 import { DecisionForm } from "@/components/admin/decision-form";
@@ -59,8 +58,8 @@ export default async function ModerationCasePage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-6">
+      <Link href="/admin/moderation" className="text-sm text-muted-foreground hover:underline">Retour à la file de modération</Link>
       <PageHeader
-        eyebrow={<Link href="/admin/moderation" className="hover:underline">← File de modération</Link>}
         title={pro ? pro.displayName : `${c.resourceType} ${c.resourceId.slice(0, 8)}`}
         description={c.summary ?? undefined}
         actions={
@@ -102,21 +101,21 @@ export default async function ModerationCasePage({ params }: { params: Promise<{
                     Fiche admin
                   </Link>
                   {pro.status === "published" && (
-                    <Link href={`/pro/${pro.slug}`} className="inline-flex items-center gap-1 text-sm underline" target="_blank">
-                      Page publique <ExternalLink className="size-3" aria-hidden="true" />
+                    <Link href={`/pro/${pro.slug}`} className="text-sm underline" target="_blank">
+                      Page publique
                     </Link>
                   )}
                 </div>
               </div>
               <dl className="grid gap-3 text-sm sm:grid-cols-2">
                 <div><dt className="text-muted-foreground">Métier</dt><dd>{pro.categoryName}</dd></div>
-                <div><dt className="text-muted-foreground">Lieu</dt><dd>{[pro.city, pro.postalCode, pro.department].filter(Boolean).join(" · ") || "—"} (rayon {pro.interventionRadiusKm} km)</dd></div>
-                <div><dt className="text-muted-foreground">Propriétaire</dt><dd>{pro.ownerName} — {pro.ownerEmail}</dd></div>
-                <div><dt className="text-muted-foreground">Tarifs</dt><dd>{pro.priceFromCents ? `${formatEuros(pro.priceFromCents)}${pro.priceToCents ? ` – ${formatEuros(pro.priceToCents)}` : ""} ${pro.priceUnit ?? ""}` : "—"}</dd></div>
-                <div><dt className="text-muted-foreground">Expérience</dt><dd>{pro.yearsExperience ? `${pro.yearsExperience} ans` : "—"}</dd></div>
+                <div><dt className="text-muted-foreground">Lieu</dt><dd>{[pro.city, pro.postalCode, pro.department].filter(Boolean).join(" · ") || "Non renseigné"} (rayon {pro.interventionRadiusKm} km)</dd></div>
+                <div><dt className="text-muted-foreground">Propriétaire</dt><dd>{pro.ownerName}, {pro.ownerEmail}</dd></div>
+                <div><dt className="text-muted-foreground">Tarifs</dt><dd>{pro.priceFromCents ? `${formatEuros(pro.priceFromCents)}${pro.priceToCents ? ` – ${formatEuros(pro.priceToCents)}` : ""} ${pro.priceUnit ?? ""}` : "Non renseigné"}</dd></div>
+                <div><dt className="text-muted-foreground">Expérience</dt><dd>{pro.yearsExperience ? `${pro.yearsExperience} ans` : "Non renseignée"}</dd></div>
                 <div><dt className="text-muted-foreground">Complétude / vérification</dt><dd>{pro.completenessScore} % · niveau {pro.verificationLevel} ({verificationLevelLabel(pro.verificationLevel)})</dd></div>
                 <div><dt className="text-muted-foreground">Services enfants</dt><dd>{pro.acceptsChildrenServices ? "Oui" : "Non"}</dd></div>
-                <div><dt className="text-muted-foreground">Contact public</dt><dd>{[pro.publicEmail, pro.publicPhone, pro.website].filter(Boolean).join(" · ") || "—"}</dd></div>
+                <div><dt className="text-muted-foreground">Contact public</dt><dd>{[pro.publicEmail, pro.publicPhone, pro.website].filter(Boolean).join(" · ") || "Non renseigné"}</dd></div>
               </dl>
               {pro.tagline && <p className="font-medium">{pro.tagline}</p>}
               {pro.description && <p className="whitespace-pre-wrap text-sm text-pretty">{pro.description}</p>}
@@ -154,10 +153,8 @@ export default async function ModerationCasePage({ params }: { params: Promise<{
 
           {pro && (
             <Card className="gap-4 p-6">
-              <h2 className="flex items-center gap-2 font-semibold">
-                <ShieldCheck className="size-4" aria-hidden="true" /> Vérifications
-              </h2>
-              <p className="text-xs text-muted-foreground">Chaque ligne indique précisément ce qui a été contrôlé. Le niveau public est recalculé automatiquement (identité → immatriculation → justificatifs → assurance → qualifications).</p>
+              <h2 className="font-semibold">Vérifications</h2>
+              <p className="text-xs text-muted-foreground">Chaque ligne indique précisément ce qui a été contrôlé. Le niveau public est recalculé automatiquement (identité, immatriculation, justificatifs, assurance, qualifications).</p>
               <ul className="divide-y text-sm">
                 {VERIFICATION_KINDS.map((kind) => {
                   const row = pro.verifications.find((v) => v.kind === kind);
@@ -171,7 +168,7 @@ export default async function ModerationCasePage({ params }: { params: Promise<{
                         </div>
                         <StatusBadge tone={row?.status === "verified" ? "success" : row?.status === "rejected" ? "danger" : row?.status === "pending" ? "warning" : "neutral"}>{row?.status ?? "non renseigné"}</StatusBadge>
                       </div>
-                      {row?.statement && <p className="text-xs">« {row.statement} »{row.reviewedAt ? ` — ${dateTime(row.reviewedAt)}` : ""}</p>}
+                      {row?.statement && <p className="text-xs">« {row.statement} »{row.reviewedAt ? ` · ${dateTime(row.reviewedAt)}` : ""}</p>}
                       {canDecide && (
                         <details>
                           <summary className="cursor-pointer text-xs underline">Marquer vérifié / rejeté</summary>
@@ -209,9 +206,7 @@ export default async function ModerationCasePage({ params }: { params: Promise<{
 
           {pro && (
             <Card className="gap-4 p-6">
-              <h2 className="flex items-center gap-2 font-semibold">
-                <FileText className="size-4" aria-hidden="true" /> Justificatifs ({pro.documents.length})
-              </h2>
+              <h2 className="font-semibold">Justificatifs ({pro.documents.length})</h2>
               {!canSeeDocs ? (
                 <p className="text-sm text-muted-foreground">Accès réservé aux comptes disposant de la permission « moderation.documents.view ».</p>
               ) : pro.documents.length === 0 ? (
@@ -221,7 +216,7 @@ export default async function ModerationCasePage({ params }: { params: Promise<{
                   {pro.documents.map((doc) => (
                     <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                       <div>
-                        <p className="font-medium">{DOCUMENT_KIND_LABELS[doc.kind as DocumentKind]}{doc.label ? ` — ${doc.label}` : ""}</p>
+                        <p className="font-medium">{DOCUMENT_KIND_LABELS[doc.kind as DocumentKind]}{doc.label ? ` : ${doc.label}` : ""}</p>
                         <p className="text-xs text-muted-foreground">
                           Transmis le {dateTime(doc.createdAt)} · <StatusBadge tone={doc.status === "verified" ? "success" : doc.status === "rejected" ? "danger" : "warning"}>{doc.status}</StatusBadge>
                           {doc.reviewNote ? ` · ${doc.reviewNote}` : ""}

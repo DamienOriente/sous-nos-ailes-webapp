@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, FileDown, Printer } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Paywall } from "@/components/billing/paywall";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,17 +32,15 @@ export default async function InvitationDetailPage({ params }: { params: Promise
   const dateTime = (d: Date) => formatDateFr(d, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   return (
     <div className="space-y-6">
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link href={`/app/evenements/${id}/invitations`}>
-          <ArrowLeft className="size-4" aria-hidden="true" /> Invitations
-        </Link>
-      </Button>
+      <Link href={`/app/evenements/${id}/invitations`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Invitations</Link>
       <PageHeader
-        eyebrow={`${INVITATION_KIND_LABELS[invitation.kind as InvitationKind] ?? invitation.kind} · ${guests.length} invité(s)`}
         title={invitation.recipientName}
         description={
           <span className="flex flex-wrap items-center gap-2">
             <StatusBadge tone={INVITATION_STATUS_TONES[invitation.status]}>{INVITATION_STATUS_LABELS[invitation.status]}</StatusBadge>
+            <span>
+              {INVITATION_KIND_LABELS[invitation.kind as InvitationKind] ?? invitation.kind} · {guests.length} invité{guests.length > 1 ? "s" : ""}
+            </span>
             {invitation.recipientEmail && <span>{invitation.recipientEmail}</span>}
             {invitation.expiresAt && <span className="text-xs">Lien valable jusqu'au {formatDateFr(invitation.expiresAt)}</span>}
           </span>
@@ -51,12 +49,12 @@ export default async function InvitationDetailPage({ params }: { params: Promise
           <>
             <Button asChild variant="outline" size="sm">
               <Link href={`/app/evenements/${id}/invitations/${invitationId}/apercu`}>
-                <Printer className="size-4" aria-hidden="true" /> Aperçu imprimable
+                 Aperçu imprimable
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <a href={`/api/events/${id}/invitations/${invitationId}/pdf`}>
-                <FileDown className="size-4" aria-hidden="true" /> PDF
+                 PDF
               </a>
             </Button>
           </>

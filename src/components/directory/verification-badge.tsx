@@ -1,5 +1,4 @@
 "use client";
-import { ShieldCheck, ShieldQuestion } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { verificationLevelLabel } from "@/modules/professionals/domain/verification";
@@ -10,7 +9,6 @@ import { verificationLevelLabel } from "@/modules/professionals/domain/verificat
  */
 export function VerificationBadge({ level, statements, className, size = "sm" }: { level: number; statements?: string[]; className?: string; size?: "sm" | "md" }) {
   const label = verificationLevelLabel(level);
-  const Icon = level > 0 ? ShieldCheck : ShieldQuestion;
   const tone = level >= 4 ? "bg-success/15 text-sage-deep dark:text-success" : level >= 2 ? "bg-info/15 text-[oklch(0.42_0.1_235)] dark:text-info" : level === 1 ? "bg-muted text-muted-foreground" : "bg-muted text-muted-foreground";
   const details = statements && statements.length ? statements : level === 0 ? ["Aucune vérification effectuée par la plateforme pour le moment."] : [label];
   // Self-contained provider: the badge is rendered in public pages that have no global TooltipProvider.
@@ -19,13 +17,12 @@ export function VerificationBadge({ level, statements, className, size = "sm" }:
       <Tooltip>
         <TooltipTrigger asChild>
         <span
-          className={cn("inline-flex items-center gap-1 rounded-full font-medium", size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-sm", tone, className)}
+          className={cn("inline-flex items-center rounded-full font-medium", size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-sm", tone, className)}
           data-testid="verification-badge"
           data-level={level}
           tabIndex={0}
           aria-label={`Niveau de vérification : ${label}`}
         >
-          <Icon className={size === "sm" ? "size-3.5" : "size-4"} aria-hidden="true" />
           {label}
         </span>
       </TooltipTrigger>

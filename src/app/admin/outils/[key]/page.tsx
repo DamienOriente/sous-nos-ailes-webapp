@@ -22,7 +22,8 @@ export default async function EditToolPage({ params }: { params: Promise<{ key: 
   }
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow={<Link href="/admin/outils" className="hover:underline">← Outils</Link>} title={t.name} description={<code>{t.key}</code>} />
+      <Link href="/admin/outils" className="text-sm text-muted-foreground hover:underline">Retour aux outils</Link>
+      <PageHeader  title={t.name} description={<code>{t.key}</code>} />
       <Card className="p-6">
         <ToolForm action={updateToolAction} isNew={false} submitLabel="Enregistrer" values={t} />
       </Card>

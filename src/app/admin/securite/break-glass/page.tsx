@@ -1,4 +1,3 @@
-import { ShieldAlert } from "lucide-react";
 import { ActionForm, ActionSubmit } from "@/components/admin/action-form";
 import { AdminTable, dateTime } from "@/components/admin/admin-table";
 import { PageHeader } from "@/components/shared/page-header";
@@ -30,10 +29,10 @@ export default async function BreakGlassPage() {
   const grants = await listBreakGlassGrants(actor);
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Sécurité" title="Accès exceptionnel (break-glass)" description="Réservé aux super administrateurs. Accès temporaire et explicite à un évènement pour une demande légale ou un incident de sécurité. Le propriétaire de l'évènement est prévenu ; tout est journalisé." />
+      <PageHeader title="Accès exceptionnel (break-glass)" description="Réservé aux super administrateurs. Accès temporaire et explicite à un évènement pour une demande légale ou un incident de sécurité. Le propriétaire de l'évènement est prévenu ; tout est journalisé." />
       <SecuritySubnav current="/admin/securite/break-glass" showBreakGlass />
       <Card className="gap-4 border-destructive/40 p-6">
-        <h2 className="flex items-center gap-2 font-semibold"><ShieldAlert className="size-4 text-destructive" aria-hidden="true" /> Nouvel accès exceptionnel</h2>
+        <h2 className="font-semibold">Nouvel accès exceptionnel</h2>
         <ActionForm action={grantBreakGlassAction} successMessage="Accès accordé. Le propriétaire a été notifié." resetOnSuccess className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
@@ -47,7 +46,7 @@ export default async function BreakGlassPage() {
           </div>
           <div className="space-y-1">
             <Label htmlFor="legalReason">Motif juridique (obligatoire, conservé dans l'audit)</Label>
-            <Textarea id="legalReason" name="legalReason" required minLength={20} rows={3} placeholder="Ex. : réquisition judiciaire n° … reçue le …, portant sur …" />
+            <Textarea id="legalReason" name="legalReason" required minLength={20} rows={3} placeholder="Ex. : réquisition judiciaire n° (numéro) reçue le (date), portant sur (objet)" />
           </div>
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">Droits accordés (le minimum nécessaire)</legend>
@@ -70,7 +69,7 @@ export default async function BreakGlassPage() {
           { key: "event", header: "Évènement", cell: (r) => (<div><span className="font-medium">{r.eventName}</span><p className="text-xs text-muted-foreground">{r.eventId}</p></div>) },
           { key: "user", header: "Compte", cell: (r) => <code className="text-xs">{r.userId.slice(0, 10)}…</code> },
           { key: "status", header: "Statut", cell: (r) => (r.status === "active" ? <StatusBadge tone="danger">actif</StatusBadge> : <StatusBadge tone="neutral">révoqué {r.revokedAt ? dateTime(r.revokedAt) : ""}</StatusBadge>) },
-          { key: "expires", header: "Expire", cell: (r) => <span className="text-muted-foreground">{r.expiresAt ? dateTime(r.expiresAt) : "—"}</span> },
+          { key: "expires", header: "Expire", cell: (r) => <span className="text-muted-foreground">{r.expiresAt ? dateTime(r.expiresAt) : "n/d"}</span> },
           { key: "granted", header: "Accordé le", cell: (r) => <span className="text-muted-foreground">{dateTime(r.joinedAt)}</span> },
           {
             key: "actions",

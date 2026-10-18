@@ -20,10 +20,10 @@ export type ProcessingActivity = {
 };
 
 export const PROCESSOR_LIST: Array<{ role: string; name: string; location: string; purpose: string; status: string }> = [
-  { role: "Hébergement applicatif et base de données", name: "[À COMPLÉTER — OVHcloud pressenti]", location: "Union européenne (France)", purpose: "Exécution du service", status: "À contractualiser (DPA)" },
-  { role: "Stockage de fichiers (S3)", name: "[À COMPLÉTER — Scaleway ou OVH Object Storage pressenti]", location: "Union européenne", purpose: "Fichiers déposés, sauvegardes chiffrées", status: "À contractualiser (DPA)" },
+  { role: "Hébergement applicatif et base de données", name: "[À COMPLÉTER : OVHcloud pressenti]", location: "Union européenne (France)", purpose: "Exécution du service", status: "À contractualiser (DPA)" },
+  { role: "Stockage de fichiers (S3)", name: "[À COMPLÉTER : Scaleway ou OVH Object Storage pressenti]", location: "Union européenne", purpose: "Fichiers déposés, sauvegardes chiffrées", status: "À contractualiser (DPA)" },
   { role: "Paiement", name: "Stripe (mode test uniquement en V1)", location: "UE/États-Unis (clauses contractuelles types)", purpose: "Abonnements payants", status: "Aucune donnée réelle tant que le mode live est inactif" },
-  { role: "E-mails transactionnels", name: "[À COMPLÉTER — relais SMTP, Brevo pressenti]", location: "Union européenne", purpose: "Vérification d'e-mail, notifications, invitations", status: "À contractualiser (DPA)" },
+  { role: "E-mails transactionnels", name: "[À COMPLÉTER : relais SMTP, Brevo pressenti]", location: "Union européenne", purpose: "Vérification d'e-mail, notifications, invitations", status: "À contractualiser (DPA)" },
   { role: "Calendriers externes (optionnel, à l'initiative de l'utilisateur)", name: "Google Calendar, Microsoft 365", location: "Hors UE possible", purpose: "Synchronisation d'agenda demandée par l'utilisateur", status: "Consentement par connexion OAuth ; jetons chiffrés" },
 ];
 
@@ -44,7 +44,7 @@ export const PROCESSING_REGISTRY: ProcessingActivity[] = [
     key: "professionals",
     name: "Fiches professionnelles et vérification",
     purpose: "Publier une fiche dans l'annuaire, vérifier les déclarations, modérer.",
-    legalBasis: "Exécution du contrat ; intérêt légitime (fiabilité de la mise en relation). [À COMPLÉTER : base légale et durée pour les justificatifs — Kbis, attestation d'assurance, diplômes.]",
+    legalBasis: "Exécution du contrat ; intérêt légitime (fiabilité de la mise en relation). [À COMPLÉTER : base légale et durée pour les justificatifs : Kbis, attestation d'assurance, diplômes.]",
     subjects: "Professionnels et leurs organisations.",
     dataCategories: ["Identité professionnelle, coordonnées publiques, zone, tarifs", "Pièces justificatives (Kbis/SIRENE, assurance, qualification)", "Historique de modération et de vérification"],
     recipients: "Public (fiche publiée uniquement) ; équipe de modération (justificatifs).",
@@ -82,7 +82,7 @@ export const PROCESSING_REGISTRY: ProcessingActivity[] = [
     purpose: "Permettre à l'équipe de garde de prendre en charge les enfants en sécurité : présence, remise aux personnes autorisées, consignes.",
     legalBasis: "Exécution de la prestation au nom de l'organisateur ; données de santé : consentement explicite du responsable légal (art. 9.2.a). [À COMPLÉTER : validation juridique, information des parents.]",
     subjects: "Enfants mineurs, responsables légaux, personnes autorisées, contacts d'urgence.",
-    dataCategories: ["Prénom, âge (pas de date de naissance), responsable légal et téléphone", "Personnes autorisées à récupérer l'enfant", "Allergies et consignes médicales — chiffrées AES-256-GCM", "Présences, remises, journal des accès"],
+    dataCategories: ["Prénom, âge (pas de date de naissance), responsable légal et téléphone", "Personnes autorisées à récupérer l'enfant", "Allergies et consignes médicales, chiffrées en AES-256-GCM", "Présences, remises, journal des accès"],
     recipients: "Organisateur ; équipe de garde affectée uniquement (ABAC par enfant) ; jamais par e-mail ni QR code.",
     retention: "Anonymisation automatique {{retention.children_days_after_event}} jours après la fin de l'évènement (prénom, nom, contacts remplacés ; données de santé supprimées).",
     security: "Chiffrement colonne, permission children.view_sensitive restreinte, journal child_access_logs, aucune donnée de santé dans les logs/e-mails/exports.",
@@ -132,7 +132,7 @@ export const PROCESSING_REGISTRY: ProcessingActivity[] = [
     purpose: "Détecter les abus, prouver qui a fait quoi sur les actions sensibles.",
     legalBasis: "Intérêt légitime (sécurité) ; obligation légale (traçabilité des accès aux données sensibles).",
     subjects: "Tous les utilisateurs.",
-    dataCategories: ["Action, ressource, horodatage, IP, identifiant de requête — jamais de secret ni de contenu"],
+    dataCategories: ["Action, ressource, horodatage, IP, identifiant de requête, jamais de secret ni de contenu"],
     recipients: "Administrateurs de la plateforme.",
     retention: "{{retention.audit_logs_months}} mois (purge quotidienne).",
     security: "Rédaction des champs sensibles dans le logger, accès réservé à admin.security.view.",
@@ -156,9 +156,9 @@ export const PROCESSING_REGISTRY: ProcessingActivity[] = [
     purpose: "Comprendre l'usage du produit (inscriptions, créations d'évènements, recherches) pour l'améliorer.",
     legalBasis: "Intérêt légitime pour les utilisateurs connectés (mesure minimisée, interne) ; consentement pour les visiteurs anonymes.",
     subjects: "Utilisateurs, visiteurs ayant consenti.",
-    dataCategories: ["Nom de l'évènement produit, identifiant utilisateur ou identifiant aléatoire, propriétés énumérées (type d'évènement, catégorie) — jamais de texte libre"],
+    dataCategories: ["Nom de l'évènement produit, identifiant utilisateur ou identifiant aléatoire, propriétés énumérées (type d'évènement, catégorie), jamais de texte libre"],
     recipients: "Équipe interne.",
-    retention: "[À COMPLÉTER — 13 mois proposés].",
+    retention: "[À COMPLÉTER : 13 mois proposés].",
     security: "Aucun outil tiers, aucune empreinte, aucune donnée de santé.",
     tables: ["product_events"],
   },

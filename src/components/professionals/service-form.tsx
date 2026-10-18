@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Pencil, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -40,7 +40,7 @@ export function ServicesManager({ professionalId, services, saveAction, deleteAc
                   <div className="min-w-0 space-y-1">
                     <p className="font-medium">
                       {s.name}
-                      {!s.isActive && <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Masquée</span>}
+                      {!s.isActive && <span className="ml-2 text-sm font-normal text-muted-foreground">(masquée)</span>}
                     </p>
                     {s.description && <p className="text-sm text-muted-foreground">{s.description}</p>}
                     <p className="text-sm">
@@ -58,7 +58,6 @@ export function ServicesManager({ professionalId, services, saveAction, deleteAc
                       <ArrowDown className="size-4" aria-hidden="true" />
                     </Button>
                     <Button type="button" variant="outline" size="sm" onClick={() => setEditing(s.id)}>
-                      <Pencil className="size-4" aria-hidden="true" />
                       Modifier
                     </Button>
                     <ConfirmDialog
@@ -100,7 +99,7 @@ function ServiceFields({ professionalId, service, action, onDone }: { profession
     return res;
   };
   return (
-    <ActionForm action={wrapped} submitLabel={service ? "Enregistrer" : "Ajouter"} successMessage={service ? "Prestation mise à jour." : "Prestation ajoutée."} footer={<Button type="button" variant="ghost" onClick={onDone}>Annuler</Button>}>
+    <ActionForm action={wrapped} submitLabel={service ? "Enregistrer" : "Ajouter"} successMessage={service ? "Prestation mise à jour." : "Prestation ajoutée."} footer={<Button type="button" variant="outline" onClick={onDone}>Annuler</Button>}>
       <input type="hidden" name="professionalId" value={professionalId} />
       {service && <input type="hidden" name="serviceId" value={service.id} />}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -123,7 +122,7 @@ function ServiceFields({ professionalId, service, action, onDone }: { profession
         <div className="space-y-2">
           <Label htmlFor={`svc-unit-${service?.id ?? "new"}`}>Unité</Label>
           <select id={`svc-unit-${service?.id ?? "new"}`} name="priceUnit" defaultValue={service?.priceUnit ?? ""} className="h-9 w-full rounded-lg border bg-background px-3 text-sm">
-            <option value="">—</option>
+            <option value="">Non précisée</option>
             {PRICE_UNITS.map((u) => (
               <option key={u.value} value={u.value}>
                 {u.label}

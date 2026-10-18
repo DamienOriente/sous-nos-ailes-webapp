@@ -50,7 +50,7 @@ test.describe("constructeur de page publique", () => {
 
     // 1. Edit the hero title: live preview and autosave.
     await page.getByTestId("section-hero").click();
-    const newTitle = `${listing.displayName} — test ${Date.now().toString().slice(-5)}`;
+    const newTitle = `${listing.displayName} test ${Date.now().toString().slice(-5)}`;
     const titleInput = page.getByTestId("hero-title-input");
     await titleInput.fill(newTitle);
     await expect(page.getByTestId("live-preview").getByRole("heading", { level: 1 })).toHaveText(newTitle);

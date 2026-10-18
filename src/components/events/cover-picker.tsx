@@ -2,7 +2,7 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Check, ImageIcon, UploadCloud } from "lucide-react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { FileUpload } from "@/components/files/file-upload";
 import { FormMessage } from "@/components/shared/form-message";
@@ -58,7 +58,7 @@ export function CoverPicker({ eventId, catalog, currentPhotoId, currentFileId, a
               >
                 <Image src={unsplashUrl(p.id, { w: 480, h: 360 })} alt="" fill sizes="(max-width: 640px) 33vw, 20vw" className="object-cover" />
                 {selected && (
-                  <span className="absolute right-1.5 top-1.5 inline-flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
+                  <span className="absolute right-1.5 top-1.5 inline-flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
                     <Check className="size-3.5" aria-hidden="true" />
                   </span>
                 )}
@@ -69,22 +69,16 @@ export function CoverPicker({ eventId, catalog, currentPhotoId, currentFileId, a
       </ul>
       <div className="rounded-xl border p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="inline-flex items-center gap-2 text-sm font-medium">
-            <ImageIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-            Votre propre photo
-          </p>
+          <p className="text-sm font-medium">Votre propre photo</p>
           {uploaded ? (
             <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 font-medium text-success">
-                <Check className="size-3" aria-hidden="true" /> utilisée
-              </span>
+              <span className="font-medium text-foreground">Photo utilisée</span>
               <a href={privateFileHref(uploaded)} target="_blank" rel="noreferrer" className="text-primary hover:underline">
                 Voir
               </a>
             </span>
           ) : (
             <Button type="button" variant="outline" size="sm" onClick={() => setShowUpload((v) => !v)} aria-expanded={showUpload}>
-              <UploadCloud className="size-3.5" aria-hidden="true" />
               Téléverser une photo
             </Button>
           )}

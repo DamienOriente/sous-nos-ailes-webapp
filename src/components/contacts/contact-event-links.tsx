@@ -2,7 +2,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarPlus, X } from "lucide-react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,7 +54,7 @@ export function ContactEventLinks({ contactId, linked, linkable, onToggle }: { c
               ))}
             </select>
             <Button size="sm" disabled={!selected || pending} onClick={() => toggle(selected, true)}>
-              <CalendarPlus className="size-4" aria-hidden="true" /> Associer
+               Associer
             </Button>
           </div>
         )}

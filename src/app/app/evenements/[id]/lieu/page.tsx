@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +14,7 @@ import { privateFileHref } from "@/modules/files/application/file-urls";
 import { getVenueOverview, SPACE_USAGE_LABELS, SPACE_USAGES } from "@/modules/trade-tools/application/venue-service";
 import { addAllocationAction, addSpaceAction, deleteAllocationAction, deleteSpaceAction, saveLogisticsAction } from "./actions";
 
-export const metadata = { title: "Lieu — Sous Nos Ailes" };
+export const metadata = { title: "Lieu" };
 
 export default async function VenuePage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = await params;
@@ -27,12 +26,12 @@ export default async function VenuePage({ params }: { params: Promise<{ id: stri
   const { spaces, allocations, logistics, milestones, providers, documents } = data;
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Outil métier" title="Lieu" description="Espaces, affectation des moments, contraintes techniques, planning d'installation et intervenants attendus." />
+      <PageHeader title="Lieu" description="Espaces, affectation des moments, contraintes techniques, planning d'installation et intervenants attendus." />
       <div className="grid gap-6 lg:grid-cols-2">
         <ToolSection
           title="Espaces du lieu"
           action={
-            <ActionDialog trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter</Button>} title="Nouvel espace" action={addSpaceAction.bind(null, eventId)} successMessage="Espace ajouté.">
+            <ActionDialog trigger={<Button size="sm">Ajouter</Button>} title="Nouvel espace" action={addSpaceAction.bind(null, eventId)} successMessage="Espace ajouté.">
               <div className="space-y-1.5">
                 <Label htmlFor="sp-name">Nom *</Label>
                 <Input id="sp-name" name="name" required placeholder="Orangerie" />
@@ -87,7 +86,7 @@ export default async function VenuePage({ params }: { params: Promise<{ id: stri
           description="Quel espace accueille quel moment du planning."
           action={
             spaces.length > 0 && (
-              <ActionDialog trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Affecter</Button>} title="Affecter un espace à un moment" action={addAllocationAction.bind(null, eventId)} successMessage="Affectation ajoutée.">
+              <ActionDialog trigger={<Button size="sm">Affecter</Button>} title="Affecter un espace à un moment" action={addAllocationAction.bind(null, eventId)} successMessage="Affectation ajoutée.">
                 <div className="space-y-1.5">
                   <Label htmlFor="al-space">Espace *</Label>
                   <select id="al-space" name="spaceId" required className="h-8 w-full rounded-lg border bg-background px-2 text-sm">
@@ -138,10 +137,10 @@ export default async function VenuePage({ params }: { params: Promise<{ id: stri
                   <div>
                     <div className="text-xs tabular-nums text-muted-foreground">
                       {formatDateTime(a.startsAt, timezone)}
-                      {a.endsAt ? ` → ${formatTime(a.endsAt, timezone)}` : ""}
+                      {a.endsAt ? ` à ${formatTime(a.endsAt, timezone)}` : ""}
                     </div>
                     <div className="font-medium">
-                      {a.label} <span className="text-muted-foreground">— {a.spaceName}</span>
+                      {a.label} <span className="text-muted-foreground">({a.spaceName})</span>
                     </div>
                   </div>
                   <DeleteItemButton label={a.label} onConfirm={deleteAllocationAction.bind(null, eventId, a.id)} />
@@ -187,11 +186,11 @@ export default async function VenuePage({ params }: { params: Promise<{ id: stri
                 <li key={p.id} className="flex items-center justify-between gap-3 py-2">
                   <div>
                     <div className="font-medium">{p.name ?? p.externalName ?? "Prestataire"}</div>
-                    <div className="text-muted-foreground">{p.category ?? "—"}</div>
+                    <div className="text-muted-foreground">{p.category ?? "Non renseignée"}</div>
                   </div>
                   <div className="text-right text-xs text-muted-foreground">
                     {p.serviceStartsAt ? formatDateTime(p.serviceStartsAt, timezone) : "Créneau à préciser"}
-                    {p.serviceEndsAt ? ` → ${formatTime(p.serviceEndsAt, timezone)}` : ""}
+                    {p.serviceEndsAt ? ` à ${formatTime(p.serviceEndsAt, timezone)}` : ""}
                   </div>
                 </li>
               ))}
@@ -211,7 +210,7 @@ export default async function VenuePage({ params }: { params: Promise<{ id: stri
               {documents.map((d) => (
                 <li key={d.id}>
                   <a href={privateFileHref(d.fileId)} className="inline-flex items-center gap-2 hover:underline">
-                    <FileText className="size-4" aria-hidden="true" /> {d.title}
+                     {d.title}
                   </a>
                 </li>
               ))}

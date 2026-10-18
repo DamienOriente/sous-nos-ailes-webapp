@@ -33,13 +33,13 @@ const BASE_TIPS = {
 
 export const LISTING_EXAMPLES: Record<string, ListingExample> = {
   childcare: {
-    displayName: "Les Petites Ailes — Garde d'enfants évènementielle",
+    displayName: "Les Petites Ailes, garde d'enfants évènementielle",
     city: "Toulouse",
     postalCode: "31000",
     organizationType: "sole_trader",
     interventionRadiusKm: 80,
     tradeDetails: { experienceYears: 7, ageRanges: ["1-3", "3-6", "6-10"], services: ["supervision", "activities", "nap_space", "ceremony"], legalStatus: "micro" },
-    tagline: "Un coin enfants serein pendant votre réception, de la cérémonie au dessert.",
+    tagline: "Un coin enfants encadré pendant votre réception, de la cérémonie au dessert.",
     description:
       "Nous accueillons les enfants de vos invités dans un espace dédié et sécurisé : jeux calmes pendant les discours, ateliers créatifs, espace sieste pour les plus petits et remise de chaque enfant à une personne autorisée. Une intervenante pour six enfants au maximum, formée aux premiers secours. Avant le jour J, nous préparons ensemble la liste des enfants, leurs âges et les consignes des parents.",
     priceFromEuros: 35,
@@ -55,7 +55,7 @@ export const LISTING_EXAMPLES: Record<string, ListingExample> = {
     },
   },
   animation: {
-    displayName: "Atelier Pirouette — Animations pour enfants",
+    displayName: "Atelier Pirouette, animations pour enfants",
     city: "Bordeaux",
     postalCode: "33000",
     organizationType: "sole_trader",
@@ -77,7 +77,7 @@ export const LISTING_EXAMPLES: Record<string, ListingExample> = {
     },
   },
   dj: {
-    displayName: "Nuit Blanche — DJ & sonorisation",
+    displayName: "Nuit Blanche, DJ & sonorisation",
     city: "Montauban",
     postalCode: "82000",
     organizationType: "sole_trader",
@@ -121,7 +121,7 @@ export const LISTING_EXAMPLES: Record<string, ListingExample> = {
     },
   },
   caterer: {
-    displayName: "Maison Garrigue — Traiteur",
+    displayName: "Maison Garrigue, traiteur",
     city: "Albi",
     postalCode: "81000",
     organizationType: "company",
@@ -143,7 +143,7 @@ export const LISTING_EXAMPLES: Record<string, ListingExample> = {
     },
   },
   photo: {
-    displayName: "Lumière d'Été — Photographe",
+    displayName: "Lumière d'Été, photographe",
     city: "Toulouse",
     postalCode: "31000",
     organizationType: "sole_trader",
@@ -165,7 +165,7 @@ export const LISTING_EXAMPLES: Record<string, ListingExample> = {
     },
   },
   planner: {
-    displayName: "Camélia Évènements — Wedding planner",
+    displayName: "Camélia Évènements, wedding planner",
     city: "Toulouse",
     postalCode: "31000",
     organizationType: "company",
@@ -187,7 +187,7 @@ export const LISTING_EXAMPLES: Record<string, ListingExample> = {
     },
   },
   generic: {
-    displayName: "Atelier Pétale — Fleuriste",
+    displayName: "Atelier Pétale, fleuriste",
     city: "Montpellier",
     postalCode: "34000",
     organizationType: "sole_trader",

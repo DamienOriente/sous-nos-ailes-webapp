@@ -1,7 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Crown, KeyRound, LogOut, ShieldAlert, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { FormMessage } from "@/components/shared/form-message";
@@ -53,7 +52,6 @@ export function MemberRow({ eventId, member, isOwnerRow, viewer, categories, act
           <p className="flex flex-wrap items-center gap-2 text-sm">
             <span className="font-medium">{member.name}</span>
             {member.isSelf && <span className="text-xs text-muted-foreground">(vous)</span>}
-            {isOwnerRow && <Crown className="size-3.5 text-gold" aria-label="Propriétaire" />}
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {EVENT_ROLE_LABELS[member.role]}
@@ -65,8 +63,8 @@ export function MemberRow({ eventId, member, isOwnerRow, viewer, categories, act
             <p className="mt-1 flex flex-wrap gap-1">
               {member.overrides.map((o) => (
                 <StatusBadge key={o.id} tone={o.effect === "allow" ? "success" : "danger"} dot={false} className="text-[11px]">
-                  {o.effect === "allow" ? "+" : "−"} {o.permission}
-                  {o.expiresAt ? ` (→ ${formatDateFr(o.expiresAt, { day: "numeric", month: "short" })})` : ""}
+                  {o.effect === "allow" ? "Autorisé" : "Retiré"} : {o.permission}
+                  {o.expiresAt ? ` (jusqu'au ${formatDateFr(o.expiresAt, { day: "numeric", month: "short" })})` : ""}
                 </StatusBadge>
               ))}
             </p>
@@ -79,8 +77,7 @@ export function MemberRow({ eventId, member, isOwnerRow, viewer, categories, act
         {viewer.isOwner && editable && (
           <ConfirmDialog
             trigger={
-              <Button variant="ghost" size="sm">
-                <Crown className="size-3.5" aria-hidden="true" />
+              <Button variant="outline" size="sm">
                 Transférer
               </Button>
             }
@@ -97,8 +94,7 @@ export function MemberRow({ eventId, member, isOwnerRow, viewer, categories, act
         {viewer.canManage && editable && (
           <ConfirmDialog
             trigger={
-              <Button variant="ghost" size="sm" className="text-destructive">
-                <UserX className="size-3.5" aria-hidden="true" />
+              <Button variant="outline" size="sm" className="text-destructive">
                 Révoquer
               </Button>
             }
@@ -129,7 +125,7 @@ function RoleDialog({ eventId, member, categories, canElevate, action }: { event
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
+        <Button variant="outline" size="sm">
           Rôle
         </Button>
       </DialogTrigger>
@@ -192,7 +188,7 @@ function RoleDialog({ eventId, member, categories, canElevate, action }: { event
           </div>
           <FormMessage error={error} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending}>
@@ -230,8 +226,7 @@ function PermissionsDialog({ eventId, member, actions }: { eventId: string; memb
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <KeyRound className="size-3.5" aria-hidden="true" />
+        <Button variant="outline" size="sm">
           Permissions
         </Button>
       </DialogTrigger>
@@ -247,10 +242,10 @@ function PermissionsDialog({ eventId, member, actions }: { eventId: string; memb
           <Label htmlFor="perm-expires">Expiration des prochaines règles (optionnel)</Label>
           <Input id="perm-expires" type="datetime-local" value={expires} onChange={(e) => setExpires(e.target.value)} className="max-w-xs" />
         </div>
-        <div className="space-y-5">
+        <div className="space-y-6">
           {PERMISSION_GROUPS.map((g) => (
             <section key={g.title} aria-labelledby={`pg-${g.title}`}>
-              <h3 id={`pg-${g.title}`} className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              <h3 id={`pg-${g.title}`} className="mb-1 text-xs font-semibold text-muted-foreground">
                 {g.title}
               </h3>
               <ul className="divide-y rounded-xl border">
@@ -277,7 +272,6 @@ function PermissionsDialog({ eventId, member, actions }: { eventId: string; memb
                         </p>
                         {p.sensitive && (
                           <p className="mt-1 flex items-start gap-1.5 text-xs text-destructive">
-                            <ShieldAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
                             Donnée de santé : accès strictement nécessaire, journalisé à chaque consultation. Privilégiez une expiration.
                           </p>
                         )}
@@ -290,7 +284,7 @@ function PermissionsDialog({ eventId, member, actions }: { eventId: string; memb
                           Refuser
                         </Button>
                         {o && (
-                          <Button size="xs" variant="ghost" disabled={pending} onClick={() => apply(p.key, "reset")}>
+                          <Button size="xs" variant="outline" disabled={pending} onClick={() => apply(p.key, "reset")}>
                             Rôle
                           </Button>
                         )}
@@ -323,7 +317,7 @@ export function PendingInvitationRow({ eventId, invitation, action }: { eventId:
       </div>
       <ConfirmDialog
         trigger={
-          <Button variant="ghost" size="sm" className="text-destructive">
+          <Button variant="outline" size="sm" className="text-destructive">
             Révoquer
           </Button>
         }
@@ -345,8 +339,7 @@ export function LeaveEventButton({ eventId, action }: { eventId: string; action:
   return (
     <ConfirmDialog
       trigger={
-        <Button variant="ghost" size="sm" className="text-destructive">
-          <LogOut className="size-3.5" aria-hidden="true" />
+        <Button variant="outline" size="sm" className="text-destructive">
           Quitter l'évènement
         </Button>
       }
@@ -364,8 +357,7 @@ export function LeaveEventButton({ eventId, action }: { eventId: string; action:
 
 export function DangerNote({ children }: { children: React.ReactNode }) {
   return (
-    <p className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-      <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+    <p className="rounded-xl bg-destructive/5 px-3 py-2 text-sm text-destructive">
       {children}
     </p>
   );

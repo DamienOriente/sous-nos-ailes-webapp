@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Mail, Plus, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { FileUpload } from "@/components/files/file-upload";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -43,7 +43,6 @@ export function ExternalProviderDialog({ eventId, categories, action, defaultCat
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="size-4" aria-hidden="true" />
           Prestataire externe
         </Button>
       </DialogTrigger>
@@ -88,7 +87,7 @@ export function ExternalProviderDialog({ eventId, categories, action, defaultCat
           </div>
           <FormMessage error={error} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending}>
@@ -127,7 +126,6 @@ export function InviteDialog({ eventId, eventProfessionalId, defaultEmail, defau
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Mail className="size-4" aria-hidden="true" />
           {triggerLabel}
         </Button>
       </DialogTrigger>
@@ -184,7 +182,7 @@ export function InviteDialog({ eventId, eventProfessionalId, defaultEmail, defau
           </div>
           <FormMessage error={error} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending}>
@@ -374,7 +372,6 @@ function FileSlot({ label, eventId, purpose, fileId, onChange }: { label: string
       {fileId ? (
         <div className="flex items-center justify-between gap-2 text-sm">
           <a href={privateFileHref(fileId)} className="inline-flex items-center gap-1.5 text-primary hover:underline" target="_blank" rel="noreferrer">
-            <FileText className="size-4" aria-hidden="true" />
             Ouvrir le fichier
           </a>
           <Button type="button" variant="ghost" size="icon-sm" onClick={() => onChange(null)} aria-label={`Retirer le fichier (${label})`}>
@@ -394,7 +391,6 @@ export function DeleteProviderButton({ eventId, providerId, label, action }: { e
     <ConfirmDialog
       trigger={
         <Button variant="destructive" size="sm">
-          <Trash2 className="size-3.5" aria-hidden="true" />
           Retirer de la liste
         </Button>
       }

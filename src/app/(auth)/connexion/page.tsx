@@ -29,17 +29,16 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         <AuthPanel
           photo={showcasePhoto("login")}
           scene={<WingsScene />}
-          promise="Vos évènements, vos fiches et vos échanges au même endroit."
-          benefits={["Retrouvez chaque évènement avec son équipe, son budget et ses invités", "Suivez les demandes reçues sur vos fiches professionnelles", "Une garde d'enfants coordonnée, du brief à la remise aux parents"]}
+          promise="Vos évènements, vos fiches et vos messages au même endroit."
+          benefits={["Chaque évènement avec son équipe, son budget et ses invités", "Les demandes reçues sur vos fiches professionnelles", "La garde d'enfants, du brief jusqu'à la remise aux parents"]}
           caption="Photo d'ambiance de démonstration."
         />
       }
     >
       <AuthCard
         flat
-        eyebrow={celebrate ? "C'est fait" : "Bon retour"}
         title={celebrate ? "Nouveau mot de passe enregistré" : "Connexion à votre espace"}
-        description={celebrate ? "Vos autres sessions ont été fermées. Connectez-vous avec votre nouveau mot de passe." : "Retrouvez vos évènements, vos fiches professionnelles et vos échanges."}
+        description={celebrate ? "Vos autres sessions ont été fermées. Connectez-vous avec votre nouveau mot de passe." : "Vos évènements, vos fiches professionnelles et vos messages."}
         footer={
           <p>
             Pas encore de compte ? <AuthLink href={params.next ? `/inscription?next=${encodeURIComponent(next)}` : "/inscription"}>Créer un compte</AuthLink>

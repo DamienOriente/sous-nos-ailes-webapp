@@ -2,9 +2,9 @@ import { bodyBlocks, renderBlock, type VariantMap } from "@/components/pages/blo
 import { heroOf, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Moderne grille — a bento of tiles. The first body blocks are packed into a
+ * Moderne grille: a grid of tiles. The first body blocks are packed into a
  * grid of unequal cells (the first spans two columns); the rest follow as full
- * rows. Hard edges, one accent, Space Grotesk everywhere.
+ * rows. One accent, one family (Figtree).
  */
 const VARIANTS: VariantMap = { hero: "band", about: "boxed", services: "tiles", pricing: "cards", gallery: "grid", testimonials: "cards", faq: "cards", contact: "stacked", trust: "card", zone: "card", cta_quote: "band", availability: "grid" };
 

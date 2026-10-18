@@ -3,7 +3,7 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Panorama photo — photographers, venues. Fullscreen hero, sticky anchored
+ * Panorama photo: photographers, venues. Fullscreen hero, sticky anchored
  * nav, mosaic gallery edge to edge; text sections stay narrow and quiet so
  * the pictures carry the page.
  */

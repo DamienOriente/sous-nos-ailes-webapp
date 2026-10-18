@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Clock } from "lucide-react";
 
 /** Countdown shown when better-auth answered 429 (X-Retry-After, in seconds). */
 export function RateLimitNotice({ until, onExpire }: { until: number; onExpire?: () => void }) {
@@ -18,11 +17,8 @@ export function RateLimitNotice({ until, onExpire }: { until: number; onExpire?:
 
   if (remaining <= 0) return null;
   return (
-    <p role="alert" className="flex items-start gap-2 rounded-lg bg-warning/20 px-3 py-2 text-sm text-warning-foreground">
-      <Clock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-      <span>
-        Trop de tentatives. Vous pourrez réessayer dans <strong className="tabular-nums">{remaining} s</strong>.
-      </span>
+    <p role="alert" className="rounded-lg bg-warning/20 px-3 py-2 text-sm text-warning-foreground">
+      Trop de tentatives. Vous pourrez réessayer dans <strong className="tabular-nums">{remaining} s</strong>.
     </p>
   );
 }

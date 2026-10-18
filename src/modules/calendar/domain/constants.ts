@@ -13,7 +13,7 @@ export const ENTRY_KIND_LABELS: Record<EntryKind, string> = {
 export const SYNC_DIRECTIONS = ["export_only", "import_only", "both"] as const;
 export type SyncDirection = (typeof SYNC_DIRECTIONS)[number];
 export const SYNC_DIRECTION_LABELS: Record<SyncDirection, string> = {
-  export_only: "Export seul (interne → externe)",
-  import_only: "Import seul (externe → interne)",
+  export_only: "Export seul (vers l'agenda externe)",
+  import_only: "Import seul (depuis l'agenda externe)",
   both: "Bidirectionnel",
 };

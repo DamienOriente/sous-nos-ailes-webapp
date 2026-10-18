@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Plus, Receipt, Sparkles, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { FileUpload } from "@/components/files/file-upload";
@@ -52,8 +52,7 @@ export function BudgetBoard({ eventId, summary, expenses, providers, canManage, 
     });
   }
   const templateChip = canManage && actions.applyTemplate && template && template.length > 0 && (
-    <Button variant="outline" size="sm" onClick={applyTemplate} disabled={pendingTemplate} data-testid="apply-budget-template" title={`${template.length} postes, environ ${formatEuros(templateTotal)} — montants indicatifs à ajuster`}>
-      <Sparkles className="size-3.5" aria-hidden="true" />
+    <Button variant="outline" size="sm" onClick={applyTemplate} disabled={pendingTemplate} data-testid="apply-budget-template" title={`${template.length} postes, environ ${formatEuros(templateTotal)}, montants indicatifs à ajuster`}>
       {templateLabel ?? "Budget type"} · {formatEuros(templateTotal)}
     </Button>
   );
@@ -62,8 +61,8 @@ export function BudgetBoard({ eventId, summary, expenses, providers, canManage, 
   const max = Math.max(1, ...summary.lines.map((l) => Math.max(l.plannedCents, l.committedCents)));
 
   return (
-    <div className="space-y-8">
-      <section aria-labelledby="chart" className="space-y-3 rounded-2xl border bg-card p-5">
+    <div className="space-y-6">
+      <section aria-labelledby="chart" className="space-y-3 rounded-2xl border bg-card p-6">
         <div className="flex items-center justify-between">
           <h2 id="chart" className="text-lg font-semibold">
             Prévu vs engagé par poste
@@ -108,7 +107,6 @@ export function BudgetBoard({ eventId, summary, expenses, providers, canManage, 
             <div className="flex flex-wrap items-center gap-2">
               {templateChip}
               <Button size="sm" onClick={() => setLineDialog("new")}>
-                <Plus className="size-3.5" aria-hidden="true" />
                 Ajouter un poste
               </Button>
             </div>
@@ -119,14 +117,14 @@ export function BudgetBoard({ eventId, summary, expenses, providers, canManage, 
             scene={BudgetScene}
             title={summary.lines.length === 0 ? "Aucun poste de budget" : "Vos postes n'ont pas encore de montant"}
             description="Un poste = ce que vous prévoyez de dépenser (lieu, traiteur, enfants, photo…). Les dépenses viennent ensuite s'y rattacher pour suivre l'engagé, le payé et l'écart."
-            example="Traiteur — Cocktail + dîner 120 couverts : 12 000 €"
-            action={canManage ? <>{templateChip}<Button size="sm" onClick={() => setLineDialog("new")}><Plus className="size-3.5" aria-hidden="true" />Ajouter un poste</Button></> : undefined}
+            example="Traiteur, cocktail et dîner pour 120 couverts : 12 000 €"
+            action={canManage ? <>{templateChip}<Button size="sm" onClick={() => setLineDialog("new")}>Ajouter un poste</Button></> : undefined}
             testId="budget-empty"
           />
         ) : (
           <div className="overflow-x-auto rounded-2xl border bg-card">
             <table className="w-full text-sm">
-              <thead className="text-left text-xs text-muted-foreground uppercase">
+              <thead className="border-b text-left text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2 font-medium">Catégorie</th>
                   <th className="px-4 py-2 font-medium">Libellé</th>
@@ -191,7 +189,6 @@ export function BudgetBoard({ eventId, summary, expenses, providers, canManage, 
           </h2>
           {canManage && expenses.length > 0 && (
             <Button size="sm" onClick={() => setExpenseDialog("new")}>
-              <Plus className="size-3.5" aria-hidden="true" />
               Ajouter une dépense
             </Button>
           )}
@@ -202,8 +199,8 @@ export function BudgetBoard({ eventId, summary, expenses, providers, canManage, 
             compact
             title="Aucune dépense saisie"
             description="Acomptes, factures, achats : chaque dépense est « engagée » (due) ou « payée », avec un justificatif si vous le souhaitez."
-            example="Acompte domaine (30 %) — 2 550 €, payé le 15 septembre"
-            action={canManage ? <Button size="sm" onClick={() => setExpenseDialog("new")}><Receipt className="size-3.5" aria-hidden="true" />Ajouter une dépense</Button> : undefined}
+            example="Acompte domaine (30 %) : 2 550 €, payé le 15 septembre"
+            action={canManage ? <Button size="sm" onClick={() => setExpenseDialog("new")}>Ajouter une dépense</Button> : undefined}
           />
         ) : (
           <ul className="divide-y rounded-2xl border bg-card">
@@ -321,7 +318,7 @@ function LineDialog({ eventId, item, providers, onClose, actions }: { eventId: s
                   {providers.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.label}
-                      {p.quoteCents !== null ? ` — ${formatEuros(p.quoteCents)}` : ""}
+                      {p.quoteCents !== null ? ` (devis ${formatEuros(p.quoteCents)})` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -330,7 +327,7 @@ function LineDialog({ eventId, item, providers, onClose, actions }: { eventId: s
           </div>
           <FormMessage error={error} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={onClose} disabled={pending}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={pending}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending}>
@@ -436,7 +433,7 @@ function ExpenseDialog({ eventId, item, lines, onClose, actions }: { eventId: st
                 <a href={privateFileHref(receipt)} className="text-primary hover:underline" target="_blank" rel="noreferrer">
                   Ouvrir le justificatif
                 </a>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setReceipt(null)}>
+                <Button type="button" variant="outline" size="sm" onClick={() => setReceipt(null)}>
                   Retirer
                 </Button>
               </div>
@@ -446,7 +443,7 @@ function ExpenseDialog({ eventId, item, lines, onClose, actions }: { eventId: st
           </div>
           <FormMessage error={error} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={onClose} disabled={pending}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={pending}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending}>

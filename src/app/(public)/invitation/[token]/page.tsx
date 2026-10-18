@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Ban, Clock, HelpCircle } from "lucide-react";
 import { Container } from "@/components/shared/section";
 import { EmptyState } from "@/components/shared/empty-state";
 import { InvitationCard } from "@/components/invitations/invitation-card";
@@ -8,7 +7,7 @@ import { resolvePublicInvitation } from "@/modules/invitations/application/invit
 import { submitRsvpAction } from "./actions";
 
 /** Public RSVP page: never indexed, no account required, token is the only credential. */
-export const metadata: Metadata = { title: "Votre invitation — Sous Nos Ailes", robots: { index: false, follow: false, nocache: true } };
+export const metadata: Metadata = { title: "Votre invitation", robots: { index: false, follow: false, nocache: true } };
 export const dynamic = "force-dynamic";
 
 export default async function PublicInvitationPage({ params }: { params: Promise<{ token: string }> }) {
@@ -18,21 +17,21 @@ export default async function PublicInvitationPage({ params }: { params: Promise
   if (view.outcome === "invalid" || !view.invitation || !view.event) {
     return (
       <Container size="narrow" className="py-16">
-        <EmptyState icon={HelpCircle} title="Invitation introuvable" description="Ce lien n'est pas valide. Vérifiez qu'il est complet ou contactez la personne qui vous a invité(e)." />
+        <EmptyState title="Invitation introuvable" description="Ce lien n'est pas valide. Vérifiez qu'il est complet ou contactez la personne qui vous a invité(e)." />
       </Container>
     );
   }
   if (view.outcome === "revoked") {
     return (
       <Container size="narrow" className="py-16">
-        <EmptyState icon={Ban} title="Invitation annulée" description="Cette invitation a été annulée par l'organisateur. Rapprochez-vous de lui si vous pensez qu'il s'agit d'une erreur." />
+        <EmptyState title="Invitation annulée" description="Cette invitation a été annulée par l'organisateur. Rapprochez-vous de lui si vous pensez qu'il s'agit d'une erreur." />
       </Container>
     );
   }
   if (view.outcome === "expired" || view.outcome === "duplicate") {
     return (
       <Container size="narrow" className="py-16">
-        <EmptyState icon={Clock} title="Invitation expirée" description="La période de réponse est terminée. Contactez directement l'organisateur." />
+        <EmptyState title="Invitation expirée" description="La période de réponse est terminée. Contactez directement l'organisateur." />
       </Container>
     );
   }
@@ -45,7 +44,6 @@ export default async function PublicInvitationPage({ params }: { params: Promise
         <InvitationCard data={{ templateKey: inv.templateKey, recipientName: inv.recipientName, customMessage: inv.customMessage, eventName: ev.name, eventType: ev.type, eventDate: ev.eventDate, startsAt: ev.startsAt, timezone: ev.timezone, venueName: ev.venueName, city: ev.city, showDate: inv.displayOptions.showDate, showVenue: inv.displayOptions.showVenue }} />
         <section aria-labelledby="rsvp-title" className="space-y-6">
           <div>
-            <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">Réponse</p>
             <h1 id="rsvp-title" className="font-heading text-2xl font-semibold sm:text-3xl">
               Serez-vous des nôtres ?
             </h1>

@@ -3,7 +3,7 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Minimal ivoire — one typeface, two columns on desktop: a sticky left column
+ * Minimal ivoire: one typeface, two columns on desktop: a sticky left column
  * (name, trade, section index) and the content on the right. No cards.
  */
 const VARIANTS: VariantMap = { hero: "editorial", about: "prose", services: "list", pricing: "table", gallery: "grid", testimonials: "list", faq: "plain", contact: "minimal", trust: "list", zone: "text", cta_quote: "split", availability: "compact" };

@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
 test.describe("Accueil", () => {
   test("présente la promesse, la recherche et les deux parcours", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Les enfants sont pris en charge");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Garde d'enfants et animation");
     const search = page.getByRole("search", { name: "Rechercher un professionnel" });
     await expect(search.getByLabel("Quel professionnel ?")).toHaveValue("garde-enfants-evenementielle");
     await expect(page.getByRole("link", { name: "Je prépare un évènement" })).toHaveAttribute("href", "/inscription?intent=organizer");
@@ -28,7 +28,7 @@ test.describe("Accueil", () => {
     await expect(page.locator('link[rel="preload"][as="image"]')).toHaveCount(1);
     expect(await page.locator("main img").count()).toBeGreaterThan(10);
     // Illustrated steps.
-    await expect(page.getByRole("heading", { name: "Trois étapes, un seul espace" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Comment ça se passe" })).toBeVisible();
     // Featured listings come from the directory ranking; demo rows are labelled.
     const featured = page.getByTestId("featured-professionals");
     if ((await featured.count()) > 0) {
@@ -36,7 +36,7 @@ test.describe("Accueil", () => {
       expect(await cards.count()).toBeGreaterThanOrEqual(1);
       expect(await cards.count()).toBeLessThanOrEqual(3);
       const demoBadges = await cards.getByText("Démo", { exact: true }).count();
-      if (demoBadges > 0) await expect(page.getByText("Fiches de démonstration — professionnels fictifs")).toBeVisible();
+      if (demoBadges > 0) await expect(page.getByText("Fiches de démonstration, professionnels fictifs")).toBeVisible();
     }
     // Demo event snapshot: real counters, explicit demo label, never a health detail.
     const showcase = page.locator("#exemple-evenement");
@@ -47,7 +47,7 @@ test.describe("Accueil", () => {
       await expect(showcase).not.toContainText(/allergique|asthm|épilep|médicament|traitement :/i);
     }
     // Journeys and FAQ about demo data.
-    await expect(page.getByRole("heading", { name: /Trois parcours/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Trois exemples tirés de la démonstration/ })).toBeVisible();
     await page.getByRole("button", { name: "Les photos et les fiches que je vois sont-elles réelles ?" }).click();
     await expect(page.getByText(/photographies sont des illustrations libres de droits/)).toBeVisible();
   });
@@ -74,7 +74,7 @@ test.describe("Pages marketing", () => {
   test("/organiser montre les écrans de l'évènement de démonstration et un exemple de demande", async ({ page }) => {
     await page.goto("/organiser");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Préparer un évènement");
-    await expect(page.getByText("Étape 1", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Avant : trouver et comparer/ })).toBeVisible();
     const space = page.locator("#espace-organisateur");
     if ((await space.count()) > 0) {
       await expect(space.getByText("Tour de contrôle")).toBeVisible();
@@ -88,8 +88,8 @@ test.describe("Pages marketing", () => {
 
   test("/professionnels explique les cinq étapes et montre des fiches réelles", async ({ page }) => {
     await page.goto("/professionnels");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Soyez trouvé");
-    await expect(page.getByRole("heading", { name: "Votre fiche en cinq étapes, dix minutes" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Publiez votre fiche");
+    await expect(page.getByRole("heading", { name: "Votre fiche en cinq étapes" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Les demandes que vous recevez" })).toBeVisible();
     await expect(page.locator("body")).not.toContainText(/certifié/i);
   });
@@ -116,7 +116,7 @@ test.describe("Annuaire", () => {
     await expect(page.getByText("À quoi ressemble une demande")).toBeVisible();
 
     await page.goto("/annuaire/dj?city=Paris&radius=10");
-    await expect(page.getByText("Le nid est vide pour cette recherche")).toBeVisible();
+    await expect(page.getByText("Aucun professionnel ne correspond à cette recherche")).toBeVisible();
     await expect(page.getByRole("link", { name: "Réinitialiser les filtres" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Exemple de demande de devis" })).toBeVisible();
   });
@@ -208,5 +208,59 @@ test.describe("Formulaires publics", () => {
     await page.getByLabel("Message").fill("Bonjour, ceci est un message de test envoyé par la suite end-to-end.");
     await page.getByRole("button", { name: "Envoyer le message" }).click();
     await expect(page.getByRole("status").filter({ hasText: "Message envoyé" })).toBeVisible();
+  });
+});
+
+/**
+ * "Un site qui ne fait pas généré" : the writing and drawing rules agreed with the owner, checked on the
+ * public pages. Demo rows (listing cards, demo event, reviews) come from the seed and are excluded.
+ */
+test.describe("Charte rédactionnelle et graphique", () => {
+  const PAGES = ["/", "/organiser", "/professionnels", "/a-propos", "/tarifs", "/contact", "/annuaire", "/annuaire/garde-enfants-evenementielle", "/connexion", "/inscription"];
+
+  for (const path of PAGES) {
+    test(`${path} : pas de tiret cadratin, de surtitre en capitales ni de dégradé`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      expect(await page.title(), "titre de page").not.toContain("—");
+      const findings = await page.evaluate(() => {
+        const skip = '[data-testid="professional-card"], [data-testid="inquiry-example"], #espace-organisateur, #exemple-evenement, #avis, [data-testid="cookie-banner"]';
+        const out: string[] = [];
+        const main = document.querySelector("main");
+        if (!main) return ["no <main>"];
+        for (const el of main.querySelectorAll("h1,h2,h3,h4,p,li,dt,dd,label,button,a,summary,span")) {
+          if (el.closest(skip)) continue;
+          const own = Array.from(el.childNodes)
+            .filter((n) => n.nodeType === Node.TEXT_NODE)
+            .map((n) => n.textContent ?? "")
+            .join("");
+          if (own.includes("—")) out.push(`dash: ${own.trim().slice(0, 60)}`);
+        }
+        for (const el of main.querySelectorAll("*")) {
+          if (el.closest(skip)) continue;
+          const cs = getComputedStyle(el);
+          if (cs.textTransform === "uppercase" && (el.textContent ?? "").trim().length > 3 && !el.closest("[aria-hidden='true']")) out.push(`uppercase: ${(el.textContent ?? "").trim().slice(0, 40)}`);
+          if (cs.backgroundImage.includes("gradient")) out.push(`gradient on <${el.tagName.toLowerCase()}>`);
+          if (cs.backdropFilter && cs.backdropFilter !== "none") out.push(`backdrop-filter on <${el.tagName.toLowerCase()}>`);
+        }
+        return out;
+      });
+      expect(findings).toEqual([]);
+    });
+  }
+
+  test("l'accueil ne garde que des icônes fonctionnelles (recherche) : aucune icône dans une liste ou une carte", async ({ page }) => {
+    await page.goto("/");
+    // Scenes and illustrations are large SVGs; an icon is small. Listing cards keep their favourite heart (a button).
+    const small = await page.evaluate(() => {
+      const out: string[] = [];
+      for (const svg of document.querySelectorAll("main li svg, main [data-slot='card'] svg, main dt svg, main h2 svg, main h3 svg")) {
+        if (svg.closest('[data-testid="professional-card"], [role="search"], #exemple-evenement, [data-slot^="accordion"]')) continue;
+        const r = svg.getBoundingClientRect();
+        if (r.width <= 40) out.push(svg.outerHTML.slice(0, 80));
+      }
+      return out;
+    });
+    expect(small).toEqual([]);
   });
 });

@@ -55,7 +55,7 @@ describe("handover validation", () => {
   it("accepts a complete handover and builds the identity text", () => {
     const r = validateHandover(ok);
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.identityVerifiedHow).toBe("Pièce d'identité présentée — CNI au nom de Dupont");
+    if (r.ok) expect(r.identityVerifiedHow).toBe("Pièce d'identité présentée : CNI au nom de Dupont");
   });
   it("refuses without an authorised person from the list", () => {
     const r = validateHandover({ ...ok, authorizedPersonId: null });

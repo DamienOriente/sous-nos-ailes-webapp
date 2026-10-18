@@ -1,4 +1,3 @@
-import { CalendarCheck, MessageSquareReply, ShieldCheck, Star } from "lucide-react";
 import { Container } from "@/components/shared/section";
 import { formatDateFr } from "@/lib/utils";
 import type { PublicActivity } from "@/modules/professionals/application/stats-service";
@@ -21,19 +20,13 @@ export function PlatformPanel({ activity, displayName, isDemo }: { activity: Pub
   const { verifications, medianResponseHours, responseRate, inquiriesAnswered, eventsCount, upcomingEventsCount, publishedReviews, averageRating, memberSince } = activity;
   const facts = [
     {
-      icon: ShieldCheck,
       title: "Vérifications",
       value: verifications.length > 0 ? `${verifications.length} contrôle${verifications.length > 1 ? "s" : ""} sur pièces` : "Aucun contrôle pour l'instant",
       detail:
         verifications.length > 0 ? (
-          <ul className="mt-2 space-y-1">
+          <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
             {verifications.map((v) => (
-              <li key={v.kind} className="flex gap-2 text-xs text-muted-foreground">
-                <span aria-hidden="true" className="mt-0.5 text-success">
-                  ✓
-                </span>
-                <span>{VERIFICATION_KIND_LABELS[v.kind as VerificationKind]?.label ?? v.kind}</span>
-              </li>
+              <li key={v.kind}>{VERIFICATION_KIND_LABELS[v.kind as VerificationKind]?.label ?? v.kind}</li>
             ))}
           </ul>
         ) : (
@@ -41,7 +34,6 @@ export function PlatformPanel({ activity, displayName, isDemo }: { activity: Pub
         ),
     },
     {
-      icon: MessageSquareReply,
       title: "Réactivité",
       value: medianResponseHours === null ? "Pas encore mesurée" : `Répond en ${responseLabel(medianResponseHours)}`,
       detail: (
@@ -53,7 +45,6 @@ export function PlatformPanel({ activity, displayName, isDemo }: { activity: Pub
       ),
     },
     {
-      icon: CalendarCheck,
       title: "Évènements",
       value: eventsCount === 0 ? "Aucun évènement coordonné ici" : `${eventsCount} évènement${eventsCount > 1 ? "s" : ""} coordonné${eventsCount > 1 ? "s" : ""}`,
       detail: (
@@ -63,9 +54,8 @@ export function PlatformPanel({ activity, displayName, isDemo }: { activity: Pub
       ),
     },
     {
-      icon: Star,
       title: "Avis",
-      value: publishedReviews === 0 ? "Aucun avis publié" : `${averageRating?.toFixed(1).replace(".", ",") ?? "–"} / 5 · ${publishedReviews} avis`,
+      value: publishedReviews === 0 ? "Aucun avis publié" : `${averageRating?.toFixed(1).replace(".", ",") ?? "n/d"} sur 5, ${publishedReviews} avis`,
       detail: <p className="mt-2 text-xs text-muted-foreground">{publishedReviews === 0 ? "Seuls les organisateurs ayant échangé avec le professionnel via la plateforme peuvent en laisser un." : "Avis laissés par des organisateurs après une demande confirmée, relus avant publication."}</p>,
     },
   ];
@@ -84,10 +74,7 @@ export function PlatformPanel({ activity, displayName, isDemo }: { activity: Pub
         <dl className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-border">
           {facts.map((f) => (
             <div key={f.title} className="lg:px-6 lg:first:pl-0 lg:last:pr-0">
-              <dt className="flex items-center gap-2 text-sm text-muted-foreground">
-                <f.icon className="size-4 text-primary" aria-hidden="true" />
-                {f.title}
-              </dt>
+              <dt className="text-sm text-muted-foreground">{f.title}</dt>
               <dd className="mt-1">
                 <p className="font-heading text-lg font-semibold">{f.value}</p>
                 {f.detail}

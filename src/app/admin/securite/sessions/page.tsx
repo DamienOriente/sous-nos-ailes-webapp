@@ -17,7 +17,7 @@ export default async function SessionsPage() {
   const canManage = canGlobal(actor, "admin.users.manage");
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Sécurité" title="Sessions actives" description="Sessions non expirées des comptes privilégiés et des comptes actifs ces 7 derniers jours (les sessions vivent dans Redis, lues via better-auth). La révocation déconnecte immédiatement l'appareil concerné." />
+      <PageHeader title="Sessions actives" description="Sessions non expirées des comptes privilégiés et des comptes actifs ces 7 derniers jours (les sessions vivent dans Redis, lues via better-auth). La révocation déconnecte immédiatement l'appareil concerné." />
       <SecuritySubnav current="/admin/securite/sessions" showBreakGlass={canGlobal(actor, "admin.break_glass")} />
       <AdminTable
         rows={rows}
@@ -25,7 +25,7 @@ export default async function SessionsPage() {
         emptyTitle="Aucune session active"
         columns={[
           { key: "user", header: "Compte", cell: (r) => (<div><span className="font-medium">{r.userEmail}</span> <StatusBadge tone={r.userRole === "user" ? "neutral" : "primary"} dot={false}>{r.userRole}</StatusBadge>{r.impersonatedBy && <StatusBadge tone="warning" className="ml-1">impersonation</StatusBadge>}</div>) },
-          { key: "ip", header: "IP / agent", cell: (r) => <span className="text-xs text-muted-foreground">{r.ipAddress ?? "—"} · {r.userAgent?.slice(0, 50) ?? "—"}</span> },
+          { key: "ip", header: "IP / agent", cell: (r) => <span className="text-xs text-muted-foreground">{r.ipAddress ?? "n/d"} · {r.userAgent?.slice(0, 50) ?? "n/d"}</span> },
           { key: "created", header: "Ouverte le", cell: (r) => <span className="text-muted-foreground">{dateTime(r.createdAt)}</span> },
           { key: "expires", header: "Expire le", cell: (r) => <span className="text-muted-foreground">{dateTime(r.expiresAt)}</span> },
           {
@@ -36,7 +36,7 @@ export default async function SessionsPage() {
                 <ActionForm action={revokeSessionAction} successMessage="Session révoquée." className="space-y-0">
                   <input type="hidden" name="userId" value={r.userId} />
                   <input type="hidden" name="sessionId" value={r.id} />
-                  <ActionSubmit size="sm" variant="ghost">Révoquer</ActionSubmit>
+                  <ActionSubmit size="sm" variant="outline">Révoquer</ActionSubmit>
                 </ActionForm>
               ) : null,
           },

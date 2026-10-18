@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { Baby, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -48,20 +48,20 @@ export function GuestsTable({
                   <span className="font-medium">{`${g.firstName} ${g.lastName}`.trim()}</span>
                   {g.isChild && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-sky/40 px-2 py-0.5 text-[11px] font-medium text-foreground" title="Enfant">
-                      <Baby className="size-3" aria-hidden="true" /> {g.ageYears !== null ? `${g.ageYears} ans` : "enfant"}
+                       {g.ageYears !== null ? `${g.ageYears} ans` : "enfant"}
                     </span>
                   )}
                   {g.plusOnesAllowed > 0 && <span className="text-xs text-muted-foreground">+{g.plusOnesAllowed}</span>}
                 </div>
                 <p className="text-xs text-muted-foreground">{[g.email, g.phone].filter(Boolean).join(" · ")}</p>
               </TableCell>
-              <TableCell className="hidden text-sm md:table-cell">{g.groupName ?? "—"}</TableCell>
+              <TableCell className="hidden text-sm md:table-cell">{g.groupName ?? "Sans groupe"}</TableCell>
               <TableCell>
                 <StatusBadge tone={RSVP_TONES[g.rsvpStatus as RsvpStatus]}>{RSVP_LABELS[g.rsvpStatus as RsvpStatus]}</StatusBadge>
                 {g.rsvpStatus === "accepted" && g.rsvpGuestsCount && g.rsvpGuestsCount > 1 && <span className="ml-1 text-xs text-muted-foreground">({g.rsvpGuestsCount} pers.)</span>}
               </TableCell>
-              <TableCell className="hidden text-sm lg:table-cell">{g.dietaryPreference ?? "—"}</TableCell>
-              <TableCell className="hidden text-sm lg:table-cell">{g.tableName ?? "—"}</TableCell>
+              <TableCell className="hidden text-sm lg:table-cell">{g.dietaryPreference ?? "Aucun"}</TableCell>
+              <TableCell className="hidden text-sm lg:table-cell">{g.tableName ?? "Non placé"}</TableCell>
               {canManage && (
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">

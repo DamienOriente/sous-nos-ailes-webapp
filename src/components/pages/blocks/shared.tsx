@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { FilesImage } from "@/components/shared/files-image";
 import { cn } from "@/lib/utils";
 import { publicImageHref, type ImageVariant } from "@/modules/files/application/file-urls";
 import type { Block, BlockType, Inline, RichText as RichTextModel } from "@/modules/pages/domain/page-schema";
@@ -36,15 +36,6 @@ export function imageSrcFor(fileId: string | null | undefined, variant: ImageVar
   }
   return publicImageHref(fileId, variant);
 }
-
-/**
- * Files served by our own API already come as WebP variants sized by the
- * pipeline (thumb/medium/large) and are reached through a signed redirect:
- * running them through next/image's optimizer would fetch and re-encode them a
- * second time (and query strings on local sources require `images.localPatterns`).
- * Catalogue photos (Unsplash) do go through the optimizer.
- */
-export const isFilesApiSrc = (src: string): boolean => src.startsWith("/api/files/");
 
 /** Dominant tone of a sample photo, used behind the picture while it loads. */
 export function imageToneFor(fileId: string | null | undefined): string | undefined {
@@ -88,7 +79,7 @@ export function Picture({
   if (!src) return <Placeholder className={className} seed={seed} label={placeholderLabel} />;
   return (
     <div className={cn("relative overflow-hidden bg-(--pg-surface)", className)} style={imageToneFor(fileId) ? { backgroundColor: imageToneFor(fileId) } : undefined} data-pg-picture="">
-      <Image src={src} alt={alt} fill sizes={sizes} priority={priority} unoptimized={isFilesApiSrc(src)} className="object-cover" />
+      <FilesImage src={src} alt={alt} fill sizes={sizes} priority={priority} fetchPriority={priority ? "high" : undefined} className="object-cover" />
     </div>
   );
 }
@@ -163,22 +154,6 @@ export function CtaButton({ href, children, className, tone = "accent", size = "
 
 export function Chip({ children, className }: { children: React.ReactNode; className?: string }) {
   return <span className={cn("inline-flex items-center rounded-(--pg-radius-sm) border border-(--pg-border) bg-(--pg-surface) px-2.5 py-1 text-xs font-medium text-(--pg-text)", className)}>{children}</span>;
-}
-
-/** Initials disc for reviews and team lists: the accent at low opacity, the letters in the accent. */
-export function Monogram({ name, className, size = "md" }: { name: string; className?: string; size?: "sm" | "md" | "lg" }) {
-  const initials = name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p.replace(/[^\p{L}]/gu, "")[0]?.toUpperCase() ?? "")
-    .join("");
-  const sizes = { sm: "size-8 text-xs", md: "size-11 text-sm", lg: "size-14 text-base" };
-  return (
-    <span aria-hidden="true" className={cn("inline-flex shrink-0 items-center justify-center rounded-full bg-(--pg-accent-soft) font-semibold tracking-wide text-(--pg-accent)", sizes[size], className)} style={{ fontFamily: "var(--pg-font-body)" }}>
-      {initials || "?"}
-    </span>
-  );
 }
 
 export function Stars({ rating, className }: { rating: number; className?: string }) {

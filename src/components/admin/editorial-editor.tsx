@@ -64,9 +64,9 @@ export function EditorialEditor({ save, preview, initial, isNew }: { save: FormA
         </div>
       </ActionForm>
       <aside className="space-y-3 rounded-xl border bg-card p-6" aria-label="Aperçu">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Aperçu public</h2>
+        <h2 className="text-sm font-semibold">Aperçu public</h2>
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-        {missing.length > 0 && <p className="rounded-lg bg-warning/15 px-3 py-2 text-xs">Variables non renseignées : {missing.join(", ")} — à compléter dans Paramètres.</p>}
+        {missing.length > 0 && <p className="rounded-lg bg-warning/15 px-3 py-2 text-xs">Variables non renseignées : {missing.join(", ")}. À compléter dans Paramètres.</p>}
         {blocks ? <EditorialContent blocks={blocks} /> : <p className="text-sm text-muted-foreground">Cliquez sur « Rafraîchir l'aperçu » pour afficher le rendu.</p>}
       </aside>
     </div>

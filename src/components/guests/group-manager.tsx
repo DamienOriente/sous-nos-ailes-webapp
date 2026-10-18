@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Users } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,7 +55,7 @@ export function GroupManager({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Users className="size-4 text-primary" aria-hidden="true" /> Groupes
+           Groupes
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -67,7 +67,7 @@ export function GroupManager({
                 <form action={(fd) => save(g.id, fd)} className="flex flex-wrap items-center gap-2 rounded-lg border p-2">
                   <Input name="name" defaultValue={g.name} aria-label="Nom du groupe" className="min-w-32 flex-1" required />
                   <select name="side" defaultValue={g.side ?? ""} aria-label="Côté" className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm">
-                    <option value="">Côté —</option>
+                    <option value="">Côté non précisé</option>
                     {GUEST_SIDES.map((s) => (
                       <option key={s} value={s}>
                         {s}
@@ -77,7 +77,7 @@ export function GroupManager({
                   <Button type="submit" size="sm" disabled={pending}>
                     OK
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(null)}>
+                  <Button type="button" size="sm" variant="outline" onClick={() => setEditing(null)}>
                     Annuler
                   </Button>
                 </form>
@@ -92,7 +92,7 @@ export function GroupManager({
                 </div>
                 {canManage && (
                   <div className="flex shrink-0 gap-1">
-                    <Button variant="ghost" size="xs" onClick={() => setEditing(g.id)}>
+                    <Button variant="outline" size="xs" onClick={() => setEditing(g.id)}>
                       Modifier
                     </Button>
                     <ConfirmDialog
@@ -121,15 +121,15 @@ export function GroupManager({
           <form action={create} className="flex flex-wrap gap-2">
             <Input name="name" placeholder="Nouveau groupe" aria-label="Nom du nouveau groupe" required className="min-w-32 flex-1" />
             <select name="side" aria-label="Côté" defaultValue="" className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm">
-              <option value="">Côté —</option>
+              <option value="">Côté non précisé</option>
               {GUEST_SIDES.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
               ))}
             </select>
-            <Button type="submit" size="sm" variant="secondary" disabled={pending}>
-              <Plus className="size-4" aria-hidden="true" /> Créer
+            <Button type="submit" size="sm" variant="outline" disabled={pending}>
+               Créer
             </Button>
           </form>
         )}

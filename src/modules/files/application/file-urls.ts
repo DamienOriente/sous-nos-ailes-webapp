@@ -13,7 +13,7 @@ export function privateFileHref(fileId: string, opts?: { download?: boolean }): 
  * card. The route only serves files whose purpose is public (logo, cover,
  * gallery) and whose owning listing is published.
  */
-export type ImageVariant = "thumb" | "medium" | "large" | "original";
+export type ImageVariant = "thumb" | "card" | "medium" | "large" | "original";
 export function publicImageHref(fileId: string, variant: ImageVariant = "medium"): string {
   return `/api/files/${fileId}/public?v=${variant}`;
 }

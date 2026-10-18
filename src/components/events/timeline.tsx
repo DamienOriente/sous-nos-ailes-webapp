@@ -1,13 +1,12 @@
 "use client";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, List, MapPin, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { CalendarScene } from "@/components/illustrations";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { FormMessage } from "@/components/shared/form-message";
-import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -54,7 +53,6 @@ export function Timeline({ eventId, eventType, eventDate, timezone, milestones, 
   }
   const suggestChip = canManage && actions.addSuggested && missingTemplates > 0 && eventDate && (
     <Button variant="outline" size="sm" onClick={addSuggested} disabled={pendingSuggest} data-testid="add-suggested-milestones">
-      <Sparkles className="size-3.5" aria-hidden="true" />
       {milestoneTemplateLabel(eventType)}
     </Button>
   );
@@ -75,14 +73,14 @@ export function Timeline({ eventId, eventType, eventDate, timezone, milestones, 
   const fmtDay = (d: string) => new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${d}T12:00:00Z`));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1 rounded-lg bg-muted p-1" role="tablist" aria-label="Affichage">
-          <button type="button" role="tab" aria-selected={view === "timeline"} onClick={() => setView("timeline")} className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium", view === "timeline" ? "bg-background shadow-sm" : "text-muted-foreground")}>
-            <Clock className="size-3.5" aria-hidden="true" /> Chronologie
+          <button type="button" role="tab" aria-selected={view === "timeline"} onClick={() => setView("timeline")} className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium", view === "timeline" ? "bg-background" : "text-muted-foreground hover:text-foreground")}>
+             Chronologie
           </button>
-          <button type="button" role="tab" aria-selected={view === "list"} onClick={() => setView("list")} className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium", view === "list" ? "bg-background shadow-sm" : "text-muted-foreground")}>
-            <List className="size-3.5" aria-hidden="true" /> Liste
+          <button type="button" role="tab" aria-selected={view === "list"} onClick={() => setView("list")} className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium", view === "list" ? "bg-background" : "text-muted-foreground hover:text-foreground")}>
+             Liste
           </button>
         </div>
         <div className="flex items-center gap-3">
@@ -95,7 +93,6 @@ export function Timeline({ eventId, eventType, eventDate, timezone, milestones, 
           {milestones.length > 0 && suggestChip}
           {canManage && milestones.length > 0 && (
             <Button onClick={() => setEditing("new")}>
-              <Plus className="size-4" aria-hidden="true" />
               Ajouter une étape
             </Button>
           )}
@@ -107,8 +104,8 @@ export function Timeline({ eventId, eventType, eventDate, timezone, milestones, 
           scene={CalendarScene}
           title="Le déroulé du jour J reste à écrire"
           description={canManage ? "Heure par heure : qui fait quoi, où, et quels prestataires sont concernés. Chaque étape ajoutée prévient automatiquement les professionnels de son métier." : "L'organisateur n'a pas encore partagé le déroulé de la journée."}
-          example="Goûter des enfants — 16:30 → 17:15, la grange (garde d'enfants, traiteur)"
-          action={canManage ? <>{suggestChip}<Button onClick={() => setEditing("new")}><Plus className="size-4" aria-hidden="true" />Ajouter une étape</Button></> : undefined}
+          example="Goûter des enfants, de 16:30 à 17:15, dans la grange (garde d'enfants, traiteur)"
+          action={canManage ? <>{suggestChip}<Button onClick={() => setEditing("new")}>Ajouter une étape</Button></> : undefined}
           testId="planning-empty"
         />
       ) : shown.length === 0 ? (
@@ -116,43 +113,30 @@ export function Timeline({ eventId, eventType, eventDate, timezone, milestones, 
       ) : (
         byDay.map(([day, list]) => (
           <section key={day} aria-labelledby={`day-${day}`} className="space-y-3">
-            <h2 id={`day-${day}`} className="text-sm font-semibold tracking-wide text-muted-foreground uppercase first-letter:uppercase">
+            <h2 id={`day-${day}`} className="text-base font-semibold first-letter:capitalize">
               {fmtDay(day)}
-              {eventDate === day && <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary normal-case">Jour J</span>}
+              {eventDate === day ? " (jour J)" : ""}
             </h2>
             {view === "timeline" ? (
-              <ol className="relative ml-3 border-l-2 border-primary/30 pl-6">
+              <ol className="divide-y rounded-2xl border bg-card">
                 {list.map((m) => {
                   const s = localParts(m.startsAt, timezone);
                   const e = m.endsAt ? localParts(m.endsAt, timezone) : null;
                   return (
-                    <li key={m.id} className="relative pb-6 last:pb-0">
-                      <span className="absolute top-1.5 -left-[31px] size-3 rounded-full border-2 border-background bg-primary" aria-hidden="true" />
-                      <div className="rounded-xl border bg-card p-4">
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <div>
-                            <p className="text-sm font-semibold tabular-nums text-primary">
-                              {s.time}
-                              {e ? ` – ${e.time}` : ""}
-                            </p>
-                            <h3 className="font-medium">{m.title}</h3>
-                          </div>
+                    <li key={m.id} className="grid gap-x-6 gap-y-1 p-4 sm:grid-cols-[7rem_1fr]">
+                      <p className="font-heading text-lg font-semibold tabular-nums">
+                        {s.time}
+                        {e ? <span className="text-sm font-normal text-muted-foreground"> à {e.time}</span> : null}
+                      </p>
+                      <div className="min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-medium">{m.title}</h3>
                           {canManage && <RowActions m={m} eventId={eventId} onEdit={() => setEditing(m)} actions={actions} />}
                         </div>
-                        {m.description && <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{m.description}</p>}
-                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                          {m.location && (
-                            <span className="inline-flex items-center gap-1">
-                              <MapPin className="size-3" aria-hidden="true" />
-                              {m.location}
-                            </span>
-                          )}
-                          {m.categorySlugs.map((slug) => (
-                            <StatusBadge key={slug} tone="neutral" dot={false}>
-                              {catName.get(slug) ?? slug}
-                            </StatusBadge>
-                          ))}
-                        </div>
+                        {m.description && <p className="mt-1 text-sm whitespace-pre-wrap text-muted-foreground">{m.description}</p>}
+                        {(m.location || m.categorySlugs.length > 0) && (
+                          <p className="mt-1 text-sm text-muted-foreground">{[m.location, ...m.categorySlugs.map((c) => catName.get(c) ?? c)].filter(Boolean).join(" · ")}</p>
+                        )}
                       </div>
                     </li>
                   );
@@ -165,9 +149,9 @@ export function Timeline({ eventId, eventType, eventDate, timezone, milestones, 
                   const e = m.endsAt ? localParts(m.endsAt, timezone) : null;
                   return (
                     <li key={m.id} className="flex items-center gap-4 px-4 py-3">
-                      <span className="w-24 shrink-0 text-sm font-semibold tabular-nums text-primary">
+                      <span className="w-24 shrink-0 text-sm font-semibold tabular-nums">
                         {s.time}
-                        {e ? `–${e.time}` : ""}
+                        {e ? ` à ${e.time}` : ""}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-medium">{m.title}</span>
@@ -300,7 +284,7 @@ function MilestoneDialog({ eventId, eventDate, timezone, item, categories, onClo
           </fieldset>
           <FormMessage error={error} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={onClose} disabled={pending}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={pending}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending} aria-busy={pending}>

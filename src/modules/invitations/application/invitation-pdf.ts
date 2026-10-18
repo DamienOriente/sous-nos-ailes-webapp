@@ -1,6 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import type { InvitationDetail } from "@/modules/invitations/application/invitation-service";
-import { INVITATION_TEMPLATE_META, type InvitationTemplateKey } from "@/modules/invitations/domain/templates";
+import { type InvitationTemplateKey } from "@/modules/invitations/domain/templates";
 
 function safe(text: string): string {
   return text
@@ -26,7 +26,7 @@ function formatDate(date: string | null, timezone: string): string | null {
 /** Printable A5 card with optional QR (PNG data URL). The QR never carries personal data. */
 export async function renderInvitationPdf(detail: InvitationDetail, qrPngDataUrl: string | null): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  doc.setTitle(`Invitation — ${detail.event.name}`);
+  doc.setTitle(`Invitation : ${detail.event.name}`);
   doc.setProducer("Sous Nos Ailes");
   const serif = await doc.embedFont(StandardFonts.TimesRoman);
   const serifItalic = await doc.embedFont(StandardFonts.TimesRomanItalic);
@@ -41,10 +41,8 @@ export async function renderInvitationPdf(detail: InvitationDetail, qrPngDataUrl
   const center = (text: string, y: number, size: number, font = serif, color = rgb(...pal.ink)) => {
     page.drawText(text, { x: (w - font.widthOfTextAtSize(text, size)) / 2, y, size, font, color });
   };
-  let y = h - 90;
-  center(safe(INVITATION_TEMPLATE_META[key].label.toUpperCase()), y, 8, sans, rgb(...pal.accent));
-  y -= 40;
-  center(safe(detail.event.name), y, 22);
+  let y = h - 130;
+  center(safe(detail.event.name), y, 24);
   y -= 34;
   center(safe(`${detail.invitation.recipientName},`), y, 13, serifItalic);
   y -= 22;
@@ -56,7 +54,7 @@ export async function renderInvitationPdf(detail: InvitationDetail, qrPngDataUrl
   }
   if (detail.invitation.displayOptions.showVenue && (detail.event.venueName || detail.event.city)) {
     y -= 16;
-    center(safe([detail.event.venueName, detail.event.city].filter(Boolean).join(" — ")), y, 10, sans);
+    center(safe([detail.event.venueName, detail.event.city].filter(Boolean).join(", ")), y, 10, sans);
   }
   if (detail.invitation.customMessage) {
     y -= 30;

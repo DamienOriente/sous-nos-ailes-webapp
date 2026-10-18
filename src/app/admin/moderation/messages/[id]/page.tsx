@@ -26,7 +26,8 @@ export default async function ReportedMessagePage({ params }: { params: Promise<
   }
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <PageHeader eyebrow={<Link href="/admin/moderation" className="hover:underline">← Modération</Link>} title="Message signalé" description="Seul le message signalé est accessible. Le reste du canal reste privé." />
+      <Link href="/admin/moderation" className="text-sm text-muted-foreground hover:underline">Retour à la modération</Link>
+      <PageHeader  title="Message signalé" description="Seul le message signalé est accessible. Le reste du canal reste privé." />
       <Card className="gap-3 p-6">
         <p className="text-sm text-muted-foreground">
           Par {msg.authorName} · {dateTime(msg.createdAt)} · {msg.reportCount} signalement{msg.reportCount > 1 ? "s" : ""}

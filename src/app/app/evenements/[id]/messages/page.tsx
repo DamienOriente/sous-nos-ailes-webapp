@@ -12,5 +12,5 @@ export default async function MessagesIndexPage({ params }: { params: Promise<{ 
   const { channels } = await guardPage(() => listChannels(actor, id));
   const general = channels.find((c) => c.kind === "general") ?? channels[0];
   if (general) redirect(`/app/evenements/${id}/messages/${general.id}`);
-  return <IllustratedEmpty scene={ChatScene} title="Aucun canal accessible pour le moment" description="Les organisateurs vous ajouteront aux canaux de coordination qui concernent votre prestation. Le canal Général s'ouvre dès que votre accès est actif." example="Espace enfants — coordination de la garde : effectifs, activités, consignes" />;
+  return <IllustratedEmpty scene={ChatScene} title="Aucun canal accessible pour le moment" description="Les organisateurs vous ajouteront aux canaux de coordination qui concernent votre prestation. Le canal Général s'ouvre dès que votre accès est actif." example="Espace enfants : coordination de la garde, effectifs, activités, consignes" />;
 }

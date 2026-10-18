@@ -1,4 +1,3 @@
-import { Package, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +12,7 @@ import { requireActor } from "@/lib/session";
 import { getEquipmentOverview, PROVIDED_BY, PROVIDED_BY_LABELS } from "@/modules/trade-tools/application/equipment-service";
 import { addEquipmentAction, deleteEquipmentAction } from "./actions";
 
-export const metadata = { title: "Matériel — Sous Nos Ailes" };
+export const metadata = { title: "Matériel" };
 
 export default async function EquipmentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = await params;
@@ -28,11 +27,10 @@ export default async function EquipmentPage({ params }: { params: Promise<{ id: 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Outil métier"
         title="Matériel"
         description="Liste du matériel par prestataire : quantités, qui fournit, besoins électriques. Chaque prestataire gère ses lignes ; les organisateurs voient tout."
         actions={
-          <ActionDialog trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter du matériel</Button>} title="Nouvelle ligne de matériel" action={addEquipmentAction.bind(null, eventId)} successMessage="Matériel ajouté.">
+          <ActionDialog trigger={<Button size="sm">Ajouter du matériel</Button>} title="Nouvelle ligne de matériel" action={addEquipmentAction.bind(null, eventId)} successMessage="Matériel ajouté.">
             <div className="space-y-1.5">
               <Label htmlFor="eq-name">Désignation *</Label>
               <Input id="eq-name" name="name" required placeholder="Enceinte active 15 pouces" />
@@ -79,7 +77,7 @@ export default async function EquipmentPage({ params }: { params: Promise<{ id: 
         }
       />
       {items.length === 0 ? (
-        <EmptyState icon={Package} title="Aucun matériel listé" description="Ajoutez le matériel apporté ou nécessaire pour que le lieu et les autres prestataires anticipent." />
+        <EmptyState title="Aucun matériel listé" description="Ajoutez le matériel apporté ou nécessaire pour que le lieu et les autres prestataires anticipent." />
       ) : (
         <div className="space-y-6">
           {[...grouped.entries()].map(([group, rows]) => (
@@ -102,8 +100,8 @@ export default async function EquipmentPage({ params }: { params: Promise<{ id: 
                       <TableCell className="font-medium">{i.name}</TableCell>
                       <TableCell className="text-right tabular-nums">{i.quantity}</TableCell>
                       <TableCell>{PROVIDED_BY_LABELS[i.providedBy as keyof typeof PROVIDED_BY_LABELS] ?? i.providedBy}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{i.powerNeeds ?? "—"}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{i.notes ?? "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{i.powerNeeds ?? "Non renseigné"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{i.notes ?? "Non renseigné"}</TableCell>
                       <TableCell className="text-right">{(tool.access.isOrganizer || i.memberId === tool.access.memberId) && <DeleteItemButton label={i.name} onConfirm={deleteEquipmentAction.bind(null, eventId, i.id)} />}</TableCell>
                     </TableRow>
                   ))}

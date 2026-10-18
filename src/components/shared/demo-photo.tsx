@@ -34,6 +34,7 @@ export function DemoPhoto({
         fill
         sizes={sizes}
         priority={priority}
+        fetchPriority={priority ? "high" : undefined}
         className={cn("object-cover", imgClassName)}
       />
     </div>

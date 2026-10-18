@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Copy, LogIn, Pencil, Phone, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,14 +58,9 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
   return (
     <div className="space-y-6">
       <div>
-        <Button asChild variant="ghost" size="sm">
-          <Link href={base}>
-            <ArrowLeft className="size-4" aria-hidden="true" /> Retour à la liste
-          </Link>
-        </Button>
+        <Link href={base} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Retour à la liste</Link>
       </div>
       <PageHeader
-        eyebrow="Fiche enfant"
         title={
           <span className="flex flex-wrap items-center gap-3">
             {child.firstName} {child.lastName}
@@ -77,7 +72,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
           <>
             {canRecord && presence === "expected" && (
               <ActionButton action={quickAttendanceAction.bind(null, eventId, childId, "check_in")} successMessage="Arrivée enregistrée." variant="default" size="default">
-                <LogIn className="size-4" aria-hidden="true" /> Enregistrer l'arrivée
+                 Enregistrer l'arrivée
               </ActionButton>
             )}
             {canHandover && (
@@ -93,7 +88,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
               <ActionDialog
                 trigger={
                   <Button variant="outline">
-                    <Pencil className="size-4" aria-hidden="true" /> Modifier
+                     Modifier
                   </Button>
                 }
                 title="Modifier la fiche"
@@ -110,7 +105,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <Card className="gap-3 p-5">
+          <Card className="gap-3 p-6">
             <h2 className="font-semibold">Consignes opérationnelles</h2>
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{child.careInstructions ?? "Aucune consigne particulière."}</p>
             <dl className="grid gap-2 text-sm sm:grid-cols-2">
@@ -121,7 +116,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
               <div>
                 <dt className="text-muted-foreground">Horaires prévus</dt>
                 <dd>
-                  {child.expectedArrivalAt ? formatDateTime(child.expectedArrivalAt, timezone) : "—"} → {child.expectedDepartureAt ? formatDateTime(child.expectedDepartureAt, timezone) : "—"}
+                  {child.expectedArrivalAt ? formatDateTime(child.expectedArrivalAt, timezone) : "n/d"} à {child.expectedDepartureAt ? formatDateTime(child.expectedDepartureAt, timezone) : "n/d"}
                 </dd>
               </div>
               <div>
@@ -145,7 +140,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
           />
 
           {canRecord && (
-            <Card className="gap-3 p-5">
+            <Card className="gap-3 p-6">
               <h2 className="font-semibold">Consigner un incident ou une note</h2>
               <ActionDialog
                 trigger={<Button variant="outline">Ajouter une note / un incident</Button>}
@@ -170,7 +165,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
             </Card>
           )}
 
-          <Card className="gap-3 p-5">
+          <Card className="gap-3 p-6">
             <h2 className="font-semibold">Historique</h2>
             {attendance.length === 0 && handovers.length === 0 ? (
               <p className="text-sm text-muted-foreground">Aucun mouvement enregistré.</p>
@@ -200,11 +195,11 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
         </div>
 
         <aside className="space-y-6">
-          <Card className="gap-3 p-5">
+          <Card className="gap-3 p-6">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Contacts d'urgence</h2>
               {canManage && (
-                <ActionDialog trigger={<Button variant="ghost" size="sm">Ajouter</Button>} title="Contact d'urgence" action={addEmergencyContactAction.bind(null, eventId, childId)} successMessage="Contact ajouté.">
+                <ActionDialog trigger={<Button variant="outline" size="sm">Ajouter</Button>} title="Contact d'urgence" action={addEmergencyContactAction.bind(null, eventId, childId)} successMessage="Contact ajouté.">
                   <div className="space-y-1.5">
                     <Label htmlFor="ec-name">Nom *</Label>
                     <Input id="ec-name" name="name" required />
@@ -235,7 +230,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
                         {c.priority}. {c.name} <span className="text-muted-foreground">({c.relationship})</span>
                       </div>
                       <a href={`tel:${c.phone}`} className="inline-flex items-center gap-1 text-muted-foreground hover:underline">
-                        <Phone className="size-3" aria-hidden="true" /> {c.phone}
+                         {c.phone}
                       </a>
                     </div>
                     {canManage && (
@@ -256,11 +251,11 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
             )}
           </Card>
 
-          <Card className="gap-3 p-5">
+          <Card className="gap-3 p-6">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Personnes autorisées</h2>
               {canManage && (
-                <ActionDialog trigger={<Button variant="ghost" size="sm">Ajouter</Button>} title="Personne autorisée à récupérer l'enfant" action={addAuthorizedPersonAction.bind(null, eventId, childId)} successMessage="Personne ajoutée.">
+                <ActionDialog trigger={<Button variant="outline" size="sm">Ajouter</Button>} title="Personne autorisée à récupérer l'enfant" action={addAuthorizedPersonAction.bind(null, eventId, childId)} successMessage="Personne ajoutée.">
                   <div className="space-y-1.5">
                     <Label htmlFor="ap-name">Nom *</Label>
                     <Input id="ap-name" name="name" required />
@@ -315,7 +310,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
           </Card>
 
           {canManage && (
-            <Card className="gap-3 p-5">
+            <Card className="gap-3 p-6">
               <h2 className="font-semibold">Information du responsable légal</h2>
               <p className="text-sm text-muted-foreground">Texte d'information à copier et envoyer au responsable (SMS, e-mail, message), puis marquez-le comme informé.</p>
               <details className="rounded-lg border bg-muted/40 p-3 text-sm">
@@ -325,7 +320,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
               <div className="flex flex-wrap gap-2">
                 <Button asChild variant="outline" size="sm">
                   <a href={`mailto:${child.guardianEmail ?? ""}?subject=${encodeURIComponent("Informations concernant la garde de votre enfant")}&body=${encodeURIComponent(GUARDIAN_INFORMATION_TEXT)}`}>
-                    <Copy className="size-4" aria-hidden="true" /> Préparer l'e-mail
+                    Préparer l'e-mail
                   </a>
                 </Button>
                 {!child.guardianInformedAt && (
@@ -340,8 +335,8 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
           {canManage && (
             <ConfirmDialog
               trigger={
-                <Button variant="ghost" className="w-full text-destructive">
-                  <Trash2 className="size-4" aria-hidden="true" /> Supprimer la fiche
+                <Button variant="outline" className="w-full text-destructive">
+                   Supprimer la fiche
                 </Button>
               }
               title="Supprimer cet enfant ?"

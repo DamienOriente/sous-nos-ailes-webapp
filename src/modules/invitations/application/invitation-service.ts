@@ -249,7 +249,7 @@ function invitationEmailPayload(event: PublicEventInfo, invitation: InvitationRe
   return {
     toEmail: invitation.recipientEmail!,
     templateKey: "invitation",
-    subject: reminder ? `Rappel — invitation : ${event.name}` : `Invitation : ${event.name}`,
+    subject: reminder ? `Rappel : invitation à ${event.name}` : `Invitation : ${event.name}`,
     payload: { heading: `${invitation.recipientName}, vous êtes invité(e)`, intro, message: invitation.customMessage ?? "", ctaLabel: "Répondre à l'invitation", url },
   };
 }
@@ -276,7 +276,7 @@ export async function remindInvitation(actor: Actor, eventId: string, invitation
         no_email: "Aucune adresse e-mail pour ce destinataire.",
         status: "Seules les invitations envoyées et sans réponse peuvent être relancées.",
         max_reached: "Nombre maximal de relances atteint (2).",
-        too_soon: `Relance possible à partir du ${decision.retryAfter?.toLocaleDateString("fr-FR") ?? "— "}.`,
+        too_soon: `Relance possible à partir du ${decision.retryAfter?.toLocaleDateString("fr-FR") ?? "une date ultérieure"}.`,
       };
       throw new ConflictError(messages[decision.reason]);
     }

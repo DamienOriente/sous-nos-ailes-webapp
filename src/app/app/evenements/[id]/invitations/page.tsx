@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Mail, Plus, QrCode, ScanLine } from "lucide-react";
 import { Paywall } from "@/components/billing/paywall";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,7 +16,7 @@ import { INVITATION_KIND_LABELS, INVITATION_STATUS_LABELS, INVITATION_STATUS_TON
 import { INVITATION_TEMPLATE_META, type InvitationTemplateKey } from "@/modules/invitations/domain/templates";
 import { getInvitationEntitlement, getInvitationStats, listInvitations } from "@/modules/invitations/application/invitation-service";
 
-export const metadata = { title: "Invitations — Sous Nos Ailes" };
+export const metadata = { title: "Invitations" };
 
 export default async function InvitationsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -34,28 +33,27 @@ export default async function InvitationsPage({ params }: { params: Promise<{ id
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Évènement"
         title="Invitations"
         description="Créez des invitations individuelles, familiales ou de groupe, envoyez-les par e-mail ou partagez le lien RSVP, suivez les réponses."
         actions={
           <>
             <Button asChild variant="outline" size="sm">
               <Link href={`/app/evenements/${id}/checkin`}>
-                <ScanLine className="size-4" aria-hidden="true" /> Contrôle d'accès
+                 Contrôle d'accès
               </Link>
             </Button>
             <Button asChild size="sm" disabled={limitReached}>
               <Link href={`/app/evenements/${id}/invitations/nouvelle`} aria-disabled={limitReached}>
-                <Plus className="size-4" aria-hidden="true" /> Nouvelle invitation
+                 Nouvelle invitation
               </Link>
             </Button>
           </>
         }
       />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Invitations" value={stats.total} icon={Mail} hint={!entitlement.premium && entitlement.basicLimit !== null ? `${stats.total - stats.revoked}/${entitlement.basicLimit} (${entitlement.planName})` : undefined} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Invitations" value={stats.total} hint={!entitlement.premium && entitlement.basicLimit !== null ? `${stats.total - stats.revoked}/${entitlement.basicLimit} (${entitlement.planName})` : undefined} />
         <StatCard label="Envoyées / consultées" value={stats.sent + stats.viewed} />
-        <StatCard label="Répondues" value={stats.answered} tone="success" />
+        <StatCard label="Répondues" value={stats.answered} />
         <StatCard label="Révoquées / expirées" value={stats.revoked + stats.expired} />
       </div>
 
@@ -64,8 +62,8 @@ export default async function InvitationsPage({ params }: { params: Promise<{ id
           scene={EnvelopeScene}
           title="Aucune invitation envoyée"
           description="Une invitation couvre une personne, une famille ou un groupe. Envoyez-la par e-mail ou partagez le lien RSVP : les réponses mettent la liste des invités à jour toutes seules. Avec l'offre Plus, un QR code d'accès à usage unique sert au contrôle à l'entrée."
-          example="Famille Dubois — modèle champêtre, 3 invités, répondue : 3 présents"
-          action={<><Button asChild><Link href={`/app/evenements/${id}/invitations/nouvelle`}><Plus className="size-4" aria-hidden="true" /> Créer une invitation</Link></Button><Button asChild variant="outline"><Link href={`/app/evenements/${id}/invites`}>Compléter la liste des invités</Link></Button></>}
+          example="Famille Dubois, modèle champêtre, 3 invités, répondue : 3 présents"
+          action={<><Button asChild><Link href={`/app/evenements/${id}/invitations/nouvelle`}>Créer une invitation</Link></Button><Button asChild variant="outline"><Link href={`/app/evenements/${id}/invites`}>Compléter la liste des invités</Link></Button></>}
           testId="invitations-empty"
         />
       ) : (
@@ -98,8 +96,8 @@ export default async function InvitationsPage({ params }: { params: Promise<{ id
                     <StatusBadge tone={INVITATION_STATUS_TONES[inv.status]}>{INVITATION_STATUS_LABELS[inv.status]}</StatusBadge>
                     {inv.reminderCount > 0 && <span className="ml-1 text-xs text-muted-foreground">({inv.reminderCount} relance{inv.reminderCount > 1 ? "s" : ""})</span>}
                   </TableCell>
-                  <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">{inv.sentAt ? formatDateFr(inv.sentAt) : "—"}</TableCell>
-                  <TableCell className="hidden text-right sm:table-cell">{inv.hasCheckinToken ? <QrCode className="ml-auto size-4 text-primary" aria-label="QR généré" /> : <span className="text-muted-foreground">—</span>}</TableCell>
+                  <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">{inv.sentAt ? formatDateFr(inv.sentAt) : "Pas envoyée"}</TableCell>
+                  <TableCell className="hidden text-right sm:table-cell">{inv.hasCheckinToken ? "Oui" : "Non"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -123,7 +123,7 @@ export function AvailabilityBlock({ block, ctx, variant = "grid" }: BlockProps<"
         {byDay.map((d) => (
           <li key={d.name} className={cn("rounded-(--pg-radius-md) border border-(--pg-border) p-3", d.slots.length > 0 ? "bg-(--pg-surface)" : "opacity-80", variant === "compact" && "flex items-center justify-between")}>
             <p className="text-sm font-medium">{d.name}</p>
-            <p className="mt-1 text-xs text-(--pg-muted)">{d.slots.length > 0 ? d.slots.join(", ") : "—"}</p>
+            <p className="mt-1 text-xs text-(--pg-muted)">{d.slots.length > 0 ? d.slots.join(", ") : "Pas de créneau"}</p>
           </li>
         ))}
       </ul>
@@ -177,9 +177,6 @@ export function TrustBlock({ block, ctx, variant = "row" }: BlockProps<"trust">)
         {items.map((v) => (
           <li key={v.kind}>
             <Chip className={cn(variant === "list" && "border-0 bg-transparent px-0 text-sm")}>
-              <svg viewBox="0 0 20 20" className="mr-1.5 size-3.5 fill-none stroke-(--pg-accent) stroke-2" aria-hidden="true">
-                <path d="M4 10.5l4 4 8-9" />
-              </svg>
               {VERIFICATION_LABELS[v.kind] ?? v.kind}
             </Chip>
             {variant === "list" && v.statement && <p className="mt-0.5 text-xs text-(--pg-muted)">{v.statement}</p>}
@@ -197,14 +194,7 @@ export function ZoneBlock({ block, ctx, variant = "text" }: BlockProps<"zone">) 
   const pro = ctx.data.professional;
   const departments = Array.from(new Set([pro.department, ...block.props.departments].filter((d): d is string => Boolean(d))));
   return (
-    <section id={id} aria-labelledby={`${id}-h`} className={cn(variant === "card" && "rounded-(--pg-radius-lg) bg-(--pg-accent-soft) p-6 sm:p-8", variant === "map" && "grid items-center gap-8 md:grid-cols-[auto_1fr]")}>
-      {variant === "map" && (
-        <svg viewBox="0 0 120 120" className="size-32 shrink-0" aria-hidden="true">
-          <circle cx="60" cy="60" r="54" className="fill-(--pg-accent) opacity-15" />
-          <circle cx="60" cy="60" r="34" className="fill-(--pg-accent) opacity-25" />
-          <circle cx="60" cy="60" r="6" className="fill-(--pg-accent)" />
-        </svg>
-      )}
+    <section id={id} aria-labelledby={`${id}-h`} className={cn(variant === "card" && "rounded-(--pg-radius-lg) bg-(--pg-accent-soft) p-6 sm:p-8", variant === "map" && "border-y border-(--pg-border) py-8")}>
       <div>
         <SectionHeading size="sm" className="mb-3">
           <span id={`${id}-h`}>{heading}</span>

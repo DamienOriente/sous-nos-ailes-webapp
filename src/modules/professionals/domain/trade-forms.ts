@@ -83,7 +83,7 @@ export const TRADE_FORMS: Record<TradeFormKey, TradeFormDefinition> = {
       { name: "teamSize", label: "Taille de l'équipe mobilisable", type: "number", min: 1, max: 100, unit: "personnes" },
       { name: "insuranceDeclared", label: "Je déclare détenir une assurance responsabilité civile professionnelle", type: "checkbox", help: "Vous pourrez transmettre l'attestation dans l'onglet Vérification." },
     ],
-    requiredDocuments: ["Extrait Kbis ou avis de situation SIRENE", "Attestation d'assurance RC professionnelle", "Diplômes ou attestations de formation (PSC1, CAP AEPE…)", "Extrait de casier judiciaire (bulletin n°3) pour chaque intervenant — conservé par vous, présenté sur demande"],
+    requiredDocuments: ["Extrait Kbis ou avis de situation SIRENE", "Attestation d'assurance RC professionnelle", "Diplômes ou attestations de formation (PSC1, CAP AEPE…)", "Extrait de casier judiciaire (bulletin n°3) pour chaque intervenant (conservé par vous, présenté sur demande)"],
   },
   animation: {
     key: "animation",

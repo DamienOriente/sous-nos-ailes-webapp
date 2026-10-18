@@ -3,9 +3,9 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Nature forêt — lodgings, green venues. Fullscreen landscape hero, then
- * "clearings": wide sections separated by generous vertical space and a
- * single hairline; the gallery sits on a deep-green band.
+ * Nature forêt: lodgings, green venues. Fullscreen landscape hero, then wide
+ * sections separated by generous vertical space and a single hairline; the
+ * gallery sits on a deep-green band.
  */
 const VARIANTS: VariantMap = { hero: "fullscreen", about: "with-image", services: "columns", pricing: "table", gallery: "mosaic", testimonials: "list", faq: "lines", contact: "panel", trust: "row", zone: "map", cta_quote: "split", availability: "grid" };
 

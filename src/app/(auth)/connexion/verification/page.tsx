@@ -12,7 +12,6 @@ export default async function TwoFactorPage() {
   if (actor) redirect("/app");
   return (
     <AuthCard
-      eyebrow="Sécurité"
       title="Vérification en deux étapes"
       description="Votre compte est protégé par la double authentification. Saisissez le code généré par votre application."
       footer={

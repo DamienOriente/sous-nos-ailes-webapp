@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Baby, Check, Clock, Download, Plus, Upload, Users, X } from "lucide-react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IllustratedEmpty } from "@/components/events/illustrated-empty";
@@ -19,7 +19,7 @@ import { RSVP_LABELS, RSVP_STATUSES, type RsvpStatus } from "@/modules/guests/do
 import { getGuestStats, listAddableContacts, listGroups, listGuests } from "@/modules/guests/application/guest-service";
 import { addFromContactsAction, createGroupAction, createGuestAction, deleteGroupAction, deleteGuestAction, updateGroupAction, updateGuestAction } from "./actions";
 
-export const metadata = { title: "Invités — Sous Nos Ailes" };
+export const metadata = { title: "Invités" };
 
 type Search = { q?: string; group?: string; rsvp?: string; enfants?: string };
 
@@ -48,7 +48,6 @@ export default async function GuestsPage({ params, searchParams }: { params: Pro
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Évènement"
         title="Invités"
         description="Liste des invités, groupes et réponses. Les enfants peuvent ensuite être inscrits dans l'espace enfants pour la garde."
         actions={
@@ -61,7 +60,7 @@ export default async function GuestsPage({ params, searchParams }: { params: Pro
               </Button>
               <Button asChild variant="outline" size="sm">
                 <Link href={`/app/evenements/${id}/invites/import`}>
-                  <Upload className="size-4" aria-hidden="true" /> Importer
+                   Importer
                 </Link>
               </Button>
               <AddFromContactsDialog eventId={id} contacts={addable} groups={groupOptions} onAdd={addFromContactsAction} />
@@ -72,7 +71,7 @@ export default async function GuestsPage({ params, searchParams }: { params: Pro
                   onSubmit={createGuestAction.bind(null, id)}
                   trigger={
                     <Button size="sm">
-                      <Plus className="size-4" aria-hidden="true" /> Ajouter un invité
+                       Ajouter un invité
                     </Button>
                   }
                 />
@@ -82,12 +81,12 @@ export default async function GuestsPage({ params, searchParams }: { params: Pro
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard label="Invités" value={stats.total} icon={Users} hint={`${stats.expectedHeadcount} personne(s) attendue(s)`} />
-        <StatCard label="Acceptés" value={stats.accepted} icon={Check} tone="success" />
-        <StatCard label="Refusés" value={stats.declined} icon={X} />
-        <StatCard label="En attente" value={stats.pending + stats.maybe} icon={Clock} tone="warning" hint={stats.maybe ? `dont ${stats.maybe} peut-être` : undefined} />
-        <StatCard label="Enfants" value={stats.children} icon={Baby} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <StatCard label="Invités" value={stats.total} hint={`${stats.expectedHeadcount} personne(s) attendue(s)`} />
+        <StatCard label="Acceptés" value={stats.accepted} />
+        <StatCard label="Refusés" value={stats.declined} />
+        <StatCard label="En attente" value={stats.pending + stats.maybe} hint={stats.maybe ? `dont ${stats.maybe} peut-être` : undefined} />
+        <StatCard label="Enfants" value={stats.children} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -118,7 +117,7 @@ export default async function GuestsPage({ params, searchParams }: { params: Pro
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="enfants" value="1" defaultChecked={sp.enfants === "1"} className="size-4 accent-primary" /> Enfants
             </label>
-            <Button type="submit" variant="secondary" size="sm">
+            <Button type="submit" variant="outline" size="sm">
               Filtrer
             </Button>
           </form>
@@ -130,8 +129,8 @@ export default async function GuestsPage({ params, searchParams }: { params: Pro
                 scene={TableScene}
                 title="Votre liste d'invités est vide"
                 description="Ajoutez vos invités un par un, depuis votre carnet de contacts ou par import CSV. Les groupes (famille, amis, collègues) servent ensuite aux invitations et au plan de table ; les enfants peuvent être inscrits à la garde."
-                example="Claire Dubois — Famille Marchand, végétarienne, +1 accompagnant"
-                action={canManage ? <><Button asChild variant="outline" size="sm"><Link href={`/app/evenements/${id}/invites/import`}><Upload className="size-4" aria-hidden="true" /> Importer un CSV</Link></Button><GuestFormDialog eventId={id} groups={groupOptions} onSubmit={createGuestAction.bind(null, id)} trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter un invité</Button>} /></> : undefined}
+                example="Claire Dubois, famille Marchand, végétarienne, +1 accompagnant"
+                action={canManage ? <><Button asChild variant="outline" size="sm"><Link href={`/app/evenements/${id}/invites/import`}>Importer un CSV</Link></Button><GuestFormDialog eventId={id} groups={groupOptions} onSubmit={createGuestAction.bind(null, id)} trigger={<Button size="sm">Ajouter un invité</Button>} /></> : undefined}
                 testId="guests-empty"
               />
             )

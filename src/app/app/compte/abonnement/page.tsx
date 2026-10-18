@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Store } from "lucide-react";
 import { LiveBillingBanner } from "@/components/billing/live-billing-banner";
 import { PlanChanges } from "@/components/billing/plan-changes";
 import { PlanComparison } from "@/components/billing/plan-comparison";
@@ -30,9 +29,9 @@ export default async function AccountSubscriptionPage({ searchParams }: { search
     const listings = await listManageableProfessionals(actor);
     return (
       <div className="space-y-6">
-        <PageHeader eyebrow="Abonnement" title="Offre professionnelle" description="L'offre Premium s'applique à une fiche professionnelle. Choisissez la fiche concernée." />
+        <PageHeader title="Offre professionnelle" description="L'offre Premium s'applique à une fiche professionnelle. Choisissez la fiche concernée." />
         {listings.length === 0 ? (
-          <EmptyState icon={Store} title="Aucune fiche professionnelle" description="Créez d'abord votre fiche pour accéder aux offres professionnelles." action={<Button asChild><Link href="/onboarding">Créer ma fiche</Link></Button>} />
+          <EmptyState title="Aucune fiche professionnelle" description="Créez d'abord votre fiche pour accéder aux offres professionnelles." action={<Button asChild><Link href="/onboarding">Créer ma fiche</Link></Button>} />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {listings.map((l) => (
@@ -53,7 +52,7 @@ export default async function AccountSubscriptionPage({ searchParams }: { search
   const paidPlans = overview.plans.filter((p) => p.priceMonthlyCents > 0);
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Mon compte" title="Abonnement" description="Votre offre actuelle, le comparatif et l'historique de facturation." />
+      <PageHeader title="Abonnement" description="Votre offre actuelle, le comparatif et l'historique de facturation." />
       <LiveBillingBanner show={!stripeConfigured || !overview.liveEnabled} />
       {sp.checkout === "cancelled" && (
         <p role="status" className="rounded-lg bg-muted px-4 py-3 text-sm">
@@ -62,8 +61,7 @@ export default async function AccountSubscriptionPage({ searchParams }: { search
       )}
       {feature && (
         <Card className="gap-1 border-primary/40 bg-accent/40 p-5" data-testid="feature-highlight">
-          <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">Fonctionnalité demandée</p>
-          <p className="font-medium">{FEATURES[feature]}</p>
+          <p className="font-medium">Fonctionnalité demandée : {FEATURES[feature]}</p>
           <p className="text-sm text-muted-foreground">Cette fonctionnalité est incluse dans {paidPlans.map((p) => p.name).join(" / ") || "l'offre Premium"}. Le comparatif ci-dessous la met en évidence.</p>
         </Card>
       )}
@@ -90,7 +88,7 @@ export default async function AccountSubscriptionPage({ searchParams }: { search
                   <Label htmlFor={`promo-${plan.key}`} className="text-xs">
                     Code promo (facultatif)
                   </Label>
-                  <Input id={`promo-${plan.key}`} name="promoCode" placeholder="BIENVENUE20" autoComplete="off" className="uppercase" />
+                  <Input id={`promo-${plan.key}`} name="promoCode" placeholder="BIENVENUE20" autoComplete="off" />
                 </div>
                 <ActionSubmit className="w-full" pendingLabel="Redirection…">
                   Souscrire pour {formatEuros(plan.priceMonthlyCents)} / mois
@@ -114,7 +112,7 @@ export default async function AccountSubscriptionPage({ searchParams }: { search
             {invoices.invoices.map((inv) => (
               <li key={inv.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                 <span>
-                  {formatDateFr(inv.createdAt)} — {inv.number ?? inv.id}
+                  {formatDateFr(inv.createdAt)} · {inv.number ?? inv.id}
                 </span>
                 <span className="font-medium">{formatEuros(inv.amountPaidCents)}</span>
                 {inv.hostedUrl && (
@@ -140,7 +138,7 @@ export default async function AccountSubscriptionPage({ searchParams }: { search
                 <span className="text-muted-foreground">{SUBSCRIPTION_STATUS_LABELS[h.status as SubscriptionStatus]}</span>
                 <span className="text-muted-foreground">
                   {formatDateFr(h.createdAt)}
-                  {h.endedAt ? ` → ${formatDateFr(h.endedAt)}` : ""}
+                  {h.endedAt ? `, terminé le ${formatDateFr(h.endedAt)}` : ""}
                 </span>
               </li>
             ))}

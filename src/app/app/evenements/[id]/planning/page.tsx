@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { CalendarArrowDown } from "lucide-react";
 import { Timeline } from "@/components/events/timeline";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,6 @@ export default async function PlanningPage({ params }: { params: Promise<{ id: s
         actions={
           <Button asChild variant="outline">
             <Link href={`/app/evenements/${id}/planning/ics`} prefetch={false}>
-              <CalendarArrowDown className="size-4" aria-hidden="true" />
               Exporter (.ics)
             </Link>
           </Button>

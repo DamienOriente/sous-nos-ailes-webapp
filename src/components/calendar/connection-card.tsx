@@ -1,6 +1,5 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { RefreshCw, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,7 +26,7 @@ export type ConnectionView = {
 
 const STATUS: Record<ConnectionView["status"], { label: string; tone: StatusTone }> = {
   active: { label: "Connecté", tone: "success" },
-  expired: { label: "Jeton expiré — reconnectez", tone: "warning" },
+  expired: { label: "Jeton expiré, reconnectez-vous", tone: "warning" },
   error: { label: "Erreur de synchronisation", tone: "danger" },
   revoked: { label: "Révoqué", tone: "neutral" },
 };
@@ -49,7 +48,7 @@ export function ConnectionCard({
   const status = STATUS[c.status];
   const fmt = (iso: string) => new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
   return (
-    <Card className="gap-4 p-5" data-testid={`connection-${c.provider}`}>
+    <Card className="gap-4 p-6" data-testid={`connection-${c.provider}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-semibold">{c.label}</h3>
@@ -106,12 +105,12 @@ export function ConnectionCard({
           }}
           variant="default"
         >
-          <RefreshCw className="size-4" aria-hidden="true" /> Synchroniser maintenant
+           Synchroniser maintenant
         </ActionButton>
         <ConfirmDialog
           trigger={
-            <Button variant="ghost" size="sm" className="text-destructive">
-              <Unplug className="size-4" aria-hidden="true" /> Déconnecter
+            <Button variant="outline" size="sm" className="text-destructive">
+               Déconnecter
             </Button>
           }
           title="Déconnecter ce calendrier ?"
@@ -137,10 +136,10 @@ export function ConnectionCard({
               <li key={j.id} className="flex flex-wrap gap-2">
                 <span className="tabular-nums text-muted-foreground">{fmt(j.createdAt)}</span>
                 <StatusBadge tone={j.status === "succeeded" ? "success" : j.status === "failed" ? "danger" : "info"} dot={false}>
-                  {j.status}
+                  {j.status === "succeeded" ? "Réussie" : j.status === "failed" ? "Échec" : "En cours"}
                 </StatusBadge>
                 <span>
-                  ↑{j.pushed} ↓{j.pulled} ⚠{j.conflicts}
+                  {j.pushed} envoyé{j.pushed > 1 ? "s" : ""}, {j.pulled} reçu{j.pulled > 1 ? "s" : ""}, {j.conflicts} conflit{j.conflicts > 1 ? "s" : ""}
                 </span>
                 {j.error && <span className="text-destructive">{j.error}</span>}
               </li>

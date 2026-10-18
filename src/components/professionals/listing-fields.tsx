@@ -101,7 +101,7 @@ export function PresentationFields({ listing }: { listing: Partial<ProfessionalR
           <div className="space-y-2">
             <Label htmlFor="priceUnit">Unité</Label>
             <select id="priceUnit" name="priceUnit" defaultValue={listing?.priceUnit ?? ""} className="h-9 w-full rounded-lg border bg-background px-3 text-sm">
-              <option value="">—</option>
+              <option value="">Non précisée</option>
               {PRICE_UNITS.map((u) => (
                 <option key={u.value} value={u.value}>
                   {u.label}

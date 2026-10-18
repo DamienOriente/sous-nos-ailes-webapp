@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Loader2, TimerReset } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/lib/errors";
 
@@ -36,7 +36,6 @@ export function CheckoutReturnPoller({ check, manageHref, targetHref, targetLabe
   if (state?.active) {
     return (
       <div className="space-y-4 text-center" role="status" data-testid="checkout-confirmed">
-        <CheckCircle2 className="mx-auto size-12 text-success" aria-hidden="true" />
         <h2 className="text-xl font-semibold">Abonnement activé : {state.planName}</h2>
         <p className="text-muted-foreground">Vos fonctionnalités sont disponibles dès maintenant.</p>
         <div className="flex flex-wrap justify-center gap-2">
@@ -55,7 +54,6 @@ export function CheckoutReturnPoller({ check, manageHref, targetHref, targetLabe
   if (timedOut) {
     return (
       <div className="space-y-4 text-center" role="status">
-        <TimerReset className="mx-auto size-12 text-warning-foreground" aria-hidden="true" />
         <h2 className="text-xl font-semibold">Confirmation en attente</h2>
         <p className="text-muted-foreground text-pretty">
           Nous n'avons pas encore reçu la confirmation du paiement. Cela peut prendre quelques minutes ; vous recevrez une notification dès l'activation. Si vous avez été débité et que rien ne change d'ici une heure, contactez-nous.
@@ -68,7 +66,7 @@ export function CheckoutReturnPoller({ check, manageHref, targetHref, targetLabe
   }
   return (
     <div className="space-y-4 text-center" role="status" aria-live="polite" data-testid="checkout-pending">
-      <Loader2 className="mx-auto size-10 animate-spin text-primary" aria-hidden="true" />
+      <Loader2 className="mx-auto size-6 animate-spin text-primary" aria-hidden="true" />
       <h2 className="text-xl font-semibold">Paiement en cours de confirmation…</h2>
       <p className="text-muted-foreground text-pretty">Nous attendons la confirmation du prestataire de paiement. Ne fermez pas cette page, elle se mettra à jour automatiquement.</p>
     </div>

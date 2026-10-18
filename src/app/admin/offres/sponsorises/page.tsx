@@ -20,7 +20,7 @@ export default async function SponsoredPage() {
   const [rows, published, cap] = await Promise.all([listFeaturedPlacementsAdmin(actor), db.select({ id: professionals.id, displayName: professionals.displayName }).from(professionals).where(eq(professionals.status, "published")).orderBy(asc(professionals.displayName)), getSetting<number>("sponsored.max_per_query", 2)]);
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Monétisation" title="Placements sponsorisés" description={`Éligibilité : fiche publiée + offre incluant « sponsored.eligible ». Au plus ${cap} résultat(s) sponsorisé(s) par recherche (paramètre sponsored.max_per_query), toujours étiquetés.`} />
+      <PageHeader title="Placements sponsorisés" description={`Éligibilité : fiche publiée + offre incluant « sponsored.eligible ». Au plus ${cap} résultat(s) sponsorisé(s) par recherche (paramètre sponsored.max_per_query), toujours étiquetés.`} />
       <OffersSubnav current="/admin/offres/sponsorises" />
       <Card className="gap-3 p-6">
         <h2 className="font-semibold">Nouveau placement</h2>
@@ -47,7 +47,7 @@ export default async function SponsoredPage() {
         columns={[
           { key: "pro", header: "Professionnel", cell: (r) => (<div><span className="font-medium">{r.displayName}</span>{r.proStatus !== "published" && <StatusBadge tone="danger" className="ml-2">fiche {r.proStatus}</StatusBadge>}</div>) },
           { key: "scope", header: "Périmètre", cell: (r) => `${r.categorySlug ?? "toutes catégories"} · ${r.department ?? "tous départements"}` },
-          { key: "period", header: "Période", cell: (r) => <span className="text-muted-foreground">{dateTime(r.startsAt)} → {dateTime(r.endsAt)}</span> },
+          { key: "period", header: "Période", cell: (r) => <span className="text-muted-foreground">du {dateTime(r.startsAt)} au {dateTime(r.endsAt)}</span> },
           {
             key: "status",
             header: "Statut",
@@ -56,7 +56,7 @@ export default async function SponsoredPage() {
                 <input type="hidden" name="placementId" value={r.id} />
                 <input type="hidden" name="isActive" value={r.isActive ? "false" : "true"} />
                 {!r.isActive ? <StatusBadge tone="neutral">désactivé</StatusBadge> : r.phase === "ended" ? <StatusBadge tone="neutral">terminé</StatusBadge> : r.phase === "upcoming" ? <StatusBadge tone="info">à venir</StatusBadge> : <StatusBadge tone="success">en cours</StatusBadge>}
-                <ActionSubmit size="sm" variant="ghost">{r.isActive ? "Désactiver" : "Réactiver"}</ActionSubmit>
+                <ActionSubmit size="sm" variant="outline">{r.isActive ? "Désactiver" : "Réactiver"}</ActionSubmit>
               </ActionForm>
             ),
           },

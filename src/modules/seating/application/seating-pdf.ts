@@ -39,14 +39,14 @@ function wrap(text: string, font: PDFFont, size: number, maxWidth: number): stri
 /** Vector drawing of the plan (page 1) followed by the per-table guest lists. */
 export async function renderSeatingPdf(plan: SeatingPlan): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  doc.setTitle(`Plan de table — ${plan.eventName}`);
+  doc.setTitle(`Plan de table : ${plan.eventName}`);
   doc.setProducer("Sous Nos Ailes");
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
   const page = doc.addPage(A4_LANDSCAPE);
   const [pw, ph] = A4_LANDSCAPE;
-  page.drawText(safe(`Plan de table — ${plan.eventName}`), { x: MARGIN, y: ph - MARGIN - 6, size: 16, font: bold, color: INK });
+  page.drawText(safe(`Plan de table : ${plan.eventName}`), { x: MARGIN, y: ph - MARGIN - 6, size: 16, font: bold, color: INK });
   page.drawText(safe(`${plan.tables.length} tables · ${plan.totalSeats} places · ${plan.totalGuests - plan.unplaced.length}/${plan.totalGuests} invités placés`), { x: MARGIN, y: ph - MARGIN - 24, size: 10, font, color: SAGE });
 
   const areaW = pw - MARGIN * 2;

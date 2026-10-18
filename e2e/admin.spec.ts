@@ -67,7 +67,7 @@ test.describe("Back-office", () => {
     await page.goto("/admin/offres");
     const plus = page.locator("[data-plan='organizer_plus']");
     await expect(plus).toBeVisible();
-    await plus.getByLabel("Description").fill("Les outils avancés pour un évènement sans fausse note.");
+    await plus.getByLabel("Description").fill("Évènements illimités, plan de table, budget détaillé, invitations personnalisées et exports PDF.");
     await plus.getByRole("button", { name: "Enregistrer le plan" }).click();
     await expect(page.getByText(/Plan enregistré/)).toBeVisible({ timeout: 15_000 });
 

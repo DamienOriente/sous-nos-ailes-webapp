@@ -3,7 +3,7 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Sauge élégante — weddings. Split hero, Cormorant light titles, hairline
+ * Sauge élégante: weddings. Split hero, Cormorant light titles, hairline
  * rules between sections, text set on a narrow measure.
  */
 const VARIANTS: VariantMap = { hero: "split", about: "pullquote", services: "columns", pricing: "table", gallery: "duo", testimonials: "large", faq: "lines", contact: "panel", trust: "row", zone: "text", cta_quote: "split", availability: "compact" };

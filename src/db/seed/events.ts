@@ -20,6 +20,7 @@ import { buildChecklist } from "@/modules/events/domain/checklist";
 import { defaultCoverPhotoId } from "@/modules/events/domain/cover";
 import { eventPhoto, showcasePhoto } from "@/modules/media/demo-photos";
 import { buildDemoPdf, demoActor, slugFileName, uploadDemoFile } from "./_demo-files";
+import { legacyDocumentTitle, renameLegacyKeys } from "./_legacy";
 import type { SeedContext } from "./context";
 
 /**
@@ -96,7 +97,7 @@ const WEDDING_PROVIDERS: ProviderSpec[] = [
     serviceStart: "14:30",
     serviceEnd: "01:00",
     notes: "2 encadrantes (Marie + Nora), espace enfants dans la grange. Coin sieste pour les moins de 3 ans.",
-    contractDoc: { title: "Contrat garde d'enfants — Les Petits Ailés", lines: ["Évènement : Mariage de Louis et Lisa — 12 juin 2027", "Prestation : 2 intervenantes diplômées, 14h30 → 01h00", "Enfants : 14 (2 à 11 ans), coin sieste et goûter inclus", "Montant : 1 180,00 € TTC — acompte 30 % versé", "Assurance RC pro n° (fictif) 2026-DEMO-001"] },
+    contractDoc: { title: "Contrat garde d'enfants, Les Petits Ailés", lines: ["Évènement : mariage de Louis et Lisa, 12 juin 2027", "Prestation : 2 intervenantes diplômées, 14h30 → 01h00", "Enfants : 14 (2 à 11 ans), coin sieste et goûter inclus", "Montant : 1 180,00 € TTC, acompte 30 % versé", "Assurance RC pro n° (fictif) 2026-DEMO-001"] },
   },
   {
     key: "helene",
@@ -108,7 +109,7 @@ const WEDDING_PROVIDERS: ProviderSpec[] = [
     serviceStart: "10:00",
     serviceEnd: "02:00",
     notes: "Orangerie + terrasse + grange. Hébergement : 6 chambres au domaine pour les familles proches.",
-    contractDoc: { title: "Contrat de location — Domaine des Tilleuls", lines: ["Location du vendredi 11 juin 14h au dimanche 13 juin 12h", "Orangerie (150 pers.), terrasse des platanes, grange aménagée espace enfants", "6 chambres, office traiteur équipé, parking 80 places", "Montant : 8 500,00 € TTC — acompte 30 % versé le 15/09/2026", "Musique extérieure jusqu'à 23h (arrêté municipal)."] },
+    contractDoc: { title: "Contrat de location, Domaine des Tilleuls", lines: ["Location du vendredi 11 juin 14h au dimanche 13 juin 12h", "Orangerie (150 pers.), terrasse des platanes, grange aménagée espace enfants", "6 chambres, office traiteur équipé, parking 80 places", "Montant : 8 500,00 € TTC, acompte 30 % versé le 15/09/2026", "Musique extérieure jusqu'à 23h (arrêté municipal)."] },
   },
   {
     key: "julien",
@@ -120,7 +121,7 @@ const WEDDING_PROVIDERS: ProviderSpec[] = [
     serviceStart: "10:00",
     serviceEnd: "01:00",
     notes: "Devis v2 reçu le 3 octobre : option menu enfants ×14 et brunch du dimanche à confirmer avant le 30 octobre.",
-    quoteDoc: { title: "Devis traiteur v2 — Rossi Traiteur", lines: ["Cocktail champêtre 12 pièces (120 pers.) : 3 360,00 €", "Menu Lavaur (120 couverts) : 10 680,00 €", "Menu enfants (14 couverts) : 252,00 €", "Option brunch du dimanche (60 pers.) : 1 440,00 €", "Total TTC avec options : 12 500,00 € — validité 30 jours"] },
+    quoteDoc: { title: "Devis traiteur v2, Rossi Traiteur", lines: ["Cocktail champêtre 12 pièces (120 pers.) : 3 360,00 €", "Menu Lavaur (120 couverts) : 10 680,00 €", "Menu enfants (14 couverts) : 252,00 €", "Option brunch du dimanche (60 pers.) : 1 440,00 €", "Total TTC avec options : 12 500,00 €, valable 30 jours"] },
   },
   {
     key: "ines",
@@ -132,7 +133,7 @@ const WEDDING_PROVIDERS: ProviderSpec[] = [
     serviceStart: "12:00",
     serviceEnd: "00:30",
     notes: "Reportage complet des préparatifs à l'ouverture de bal. Galerie privée sous 6 semaines.",
-    contractDoc: { title: "Contrat reportage photo — Inès Garnier", lines: ["Reportage du 12 juin 2027, 12h → 00h30 (12 h de présence)", "Livraison : galerie privée en ligne sous 6 semaines, 600 photos retouchées", "Droit à l'image : diffusion sur le site de la photographe soumise à accord écrit", "Montant : 2 400,00 € TTC — acompte 30 % à la signature"] },
+    contractDoc: { title: "Contrat reportage photo, Inès Garnier", lines: ["Reportage du 12 juin 2027, 12h → 00h30 (12 h de présence)", "Livraison : galerie privée en ligne sous 6 semaines, 600 photos retouchées", "Droit à l'image : diffusion sur le site de la photographe soumise à accord écrit", "Montant : 2 400,00 € TTC, acompte 30 % à la signature"] },
   },
   {
     key: "theo",
@@ -144,7 +145,7 @@ const WEDDING_PROVIDERS: ProviderSpec[] = [
     serviceStart: "16:00",
     serviceEnd: "04:00",
     notes: "Devis reçu avec sonorisation de la cérémonie incluse. Brief musical en cours de remplissage.",
-    quoteDoc: { title: "Devis DJ & sonorisation — DJ Théo", lines: ["Sonorisation cérémonie (chapelle) + cocktail + soirée jusqu'à 4h", "Système façade 2 × 15\" + 2 caissons, 2 micros HF, éclairage d'ambiance", "Rendez-vous brief musical inclus", "Montant : 1 650,00 € TTC — acompte 30 % à la confirmation"] },
+    quoteDoc: { title: "Devis DJ & sonorisation, DJ Théo", lines: ["Sonorisation cérémonie (chapelle) + cocktail + soirée jusqu'à 4h", "Système façade 2 × 15\" + 2 caissons, 2 micros HF, éclairage d'ambiance", "Rendez-vous brief musical inclus", "Montant : 1 650,00 € TTC, acompte 30 % à la confirmation"] },
   },
   {
     key: "camille",
@@ -154,7 +155,7 @@ const WEDDING_PROVIDERS: ProviderSpec[] = [
     quoteCents: 320_000,
     memberUserKey: "camille",
     notes: "Coordination complète : prestataires, planning, jour J.",
-    contractDoc: { title: "Contrat de coordination — Camille Ferrand", lines: ["Mission : coordination complète du mariage du 12 juin 2027", "Suivi des prestataires, planning du jour J, présence de 9h à 2h", "Honoraires : 3 200,00 € TTC en trois versements (1/3 à la signature)", "Accès aux fiches enfants : limité aux informations utiles, accordé par les mariés"] },
+    contractDoc: { title: "Contrat de coordination, Camille Ferrand", lines: ["Mission : coordination complète du mariage du 12 juin 2027", "Suivi des prestataires, planning du jour J, présence de 9h à 2h", "Honoraires : 3 200,00 € TTC en trois versements (1/3 à la signature)", "Accès aux fiches enfants : limité aux informations utiles, accordé par les mariés"] },
   },
   {
     key: "fleurs",
@@ -167,7 +168,7 @@ const WEDDING_PROVIDERS: ProviderSpec[] = [
     serviceStart: "09:00",
     serviceEnd: "13:00",
     notes: "Recommandée par Hélène. Bouquet de mariée, arche de cérémonie, 12 centres de table.",
-    quoteDoc: { title: "Devis fleurs — Fleurs & Co", lines: ["Bouquet de mariée et boutonnières : 320,00 €", "Arche de cérémonie fleurie (eucalyptus, pivoines, roses) : 650,00 €", "12 centres de table + chemin de table : 1 080,00 €", "Installation sur place le 12 juin 9h : 250,00 €", "Total TTC : 2 300,00 €"] },
+    quoteDoc: { title: "Devis fleurs, Fleurs & Co", lines: ["Bouquet de mariée et boutonnières : 320,00 €", "Arche de cérémonie fleurie (eucalyptus, pivoines, roses) : 650,00 €", "12 centres de table + chemin de table : 1 080,00 €", "Installation sur place le 12 juin 9h : 250,00 €", "Total TTC : 2 300,00 €"] },
   },
   {
     key: "patissier",
@@ -210,14 +211,14 @@ const WEDDING_EXTRA_TASKS: ExtraTask[] = [
   { title: "Valider le devis v2 du traiteur (menu enfants + brunch)", section: "Prestataires", description: "Réponse attendue par Julien avant le 30 octobre pour bloquer la date.", dueDaysBefore: 225, status: "in_progress", priority: "high", assignee: "louis", comments: [{ from: "julien", body: "Le devis v2 est en ligne dans les documents. Le brunch du dimanche est en option, vous pouvez le retirer sans surcoût.", daysAgo: 9 }, { from: "louis", body: "On regarde ça ce week-end avec Lisa, réponse lundi.", daysAgo: 8 }] },
   { title: "Choisir la musique d'entrée et d'ouverture de bal", section: "Prestataires", description: "À renseigner dans le brief musical (onglet Brief musical) : Théo propose un enchaînement sur September pour lancer la piste.", dueDaysBefore: 45, priority: "normal", assignee: "lisa", comments: [{ from: "theo", body: "Dites-moi si vous préférez une version acoustique pour l'entrée de cérémonie, j'ai deux pistes à vous proposer.", daysAgo: 20 }] },
   { title: "Confirmer la pièce montée (120 parts + 12 sans gluten)", section: "Prestataires", dueDaysBefore: 60, status: "done", assignee: "camille" },
-  { title: "Essai coiffure et maquillage", section: "Prestataires", description: "Atelier Beauté Lavaur — 24 avril 10h, avec les deux témoins.", dueDaysBefore: 49, assignee: "lisa" },
+  { title: "Essai coiffure et maquillage", section: "Prestataires", description: "Atelier Beauté Lavaur, le 24 avril à 10h, avec les deux témoins.", dueDaysBefore: 49, assignee: "lisa" },
   { title: "Prévoir le plan B en cas de pluie (cérémonie dans l'orangerie)", section: "Lieu", description: "Hélène peut basculer la cérémonie dans l'orangerie en 45 min ; à prévoir : qui déplace les chaises ?", dueDaysBefore: 30, priority: "high", assignee: "camille", comments: [{ from: "helene", body: "En cas de pluie annoncée la veille, mon équipe installe 120 chaises dans l'orangerie dès 8h. Il faudra juste décaler le dressage des tables à 12h.", daysAgo: 30 }, { from: "camille", body: "Parfait, je l'ajoute au planning de repli. Julien, ça te laisse assez de temps pour dresser ?", daysAgo: 29 }, { from: "julien", body: "Oui si l'orangerie est libre à 12h précises. Au-delà on dresse pendant la cérémonie, c'est jouable.", daysAgo: 29 }] },
   { title: "Visiter le domaine avec le traiteur et le DJ", section: "Lieu", description: "Repérage technique : prises 32A, accès livraisons, régie.", dueDaysBefore: 150, status: "done", assignee: "camille", comments: [{ from: "camille", body: "Visite faite : 2 × 32A dans l'office, régie DJ possible à droite de la piste. Compte rendu dans Documents.", daysAgo: 40 }] },
   { title: "Réserver l'hébergement des invités venant de loin", section: "Invités", description: "6 chambres au domaine (famille proche) + liste de gîtes à Lavaur pour les autres.", dueDaysBefore: 90, status: "in_progress", assignee: "louis" },
   { title: "Préparer le kit de survie des enfants (jeux, couches, doudous)", section: "Enfants", description: "Liste fournie par Marie : coloriages, Kapla, 2 lits parapluie (Hélène), trousse de secours.", dueDaysBefore: 10, assignee: "marie", visibility: "team", comments: [{ from: "marie", body: "J'apporte la malle d'activités et la trousse. Il me manque seulement 2 lits parapluie : Hélène les prête ?", daysAgo: 15 }, { from: "helene", body: "Oui, deux lits parapluie et des matelas de sieste sont au domaine. Je les mets dans la grange le vendredi.", daysAgo: 15 }] },
   { title: "Recueillir les autorisations de récupération pour chaque enfant", section: "Enfants", description: "Formulaire envoyé aux parents : 11 reçus sur 14.", dueDaysBefore: 14, status: "in_progress", assignee: "lisa", comments: [{ from: "lisa", body: "Encore 3 familles à relancer : Perrin, Costa et Fontaine.", daysAgo: 5 }] },
   { title: "Choisir les couleurs et la papeterie (menus, marque-places)", section: "Décoration", dueDaysBefore: 100, status: "done", assignee: "lisa" },
-  { title: "Commander les menus imprimés et les marque-places", section: "Décoration", description: "Studio Papier — même papier que les faire-part (vert sauge).", dueDaysBefore: 30, assignee: "lisa" },
+  { title: "Commander les menus imprimés et les marque-places", section: "Décoration", description: "Studio Papier, même papier que les faire-part (vert sauge).", dueDaysBefore: 30, assignee: "lisa" },
   { title: "Rédiger les discours (témoins + parents)", section: "Autres", description: "Maxime (témoin) parle au cocktail, les parents au dîner. Durée max 5 min chacun !", dueDaysBefore: 21, priority: "low" },
   { title: "Organiser les navettes retour (Lavaur → Toulouse)", section: "Invités", description: "Deux départs : 1h et 3h. Devis bus à demander.", dueDaysBefore: 60, assignee: "louis", comments: [{ from: "louis", body: "Devis demandé à deux compagnies, réponse sous 10 jours.", daysAgo: 3 }] },
 ];
@@ -271,7 +272,7 @@ const SPECS: EventSpec[] = [
     ],
     providers: WEDDING_PROVIDERS,
     milestones: [
-      { title: "Arrivée des prestataires & installation", start: "10:00", end: "14:00", location: "Domaine — accès livraisons", categorySlugs: ["traiteur", "domaine-reception", "dj", "fleuriste", "location-mobilier"], description: "Fleuriste 9h, traiteur 10h, DJ 16h. Portail ouest." },
+      { title: "Arrivée des prestataires & installation", start: "10:00", end: "14:00", location: "Domaine, accès livraisons", categorySlugs: ["traiteur", "domaine-reception", "dj", "fleuriste", "location-mobilier"], description: "Fleuriste 9h, traiteur 10h, DJ 16h. Portail ouest." },
       { title: "Préparatifs de Lisa et de Louis", start: "12:00", end: "14:30", location: "Suite du domaine / gîte", categorySlugs: ["photographe", "maquilleur", "coiffeur"] },
       { title: "Accueil des enfants à l'espace dédié", start: "14:30", end: "15:00", location: "La grange", categorySlugs: ["garde-enfants-evenementielle"], description: "Pointage à l'arrivée, remise des consignes des parents." },
       { title: "Cérémonie laïque", start: "15:00", end: "16:00", location: "Le parc", categorySlugs: ["photographe", "dj"] },
@@ -280,8 +281,8 @@ const SPECS: EventSpec[] = [
       { title: "Cocktail", start: "17:00", end: "19:30", location: "Terrasse des platanes", categorySlugs: ["traiteur", "photographe", "dj"] },
       { title: "Dîner des enfants", start: "19:00", end: "20:00", location: "La grange", categorySlugs: ["garde-enfants-evenementielle", "traiteur"] },
       { title: "Dîner", start: "20:00", end: "22:30", location: "Orangerie", categorySlugs: ["traiteur", "photographe"] },
-      { title: "Photos de couple — golden hour", start: "21:15", end: "21:45", location: "Allée de platanes", categorySlugs: ["photographe"] },
-      { title: "Coucher des petits (espace sieste)", start: "21:30", location: "La grange — coin calme", categorySlugs: ["garde-enfants-evenementielle"] },
+      { title: "Photos de couple au coucher du soleil", start: "21:15", end: "21:45", location: "Allée de platanes", categorySlugs: ["photographe"] },
+      { title: "Coucher des petits (espace sieste)", start: "21:30", location: "La grange, coin calme", categorySlugs: ["garde-enfants-evenementielle"] },
       { title: "Pièce montée", start: "23:00", end: "23:30", location: "Orangerie", categorySlugs: ["traiteur", "patissier", "photographe", "dj"] },
       { title: "Ouverture de bal", start: "23:30", end: "00:00", location: "Orangerie", categorySlugs: ["dj", "photographe"], description: "Perfect (Ed Sheeran) puis September pour lancer la piste." },
     ],
@@ -366,7 +367,7 @@ const SPECS: EventSpec[] = [
       { title: "Prévoir un coin change et sieste", section: "Enfants", dueDaysBefore: 14, status: "done", assignee: "sofia", visibility: "team", comments: [{ from: "sofia", body: "La salle annexe a un coin moquette : parfait pour les petits. J'apporte un tapis d'éveil.", daysAgo: 4 }] },
     ],
     taskComments: [{ task: "Choisir le traiteur ou le menu", from: "paul", body: "Devis Les Quais reçu : 1 600 € pour 45 couverts, menu enfants inclus. Je compare avec un deuxième traiteur avant de décider.", daysAgo: 6 }],
-    documents: [{ title: "Devis traiteur — Les Quais", kind: "quote", purpose: "quote", visibility: "organizers", providerKey: "traiteur", lines: ["Buffet froid et plat chaud pour 45 personnes", "Menu enfants ×9", "Montant : 1 600,00 € TTC"] }],
+    documents: [{ title: "Devis traiteur, Les Quais", kind: "quote", purpose: "quote", visibility: "organizers", providerKey: "traiteur", lines: ["Buffet froid et plat chaud pour 45 personnes", "Menu enfants ×9", "Montant : 1 600,00 € TTC"] }],
   },
   {
     key: "seminaireDiginumia",
@@ -390,7 +391,7 @@ const SPECS: EventSpec[] = [
     members: [{ userKey: "paul", role: "owner" }],
     providers: [
       { key: "lieu", externalName: "Compans Événements", externalEmail: "resa@compans.test", categorySlug: "salle-evenementielle", status: "confirmed", quoteCents: 250_000, serviceStart: "08:00", serviceEnd: "23:00" },
-      { key: "traiteur", externalName: "Table Occitane", externalEmail: "contact@table-occitane.test", categorySlug: "traiteur", status: "quoted", quoteCents: 380_000, serviceStart: "08:30", serviceEnd: "22:00", notes: "Pauses, déjeuner, dîner — 30 personnes." },
+      { key: "traiteur", externalName: "Table Occitane", externalEmail: "contact@table-occitane.test", categorySlug: "traiteur", status: "quoted", quoteCents: 380_000, serviceStart: "08:30", serviceEnd: "22:00", notes: "Pauses, déjeuner, dîner pour 30 personnes." },
       { key: "anim", externalName: "Cohésion & Co", externalEmail: "bonjour@cohesion-co.test", categorySlug: "animateur", status: "requested", quoteCents: 140_000, serviceStart: "14:30", serviceEnd: "17:30", notes: "Escape game géant en ville." },
       { key: "tech", categorySlug: "location-materiel", status: "shortlisted" },
     ],
@@ -418,6 +419,7 @@ const SPECS: EventSpec[] = [
 export async function seed(ctx: SeedContext): Promise<void> {
   const { db, now } = ctx;
   const tz = "Europe/Paris";
+  await renameLegacyKeys(ctx);
   for (const spec of SPECS) {
     const ownerId = ctx.users[spec.ownerKey];
     if (!ownerId) throw new Error(`seed events: unknown owner ${spec.ownerKey}`);
@@ -534,12 +536,20 @@ export async function seed(ctx: SeedContext): Promise<void> {
     const ensureDoc = async (doc: DocumentSpec & { providerKey?: string }, uploaderKey?: string): Promise<string | null> => {
       const known = docFileByTitle.get(doc.title);
       if (known) return known;
+      // A document generated under its pre-2026-10-18 title: regenerate the PDF and re-point the same row.
+      const legacyTitle = legacyDocumentTitle(doc.title);
+      const legacyKnown = legacyTitle ? docFileByTitle.get(legacyTitle) : undefined;
       const actor = (uploaderKey ? await demoActor(ctx, uploaderKey) : null) ?? ownerActor;
       if (!actor) return null;
       const bytes = await buildDemoPdf(doc.title, doc.lines);
       const fileId = await uploadDemoFile(actor, { scope: "event", scopeId: eventId, purpose: doc.purpose, originalName: slugFileName(doc.title), bytes });
       if (!fileId) return null;
-      await db.insert(eventDocuments).values({ eventId, fileId, title: doc.title, kind: doc.kind, visibility: doc.visibility, eventProfessionalId: doc.providerKey ? (providerIdByKey.get(doc.providerKey) ?? null) : null, uploadedByUserId: actor.userId });
+      if (legacyTitle && legacyKnown) {
+        await db.update(eventDocuments).set({ title: doc.title, fileId }).where(and(eq(eventDocuments.eventId, eventId), eq(eventDocuments.title, legacyTitle)));
+        docFileByTitle.delete(legacyTitle);
+      } else {
+        await db.insert(eventDocuments).values({ eventId, fileId, title: doc.title, kind: doc.kind, visibility: doc.visibility, eventProfessionalId: doc.providerKey ? (providerIdByKey.get(doc.providerKey) ?? null) : null, uploadedByUserId: actor.userId });
+      }
       docFileByTitle.set(doc.title, fileId);
       return fileId;
     };
@@ -699,6 +709,6 @@ function rollover(end: Date, start: Date | null): Date {
 
 /** Display name used for a provider slot when the professionals seed has not created the listing yet. */
 export function demoProName(proKey: string): string {
-  const names: Record<string, string> = { marie: "Marie Delcourt — Garde d'enfants", camille: "Camille Ferrand — Wedding planner", julien: "Julien Rossi Traiteur", helene: "Domaine des Tilleuls", theo: "DJ Théo Lambert", ines: "Inès Garnier Photographe", sofia: "Sofia Martins Animation" };
+  const names: Record<string, string> = { marie: "Marie Delcourt, garde d'enfants", camille: "Camille Ferrand, wedding planner", julien: "Julien Rossi Traiteur", helene: "Domaine des Tilleuls", theo: "DJ Théo Lambert", ines: "Inès Garnier Photographe", sofia: "Sofia Martins Animation" };
   return names[proKey] ?? proKey;
 }

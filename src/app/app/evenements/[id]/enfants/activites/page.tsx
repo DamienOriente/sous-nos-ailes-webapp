@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,7 @@ import { listActivities } from "@/modules/childcare/application/activities-servi
 import { guardPage } from "@/components/childcare/page-guard";
 import { createActivityAction, deleteActivityAction } from "../actions";
 
-export const metadata = { title: "Programme d'activités — Sous Nos Ailes" };
+export const metadata = { title: "Programme d'activités" };
 
 export default async function ActivitiesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = await params;
@@ -27,13 +27,8 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ id:
   });
   return (
     <div className="space-y-6">
-      <Button asChild variant="ghost" size="sm">
-        <Link href={`/app/evenements/${eventId}/enfants`}>
-          <ArrowLeft className="size-4" aria-hidden="true" /> Enfants
-        </Link>
-      </Button>
+      <Link href={`/app/evenements/${eventId}/enfants`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Enfants</Link>
       <PageHeader
-        eyebrow="Garde d'enfants"
         title="Programme d'activités"
         description="Le déroulé de l'espace enfants : ateliers, goûter, sieste, spectacle. Visible par toute l'équipe de garde."
         actions={
@@ -41,7 +36,7 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ id:
             <ActionDialog
               trigger={
                 <Button size="sm">
-                  <Plus className="size-4" aria-hidden="true" /> Ajouter une activité
+                   Ajouter une activité
                 </Button>
               }
               title="Nouvelle activité"
@@ -83,15 +78,15 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ id:
         }
       />
       {activities.length === 0 ? (
-        <EmptyState icon={CalendarDays} title="Aucune activité planifiée" description="Ajoutez les temps forts de l'espace enfants pour que l'équipe s'organise." />
+        <EmptyState title="Aucune activité planifiée" description="Ajoutez les temps forts de l'espace enfants pour que l'équipe s'organise." />
       ) : (
         <ol className="space-y-3">
           {activities.map((a) => (
             <li key={a.id} className="flex items-start justify-between gap-4 rounded-2xl border bg-card p-4">
               <div className="min-w-0">
-                <div className="text-xs font-semibold tracking-wider text-primary uppercase">
+                <div className="text-sm text-muted-foreground tabular-nums">
                   {formatDateTime(a.startsAt, timezone)}
-                  {a.endsAt ? ` → ${formatTime(a.endsAt, timezone)}` : ""}
+                  {a.endsAt ? ` à ${formatTime(a.endsAt, timezone)}` : ""}
                 </div>
                 <h3 className="font-semibold">{a.title}</h3>
                 <p className="text-sm text-muted-foreground">

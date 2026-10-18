@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Flag } from "lucide-react";
 import { ActionForm, ActionSubmit } from "@/components/admin/action-form";
 import { dateTime } from "@/components/admin/admin-table";
 import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
@@ -25,7 +24,6 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Modération"
         title="Signalements et recours"
         description="Chaque signalement est rattaché à un cas de modération ; la décision et la réponse au signalant sont historisées."
         actions={
@@ -40,7 +38,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
           Signalements ({reports.length})
         </h2>
         {reports.length === 0 ? (
-          <EmptyState icon={Flag} title="Aucun signalement" description={all ? "Aucun signalement enregistré." : "Aucun signalement en attente."} />
+          <EmptyState title="Aucun signalement" description={all ? "Aucun signalement enregistré." : "Aucun signalement en attente."} />
         ) : (
           <ul className="space-y-3">
             {reports.map((r) => (

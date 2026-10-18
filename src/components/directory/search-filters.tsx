@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Baby, CalendarDays, Search, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,14 +20,14 @@ export function SearchFilters({ filters, categories, action = "/annuaire", locke
   const others = DEPARTMENTS.filter((d) => !launchDepartments.includes(d));
   // One-tap refinements: each chip is a plain link that toggles a single filter, so it works without JavaScript.
   const chip = (patch: Partial<SearchFilters>) => `${action}${toQueryString({ ...filters, page: 1, ...patch })}`;
-  const quick: Array<{ label: string; icon: typeof Baby; active: boolean; href: string }> = [
-    { label: "Enfants bienvenus", icon: Baby, active: filters.children === "1", href: chip({ children: filters.children === "1" ? "" : "1" }) },
-    { label: "Justificatifs examinés", icon: ShieldCheck, active: filters.verification >= 3, href: chip({ verification: filters.verification >= 3 ? 0 : 3 }) },
-    { label: "Mariage", icon: Sparkles, active: filters.eventType === "wedding", href: chip({ eventType: filters.eventType === "wedding" ? "" : "wedding" }) },
-    { label: "Séminaire", icon: CalendarDays, active: filters.eventType === "seminar", href: chip({ eventType: filters.eventType === "seminar" ? "" : "seminar" }) },
+  const quick: Array<{ label: string; active: boolean; href: string }> = [
+    { label: "Enfants bienvenus", active: filters.children === "1", href: chip({ children: filters.children === "1" ? "" : "1" }) },
+    { label: "Justificatifs examinés", active: filters.verification >= 3, href: chip({ verification: filters.verification >= 3 ? 0 : 3 }) },
+    { label: "Mariage", active: filters.eventType === "wedding", href: chip({ eventType: filters.eventType === "wedding" ? "" : "wedding" }) },
+    { label: "Séminaire", active: filters.eventType === "seminar", href: chip({ eventType: filters.eventType === "seminar" ? "" : "seminar" }) },
   ];
   return (
-    <form method="get" action={action} className="space-y-4 rounded-3xl border bg-card p-4 shadow-soft sm:p-5" role="search" aria-label="Rechercher un professionnel">
+    <form method="get" action={action} className="space-y-4 rounded-3xl border bg-card p-4 sm:p-6" role="search" aria-label="Rechercher un professionnel">
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
@@ -73,16 +73,14 @@ export function SearchFilters({ filters, categories, action = "/annuaire", locke
       <ul className="flex flex-wrap gap-2" aria-label="Filtres rapides">
         {quick.map((q) => (
           <li key={q.label}>
-            <Link href={q.href} aria-current={q.active ? "true" : undefined} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${q.active ? "border-primary bg-sage-soft text-sage-deep dark:text-foreground" : "hover:border-primary/60 hover:text-primary"}`}>
-              <q.icon className="size-3.5" aria-hidden="true" />
+            <Link href={q.href} aria-current={q.active ? "true" : undefined} className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors ${q.active ? "border-primary bg-sage-soft text-sage-deep dark:text-foreground" : "hover:bg-muted"}`}>
               {q.label}
             </Link>
           </li>
         ))}
       </ul>
       <details className="group" open={Boolean(filters.city || filters.radius || filters.eventType || filters.priceMax || filters.children || filters.languages || filters.verification || filters.date || filters.favorites)}>
-        <summary className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-          <SlidersHorizontal className="size-4" aria-hidden="true" />
+        <summary className="inline-flex cursor-pointer items-center text-sm font-medium text-muted-foreground hover:text-foreground">
           Plus de critères
         </summary>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { MessageSquare, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +16,7 @@ import { formatDateTime, formatTime } from "@/modules/calendar/domain/datetime";
 import { getCateringOverview, MENU_MOMENTS, MENU_MOMENT_LABELS } from "@/modules/trade-tools/application/catering-service";
 import { addMenuAction, addStepAction, deleteMenuAction, deleteStepAction, savePlanAction } from "./actions";
 
-export const metadata = { title: "Traiteur — Sous Nos Ailes" };
+export const metadata = { title: "Traiteur" };
 
 export default async function CateringPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = await params;
@@ -30,18 +29,17 @@ export default async function CateringPage({ params }: { params: Promise<{ id: s
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Outil métier"
         title="Traiteur"
         description="Convives, répartition des repas, menus, planning de service et décompte alimentaire anonyme. Les allergies individuelles restent du côté de l'équipe de garde."
         actions={
           <Button asChild variant="outline" size="sm">
             <Link href={data.channelHref}>
-              <MessageSquare className="size-4" aria-hidden="true" /> Coordination (messages)
+               Coordination (messages)
             </Link>
           </Button>
         }
       />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Adultes" value={headcount.totalAdults} hint={`${headcount.acceptedAdults} invités acceptés + ${headcount.manualAdults} manuels`} />
         <StatCard label="Enfants" value={headcount.totalChildren} hint={`${headcount.registeredChildren} enfants enregistrés`} />
         <StatCard label="Total couverts" value={headcount.totalAdults + headcount.totalChildren} />
@@ -114,7 +112,7 @@ export default async function CateringPage({ params }: { params: Promise<{ id: s
       <ToolSection
         title="Menus"
         action={
-          <ActionDialog trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter</Button>} title="Nouveau menu" action={addMenuAction.bind(null, eventId)} successMessage="Menu ajouté.">
+          <ActionDialog trigger={<Button size="sm">Ajouter</Button>} title="Nouveau menu" action={addMenuAction.bind(null, eventId)} successMessage="Menu ajouté.">
             <div className="space-y-1.5">
               <Label htmlFor="m-moment">Moment</Label>
               <select id="m-moment" name="moment" defaultValue="dinner" className="h-8 w-full rounded-lg border bg-background px-2 text-sm">
@@ -143,11 +141,11 @@ export default async function CateringPage({ params }: { params: Promise<{ id: s
         {menus.length === 0 ? (
           <p className="text-sm text-muted-foreground">Aucun menu pour l'instant.</p>
         ) : (
-          <ul className="grid gap-3 md:grid-cols-2">
+          <ul className="grid gap-4 md:grid-cols-2">
             {menus.map((m) => (
               <li key={m.id} className="flex items-start justify-between gap-3 rounded-xl border p-4">
                 <div>
-                  <div className="text-xs font-semibold tracking-wider text-primary uppercase">{MENU_MOMENT_LABELS[m.moment as keyof typeof MENU_MOMENT_LABELS] ?? m.moment}</div>
+                  <div className="text-sm text-muted-foreground">{MENU_MOMENT_LABELS[m.moment as keyof typeof MENU_MOMENT_LABELS] ?? m.moment}</div>
                   <h3 className="font-medium">{m.name}</h3>
                   {m.description && <p className="whitespace-pre-wrap text-sm text-muted-foreground">{m.description}</p>}
                   {m.pricePerCoverCents !== null && <p className="mt-1 text-sm">{formatEuros(m.pricePerCoverCents)} / couvert</p>}
@@ -162,7 +160,7 @@ export default async function CateringPage({ params }: { params: Promise<{ id: s
       <ToolSection
         title="Planning de service"
         action={
-          <ActionDialog trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter une étape</Button>} title="Étape de service" action={addStepAction.bind(null, eventId)} successMessage="Étape ajoutée.">
+          <ActionDialog trigger={<Button size="sm">Ajouter une étape</Button>} title="Étape de service" action={addStepAction.bind(null, eventId)} successMessage="Étape ajoutée.">
             <div className="space-y-1.5">
               <Label htmlFor="s-title">Étape *</Label>
               <Input id="s-title" name="title" required placeholder="Service du plat" />
@@ -193,7 +191,7 @@ export default async function CateringPage({ params }: { params: Promise<{ id: s
                 <div>
                   <div className="text-xs tabular-nums text-muted-foreground">
                     {formatDateTime(s.startsAt, timezone)}
-                    {s.endsAt ? ` → ${formatTime(s.endsAt, timezone)}` : ""}
+                    {s.endsAt ? ` à ${formatTime(s.endsAt, timezone)}` : ""}
                   </div>
                   <div className="font-medium">{s.title}</div>
                   {s.notes && <div className="text-sm text-muted-foreground">{s.notes}</div>}

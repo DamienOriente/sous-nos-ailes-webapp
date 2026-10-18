@@ -12,7 +12,7 @@ export default async function BillingEventsPage() {
   const rows = await listRecentBillingEvents(actor, 100);
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Monétisation" title="Journal des évènements de facturation" description="Registre idempotent : chaque évènement Stripe ou simulé est traité au plus une fois. Les erreurs de traitement sont conservées pour analyse et rejouées à la prochaine livraison." />
+      <PageHeader title="Journal des évènements de facturation" description="Registre idempotent : chaque évènement Stripe ou simulé est traité au plus une fois. Les erreurs de traitement sont conservées pour analyse et rejouées à la prochaine livraison." />
       <OffersSubnav current="/admin/offres/evenements" />
       <AdminTable
         rows={rows}

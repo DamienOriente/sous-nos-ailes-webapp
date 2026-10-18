@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { and, eq, isNull } from "drizzle-orm";
-import { CalendarDays, Handshake, MapPin, Plus } from "lucide-react";
 import { db } from "@/db/client";
 import { professionals } from "@/db/schema";
 import { EventCover, MemberAvatars, ProgressBar } from "@/components/events/event-cover";
@@ -19,7 +18,7 @@ import { EVENT_STATUS_TONES, isEventLive, type EventStatus } from "@/modules/eve
 import { EVENT_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/modules/events/domain/event-types";
 import { shortlistAction } from "./actions";
 
-export const metadata: Metadata = { title: "Mes évènements — Sous Nos Ailes" };
+export const metadata: Metadata = { title: "Mes évènements" };
 
 const FILTERS: Array<{ key: string; label: string; match: (s: EventStatus) => boolean }> = [
   { key: "actifs", label: "En cours", match: (s) => isEventLive(s) },
@@ -40,23 +39,19 @@ export default async function EventsListPage({ searchParams }: { searchParams: P
   const manageable = all.filter((e) => isEventLive(e.status) && ["owner", "lead_organizer", "co_organizer", "wedding_planner"].includes(e.role));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
-        eyebrow="Organisation"
         title="Mes évènements"
         description="Les évènements que vous organisez et ceux où vous intervenez."
         actions={
           <Button asChild>
-            <Link href="/app/evenements/nouveau">
-              <Plus className="size-4" aria-hidden="true" />
-              Créer un évènement
-            </Link>
+            <Link href="/app/evenements/nouveau">Créer un évènement</Link>
           </Button>
         }
       />
 
       {invitePro && (
-        <Card className="border-primary/30">
+        <Card>
           <CardHeader>
             <CardTitle>Ajouter {invitePro.displayName} à un évènement</CardTitle>
             <CardDescription>{invitePro.tagline ?? "Choisissez l'évènement concerné : le professionnel sera présélectionné dans votre liste de prestataires, sans qu'il soit encore contacté."}</CardDescription>
@@ -112,7 +107,7 @@ export default async function EventsListPage({ searchParams }: { searchParams: P
             scene={ConfettiScene}
             title="Votre premier évènement commence ici"
             description="En quelques questions nous préparons la liste de tâches, le budget par poste, le planning du jour J et la messagerie de l'équipe. Vous pourrez ensuite inviter vos prestataires et vos proches."
-            example="Mariage de Louis et Lisa — 12 juin 2027, 120 invités dont 14 enfants"
+            example="Mariage de Louis et Lisa, 12 juin 2027, 120 invités dont 14 enfants"
             action={
               <Button asChild>
                 <Link href="/app/evenements/nouveau">Créer mon évènement</Link>
@@ -124,17 +119,17 @@ export default async function EventsListPage({ searchParams }: { searchParams: P
           <IllustratedEmpty scene={EmptyNestScene} title="Rien dans cette catégorie" description="Changez de filtre pour voir vos autres évènements." compact action={<Button asChild variant="outline"><Link href="/app/evenements">Voir les évènements en cours</Link></Button>} />
         )
       ) : (
-        <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" data-testid="events-grid">
+        <ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3" data-testid="events-grid">
           {list.map((e, i) => {
             const pct = e.totalTasks > 0 ? Math.round((e.doneTasks / e.totalTasks) * 100) : 0;
             return (
               <li key={e.id}>
-                <Link href={`/app/evenements/${e.id}`} className="group flex h-full flex-col overflow-hidden rounded-3xl border bg-card transition-shadow hover:shadow-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-testid="event-card">
+                <Link href={`/app/evenements/${e.id}`} className="group flex h-full flex-col overflow-hidden rounded-3xl border bg-card transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-testid="event-card">
                   <div className="relative">
                     <EventCover event={e} className="aspect-[16/9]" priority={i < 2} sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw" width={900} height={506} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" aria-hidden="true" />
+                    <div className="absolute inset-0 bg-black/35" aria-hidden="true" />
                     <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
-                      <span className="rounded-full bg-white/85 px-2.5 py-0.5 text-xs font-medium text-foreground backdrop-blur-sm dark:bg-black/50 dark:text-white">{EVENT_TYPE_LABELS[e.type]}</span>
+                      <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-foreground dark:bg-black/50 dark:text-white">{EVENT_TYPE_LABELS[e.type]}</span>
                       <span className="rounded-full bg-white/90 px-1 py-0.5 dark:bg-black/60">
                         <StatusBadge tone={EVENT_STATUS_TONES[e.status]}>{EVENT_STATUS_LABELS[e.status]}</StatusBadge>
                       </span>
@@ -146,16 +141,8 @@ export default async function EventsListPage({ searchParams }: { searchParams: P
                   </div>
                   <div className="flex flex-1 flex-col gap-3 p-4">
                     <ul className="space-y-1 text-sm text-muted-foreground">
-                      <li className="inline-flex items-center gap-1.5">
-                        <CalendarDays className="size-3.5" aria-hidden="true" />
-                        {e.eventDate ? formatDateFr(e.eventDate, { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Date à définir"}
-                      </li>
-                      {(e.venueName || e.city) && (
-                        <li className="flex items-center gap-1.5">
-                          <MapPin className="size-3.5" aria-hidden="true" />
-                          <span className="truncate">{[e.venueName, e.city].filter(Boolean).join(" · ")}</span>
-                        </li>
-                      )}
+                      <li>{e.eventDate ? formatDateFr(e.eventDate, { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Date à définir"}</li>
+                      {(e.venueName || e.city) && <li className="truncate">{[e.venueName, e.city].filter(Boolean).join(" · ")}</li>}
                     </ul>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -168,11 +155,8 @@ export default async function EventsListPage({ searchParams }: { searchParams: P
                     </div>
                     <div className="mt-auto flex items-center justify-between gap-3 border-t pt-3 text-xs text-muted-foreground">
                       <MemberAvatars names={e.memberNames} />
-                      <span className="inline-flex items-center gap-3">
-                        <span className="inline-flex items-center gap-1" title="Prestataires confirmés">
-                          <Handshake className="size-3.5" aria-hidden="true" /> {e.confirmedProviders}
-                        </span>
-                        <span>{EVENT_ROLE_LABELS[e.role as EventRole]}</span>
+                      <span>
+                        {e.confirmedProviders} prestataire{e.confirmedProviders > 1 ? "s" : ""} confirmé{e.confirmedProviders > 1 ? "s" : ""} · {EVENT_ROLE_LABELS[e.role as EventRole]}
                       </span>
                     </div>
                   </div>

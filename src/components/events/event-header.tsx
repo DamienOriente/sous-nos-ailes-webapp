@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, ChevronLeft, MapPin, Users } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { EventCover } from "@/components/events/event-cover";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { cn, formatDateFr } from "@/lib/utils";
@@ -35,10 +35,10 @@ export function EventHeader({
   return (
     <header className="relative overflow-hidden rounded-3xl border bg-card">
       <EventCover event={event} className="absolute inset-0" priority sizes="100vw" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/5" aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/45" aria-hidden="true" />
       <div className="relative flex min-h-[15rem] flex-col justify-between gap-6 p-5 text-white sm:min-h-[17rem] sm:p-7">
         <div className="flex items-start justify-between gap-3">
-          <Link href="/app/evenements" className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur-sm transition-colors hover:bg-white/25">
+          <Link href="/app/evenements" className="inline-flex items-center gap-1 rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-black/70">
             <ChevronLeft className="size-3.5" aria-hidden="true" />
             Mes évènements
           </Link>
@@ -53,26 +53,15 @@ export function EventHeader({
             </p>
             <h1 className="font-heading text-3xl font-semibold text-balance drop-shadow-sm sm:text-4xl">{event.name}</h1>
             <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/85">
-              <li className="inline-flex items-center gap-1.5">
-                <CalendarDays className="size-3.5" aria-hidden="true" />
+              <li>
                 {event.eventDate ? formatDateFr(event.eventDate, { weekday: "long", day: "numeric", month: "long", year: "numeric" }, event.timezone) : "Date à définir"}
                 {event.dateIsTentative && event.eventDate ? " (provisoire)" : ""}
               </li>
-              {(event.venueName || event.city) && (
-                <li className="inline-flex items-center gap-1.5">
-                  <MapPin className="size-3.5" aria-hidden="true" />
-                  {[event.venueName, event.city].filter(Boolean).join(" · ")}
-                </li>
-              )}
-              {event.expectedGuests !== null && (
-                <li className="inline-flex items-center gap-1.5">
-                  <Users className="size-3.5" aria-hidden="true" />
-                  {event.expectedGuests} invités
-                </li>
-              )}
+              {(event.venueName || event.city) && <li>{[event.venueName, event.city].filter(Boolean).join(" · ")}</li>}
+              {event.expectedGuests !== null && <li>{event.expectedGuests} invités</li>}
             </ul>
           </div>
-          <div className="shrink-0 rounded-2xl bg-white/15 px-4 py-3 backdrop-blur-sm sm:text-right">
+          <div className="shrink-0 rounded-2xl bg-black/55 px-4 py-3 text-white sm:text-right">
             <Countdown eventDate={event.eventDate} timezone={event.timezone} tentative={event.dateIsTentative} size="lg" onPhoto />
           </div>
         </div>

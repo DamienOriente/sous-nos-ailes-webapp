@@ -8,7 +8,7 @@ const pro = { displayName: "Marie Delcourt", categoryName: "Garde d'enfants év�
 describe("title and description generation", () => {
   it("builds a title with trade and city within the limit", () => {
     const t = generateTitle(pro);
-    expect(t).toBe("Marie Delcourt – Garde d'enfants évènementielle à Toulouse");
+    expect(t).toBe("Marie Delcourt, garde d'enfants évènementielle à Toulouse");
     expect(t.length).toBeLessThanOrEqual(TITLE_MAX);
   });
   it("drops parts until the title fits", () => {
@@ -37,7 +37,7 @@ describe("title and description generation", () => {
     expect(checkTitle(null).level).toBe("error");
     expect(checkTitle("Court").level).toBe("warn");
     expect(checkTitle("x".repeat(80)).level).toBe("warn");
-    expect(checkTitle("Marie Delcourt – Garde d'enfants à Toulouse").ok).toBe(true);
+    expect(checkTitle("Marie Delcourt, garde d'enfants à Toulouse").ok).toBe(true);
     expect(checkDescription("x".repeat(100)).ok).toBe(true);
     expect(checkDescription("x".repeat(10)).level).toBe("warn");
   });

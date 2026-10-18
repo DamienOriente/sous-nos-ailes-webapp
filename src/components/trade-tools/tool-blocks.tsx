@@ -7,7 +7,7 @@ import type { ActionResult } from "@/lib/errors";
 /** Section card with title, optional action slot and content. */
 export function ToolSection({ title, description, action, children, id }: { title: string; description?: string; action?: React.ReactNode; children: React.ReactNode; id?: string }) {
   return (
-    <Card className="gap-4 p-5" id={id}>
+    <Card className="gap-4 p-6" id={id}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-semibold">{title}</h2>
@@ -39,8 +39,8 @@ export function DeleteItemButton({ label, onConfirm, description }: { label: str
 export function KeyValue({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">{label}</dt>
-      <dd className="mt-0.5 whitespace-pre-wrap text-sm">{value || <span className="text-muted-foreground">—</span>}</dd>
+      <dt className="text-xs font-semibold text-muted-foreground">{label}</dt>
+      <dd className="mt-0.5 whitespace-pre-wrap text-sm">{value || <span className="text-muted-foreground">Non renseigné</span>}</dd>
     </div>
   );
 }

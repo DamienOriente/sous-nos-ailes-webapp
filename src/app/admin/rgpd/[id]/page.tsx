@@ -48,8 +48,8 @@ export default async function AdminDsrDetailPage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-8">
+      <Link href="/admin/rgpd" className="text-sm text-muted-foreground hover:underline">Retour à RGPD et demandes</Link>
       <PageHeader
-        eyebrow={<Link href="/admin/rgpd">← RGPD et demandes</Link>}
         title={DSR_KIND_LABELS[row.kind]}
         description={`Déposée le ${formatDateFr(row.createdAt)} par ${row.userName ?? row.email}`}
         actions={<StatusBadge tone={dueTone(row.dueAt, row.status)}>{DSR_STATUS_LABELS[row.status]}</StatusBadge>}
@@ -71,7 +71,7 @@ export default async function AdminDsrDetailPage({ params }: { params: Promise<{
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-muted-foreground">Précisions de la personne</dt>
-                <dd className="whitespace-pre-wrap">{row.details || "—"}</dd>
+                <dd className="whitespace-pre-wrap">{row.details || "Non renseigné"}</dd>
               </div>
             </dl>
             {row.userId && (
@@ -102,12 +102,12 @@ export default async function AdminDsrDetailPage({ params }: { params: Promise<{
             {history.length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">Aucune entrée.</p>
             ) : (
-              <ul className="mt-3 space-y-3 text-sm">
+              <ul className="mt-3 divide-y text-sm">
                 {history.map((h) => {
                   const meta = h.metadata as { from?: string; to?: string };
                   return (
-                    <li key={h.id} className="border-l-2 border-primary/40 pl-3">
-                      <p className="font-medium">{h.action === "privacy.dsr.status_changed" ? `${DSR_STATUS_LABELS[meta.from as keyof typeof DSR_STATUS_LABELS] ?? meta.from} → ${DSR_STATUS_LABELS[meta.to as keyof typeof DSR_STATUS_LABELS] ?? meta.to}` : "Demande créée"}</p>
+                    <li key={h.id} className="py-3 first:pt-0 last:pb-0">
+                      <p className="font-medium">{h.action === "privacy.dsr.status_changed" ? `De « ${DSR_STATUS_LABELS[meta.from as keyof typeof DSR_STATUS_LABELS] ?? meta.from} » à « ${DSR_STATUS_LABELS[meta.to as keyof typeof DSR_STATUS_LABELS] ?? meta.to} »` : "Demande créée"}</p>
                       <p className="text-muted-foreground">{formatDateFr(h.createdAt, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
                       {h.reason && <p className="mt-1 whitespace-pre-wrap">{h.reason}</p>}
                     </li>

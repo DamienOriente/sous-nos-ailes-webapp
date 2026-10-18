@@ -7,7 +7,7 @@ export function Container({ className, children, size = "default" }: { className
 
 export function Section({ className, children, id }: { className?: string; children: React.ReactNode; id?: string }) {
   return (
-    <section id={id} className={cn("py-12 sm:py-16 lg:py-20", className)}>
+    <section id={id} className={cn("py-14 sm:py-20", className)}>
       {children}
     </section>
   );

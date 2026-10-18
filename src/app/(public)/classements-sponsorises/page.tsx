@@ -7,7 +7,7 @@ import { getSetting } from "@/modules/admin/application/settings-service";
 import { getPublishedEditorialPage } from "@/modules/admin/application/editorial-service";
 import { DRAFT_NOTICE } from "@/modules/legal/domain/defaults";
 
-export const metadata: Metadata = { title: "Classements et résultats sponsorisés — Sous Nos Ailes", description: "Comment les résultats sont classés dans l'annuaire, ce qu'est un emplacement sponsorisé et ce qu'il ne garantit pas." };
+export const metadata: Metadata = { title: "Classements et résultats sponsorisés", description: "Comment les résultats sont classés dans l'annuaire, ce qu'est un emplacement sponsorisé et ce qu'il ne garantit pas." };
 
 /** Legal information on ranking and sponsored results (editable from the back-office; built-in text otherwise). */
 export default async function SponsoredRankingsPage() {
@@ -15,7 +15,7 @@ export default async function SponsoredRankingsPage() {
   return (
     <Section>
       <Container size="narrow" className="space-y-8">
-        <PageHeader eyebrow="Transparence" title={page?.title ?? "Classements et résultats sponsorisés"} description="Ce que signifie « Sponsorisé » dans l'annuaire, comment les résultats sont ordonnés et ce qu'un emplacement payant ne permet jamais." />
+        <PageHeader title={page?.title ?? "Classements et résultats sponsorisés"} description="Ce que signifie « Sponsorisé » dans l'annuaire, comment les résultats sont ordonnés et ce qu'un emplacement payant ne permet jamais." />
         {page ? (
           <>
             {page.hasDraftNotice && (

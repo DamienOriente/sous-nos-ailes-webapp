@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { appeals, editorialPages, moderationCases, moderationDecisions, professionals, reports, users } from "@/db/schema";
 import { DRAFT_NOTICE, LEGAL_DEFAULTS, LEGAL_SLUGS } from "@/modules/legal/domain/defaults";
+import { scrubLegacyDashes } from "./_legacy";
 import type { SeedContext } from "./context";
 
 /**
@@ -32,7 +33,7 @@ const FAQ_PAGE = `## Organisateurs
 Oui. L'offre gratuite permet de créer vos évènements, chercher des professionnels, gérer tâches, contacts et invitations essentielles. L'offre Plus ajoute le plan de table, les invitations personnalisées, le budget avancé et les exports.
 
 ### Comment sont choisis les professionnels affichés ?
-Par pertinence (métier, distance, disponibilité, complétude, vérification, avis). Les emplacements sponsorisés sont limités et toujours étiquetés — voir [Classements sponsorisés](/classements-sponsorises).
+Par pertinence (métier, distance, disponibilité, complétude, vérification, avis). Les emplacements sponsorisés sont limités et toujours étiquetés (voir [Classements sponsorisés](/classements-sponsorises)).
 
 ### Que signifient les badges de vérification ?
 Chaque badge indique exactement ce qui a été contrôlé (par exemple « Assurance vérifiée » = attestation en cours de validité examinée à la date indiquée). Aucune certification officielle n'est inventée.
@@ -114,10 +115,19 @@ export async function seed(ctx: SeedContext): Promise<void> {
   ];
   for (const p of pages) {
     const body = p.body.includes(DRAFT_NOTICE) ? p.body : `> ${DRAFT_NOTICE}\n\n${p.body}`;
-    const [existing] = await db.select({ slug: editorialPages.slug }).from(editorialPages).where(eq(editorialPages.slug, p.slug)).limit(1);
-    if (existing) continue; // never overwrite staff edits
+    const [existing] = await db.select({ slug: editorialPages.slug, body: editorialPages.body }).from(editorialPages).where(eq(editorialPages.slug, p.slug)).limit(1);
+    if (existing) {
+      // Staff edits are never overwritten. The only exception: a stored draft that still has the long dash of the first seeds.
+      const DASH = "\u2014";
+      if (existing.body.includes(DASH) && !body.includes(DASH)) await db.update(editorialPages).set({ body, title: p.title, updatedByUserId: admin, updatedAt: now }).where(eq(editorialPages.slug, p.slug));
+      continue;
+    }
     await db.insert(editorialPages).values({ slug: p.slug, title: p.title, body, isPublished: "published", updatedByUserId: admin });
   }
+
+  // Texts written by older seeds that this run could not update in place (insert-once rows).
+  const scrubbed = await scrubLegacyDashes(ctx);
+  if (scrubbed > 0) process.stdout.write(`admin: ${scrubbed} legacy text columns rewritten\n`);
 
   // Keep privileged demo accounts flagged (the admin pages show the 2FA warning banner in demo mode).
   await db.update(users).set({ isDemo: true }).where(inArray(users.id, [moderator, admin]));

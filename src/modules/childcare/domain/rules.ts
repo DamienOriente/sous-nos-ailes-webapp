@@ -78,7 +78,7 @@ export function validateHandover(input: HandoverInput): HandoverValidation {
   const details = input.identityCheckDetails.trim();
   if (input.identityCheckMethod === "other" && details.length < 3) return { ok: false, error: "Précisez la méthode de vérification." };
   const label = IDENTITY_CHECK_LABELS[input.identityCheckMethod as IdentityCheckMethod];
-  return { ok: true, identityVerifiedHow: details ? `${label} — ${details}` : label };
+  return { ok: true, identityVerifiedHow: details ? `${label} : ${details}` : label };
 }
 
 export type AttendanceEvent = { childId: string; kind: "check_in" | "check_out" | "incident" | "note"; recordedAt: Date };
@@ -143,4 +143,4 @@ Ces informations sont visibles de l'organisateur et de l'équipe de garde affect
 Vous pouvez à tout moment demander la modification ou la suppression de ces informations, ou retirer votre accord, en contactant l'organisateur.`;
 
 /** What gets erased when a guardian withdraws consent or when retention kicks in. */
-export const ANONYMIZED_PLACEHOLDER = "—";
+export const ANONYMIZED_PLACEHOLDER = "Anonymisé";

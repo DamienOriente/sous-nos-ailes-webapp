@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Baby, CalendarDays, LifeBuoy, Plus, ScrollText, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { KidsCornerScene } from "@/components/illustrations";
@@ -15,7 +14,7 @@ import { listChildren } from "@/modules/childcare/application/children-service";
 import { guardPage } from "@/components/childcare/page-guard";
 import { createChildAction, quickAttendanceAction } from "./actions";
 
-export const metadata = { title: "Garde d'enfants — Sous Nos Ailes" };
+export const metadata = { title: "Garde d'enfants" };
 
 export default async function ChildrenPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = await params;
@@ -37,7 +36,6 @@ export default async function ChildrenPage({ params }: { params: Promise<{ id: s
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Garde d'enfants"
         title={scoped ? "Mes enfants" : "Enfants accueillis"}
         description={
           scoped
@@ -48,25 +46,25 @@ export default async function ChildrenPage({ params }: { params: Promise<{ id: s
           <>
             <Button asChild variant="outline" size="sm">
               <Link href={`/app/evenements/${eventId}/enfants/procedure`}>
-                <LifeBuoy className="size-4" aria-hidden="true" /> Procédure d'urgence
+                 Procédure d'urgence
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link href={`/app/evenements/${eventId}/enfants/activites`}>
-                <CalendarDays className="size-4" aria-hidden="true" /> Programme
+                 Programme
               </Link>
             </Button>
             {perms.has("children.assign_staff") && (
               <Button asChild variant="outline" size="sm">
                 <Link href={`/app/evenements/${eventId}/enfants/equipe`}>
-                  <Users className="size-4" aria-hidden="true" /> Équipe
+                   Équipe
                 </Link>
               </Button>
             )}
             {perms.has("children.view_access_logs") && (
               <Button asChild variant="outline" size="sm">
                 <Link href={`/app/evenements/${eventId}/enfants/journal`}>
-                  <ScrollText className="size-4" aria-hidden="true" /> Journal d'accès
+                   Journal d'accès
                 </Link>
               </Button>
             )}
@@ -74,7 +72,7 @@ export default async function ChildrenPage({ params }: { params: Promise<{ id: s
               <ActionDialog
                 trigger={
                   <Button size="sm">
-                    <Plus className="size-4" aria-hidden="true" /> Ajouter un enfant
+                     Ajouter un enfant
                   </Button>
                 }
                 title="Nouvel enfant"
@@ -91,11 +89,11 @@ export default async function ChildrenPage({ params }: { params: Promise<{ id: s
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="presence-dashboard">
-        <StatCard label="Enfants" value={dashboard.total} icon={Baby} />
-        <StatCard label="Présents" value={dashboard.present} tone="success" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="presence-dashboard">
+        <StatCard label="Enfants" value={dashboard.total} />
+        <StatCard label="Présents" value={dashboard.present} />
         <StatCard label="Attendus" value={dashboard.expected} />
-        <StatCard label="Partis" value={dashboard.left} hint={dashboard.incidents ? `${dashboard.incidents} incident(s) consigné(s)` : undefined} tone={dashboard.incidents ? "warning" : "default"} />
+        <StatCard label="Partis" value={dashboard.left} hint={dashboard.incidents ? `${dashboard.incidents} incident(s) consigné(s)` : undefined} />
       </div>
 
       {children.length === 0 ? (
@@ -103,8 +101,8 @@ export default async function ChildrenPage({ params }: { params: Promise<{ id: s
           scene={KidsCornerScene}
           title={scoped ? "Aucun enfant ne vous est affecté" : "Aucun enfant inscrit pour l'instant"}
           description={scoped ? "L'organisateur ou le responsable de la garde vous affectera les enfants dont vous aurez la charge ; vous verrez alors leurs consignes et pourrez pointer les arrivées." : "Inscrivez les enfants attendus avec ce qui est nécessaire à la garde : âge, responsable légal, consignes, personnes autorisées à les récupérer. Les informations de santé restent chiffrées et chaque consultation est journalisée."}
-          example="Léa, 6 ans — arrivée 15:30, départ 23:00, récupérée par sa mère ou son père"
-          action={canManage ? <ActionDialog trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter un enfant</Button>} title="Nouvel enfant" description="Renseignez uniquement ce qui est nécessaire à la garde. Pensez à informer le responsable légal (texte prêt à envoyer sur la fiche de l'enfant)." action={createAction} submitLabel="Ajouter" successMessage="Enfant ajouté." wide><ChildFormFields timezone={timezone} /></ActionDialog> : undefined}
+          example="Léa, 6 ans, arrivée à 15:30, départ à 23:00, récupérée par sa mère ou son père"
+          action={canManage ? <ActionDialog trigger={<Button size="sm">Ajouter un enfant</Button>} title="Nouvel enfant" description="Renseignez uniquement ce qui est nécessaire à la garde. Pensez à informer le responsable légal (texte prêt à envoyer sur la fiche de l'enfant)." action={createAction} submitLabel="Ajouter" successMessage="Enfant ajouté." wide><ChildFormFields timezone={timezone} /></ActionDialog> : undefined}
           testId="children-empty"
         />
       ) : (

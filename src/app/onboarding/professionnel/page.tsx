@@ -76,7 +76,7 @@ export default async function ProfessionalOnboardingPage({ searchParams }: { sea
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Inscription professionnelle" title={managed?.listing.displayName ? managed.listing.displayName : "Créer ma fiche professionnelle"} description="Cinq étapes, enregistrées au fur et à mesure : vous pouvez reprendre plus tard depuis « Mes fiches pro ». Votre fiche se dessine à droite pendant que vous la remplissez." />
+      <PageHeader title={managed?.listing.displayName ? managed.listing.displayName : "Créer ma fiche professionnelle"} description="Cinq étapes, enregistrées au fur et à mesure : vous pouvez reprendre plus tard depuis « Mes fiches pro ». Votre fiche se dessine à droite pendant que vous la remplissez." />
       <Stepper current={step} id={id} />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <div>
@@ -126,24 +126,25 @@ function previewFromExample(step: number, ex: Partial<ProfessionalRow>): Partial
 
 function Stepper({ current, id }: { current: number; id: string | null }) {
   return (
-    <ol className="flex flex-wrap gap-2" aria-label="Étapes">
+    <ol className="flex flex-wrap gap-x-6 gap-y-1 border-b" aria-label="Étapes">
       {STEPS.map((label, i) => {
         const n = i + 1;
         const state = n < current ? "done" : n === current ? "current" : "todo";
+        const cls = cn("-mb-px inline-flex gap-2 border-b-2 py-2 text-sm", state === "current" ? "border-primary font-medium" : "border-transparent text-muted-foreground");
         const inner = (
           <>
-            <span className={cn("flex size-6 items-center justify-center rounded-full text-xs font-semibold", state === "current" ? "bg-primary text-primary-foreground" : state === "done" ? "bg-success/20 text-success" : "bg-muted text-muted-foreground")}>{n}</span>
-            <span className={cn("text-sm", state === "current" ? "font-medium" : "text-muted-foreground")}>{label}</span>
+            <span className="tabular-nums">{n}</span>
+            <span>{label}</span>
           </>
         );
         return (
           <li key={label} aria-current={state === "current" ? "step" : undefined}>
             {id && state === "done" ? (
-              <Link href={`/onboarding/professionnel?id=${id}&step=${n}`} className="inline-flex items-center gap-2 rounded-full border px-3 py-1 hover:bg-muted">
+              <Link href={`/onboarding/professionnel?id=${id}&step=${n}`} className={cn(cls, "transition-colors duration-150 hover:text-foreground")}>
                 {inner}
               </Link>
             ) : (
-              <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1">{inner}</span>
+              <span className={cls}>{inner}</span>
             )}
           </li>
         );
@@ -155,7 +156,7 @@ function Stepper({ current, id }: { current: number; id: string | null }) {
 function ExitButton({ show }: { show: boolean }) {
   if (!show) return <span />;
   return (
-    <Button type="submit" name="intent" value="exit" variant="ghost">
+    <Button type="submit" name="intent" value="exit" variant="outline">
       Enregistrer et terminer plus tard
     </Button>
   );
@@ -187,19 +188,19 @@ async function Step5({ managed }: { managed: ManagedListing }) {
           <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
             <Row label="Nom commercial" value={listing.displayName} />
             <Row label="Métier principal" value={category.name} />
-            <Row label="Métiers secondaires" value={secondaryCategories.map((c) => c.name).join(", ") || "—"} />
+            <Row label="Métiers secondaires" value={secondaryCategories.map((c) => c.name).join(", ") || "Non renseigné"} />
             <Row label="Localisation" value={[listing.city, listing.postalCode, dept?.name].filter(Boolean).join(" · ")} />
             <Row label="Rayon" value={`${listing.interventionRadiusKm} km`} />
             <Row label="Langues" value={listing.languages.map((l) => labelFor(LANGUAGE_OPTIONS, l)).join(", ")} />
-            <Row label="Évènements" value={listing.eventTypes.map((l) => labelFor(EVENT_TYPE_OPTIONS, l)).join(", ") || "—"} />
-            <Row label="Accroche" value={listing.tagline ?? "—"} />
+            <Row label="Évènements" value={listing.eventTypes.map((l) => labelFor(EVENT_TYPE_OPTIONS, l)).join(", ") || "Non renseigné"} />
+            <Row label="Accroche" value={listing.tagline ?? "Non renseignée"} />
             {trade.map((t) => (
               <Row key={t.label} label={t.label} value={t.value} />
             ))}
           </dl>
           <p className="mt-4 text-sm">
             Complétude : <strong data-testid="completeness-score">{completeness.score} %</strong>
-            {!canSubmit && <span className="text-destructive"> — minimum {SUBMISSION_MIN_SCORE} % pour soumettre.</span>}
+            {!canSubmit && <span className="text-destructive"> Minimum {SUBMISSION_MIN_SCORE} % pour soumettre.</span>}
           </p>
           {completeness.recommendations.length > 0 && (
             <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
@@ -222,7 +223,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="font-medium">{value || "—"}</dd>
+      <dd className="font-medium">{value || "Non renseigné"}</dd>
     </div>
   );
 }

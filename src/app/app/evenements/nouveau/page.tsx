@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { requireActor } from "@/lib/session";
 import { createEventAction } from "@/app/onboarding/organisateur/actions";
 
-export const metadata: Metadata = { title: "Nouvel évènement — Sous Nos Ailes" };
+export const metadata: Metadata = { title: "Nouvel évènement" };
 
 export default async function NewEventPage() {
   const actor = await requireActor("/app/evenements/nouveau");
@@ -20,7 +20,7 @@ export default async function NewEventPage() {
   const firstName = profile?.firstName || actor.name.split(" ")[0] || actor.name;
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <PageHeader eyebrow="Mes évènements" title="Nouvel évènement" description="Un espace complet est créé en une fois : tâches, budget, équipe et messagerie." />
+      <PageHeader title="Nouvel évènement" description="Un espace complet est créé en une fois : tâches, budget, équipe et messagerie." />
       <EventForm categories={categories} firstName={firstName} mode="create" action={createEventAction} />
     </div>
   );

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookUser, Copy, Download, Plus, Upload } from "lucide-react";
+import { Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import { CONTACT_CATEGORIES, CONTACT_CATEGORY_LABELS } from "@/modules/contacts/
 import { getContactUsage, listContactTags, listContacts, listOrganizationScopes } from "@/modules/contacts/application/contact-service";
 import { createContactAction } from "./actions";
 
-export const metadata = { title: "Contacts — Sous Nos Ailes" };
+export const metadata = { title: "Contacts" };
 
 type Search = { q?: string; category?: string; tag?: string; scope?: string };
 
@@ -35,14 +35,13 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Carnet"
         title="Contacts"
         description="Votre carnet d'adresses privé : clients, prestataires, famille. Associez-les à vos évènements ou ajoutez-les comme invités en un clic."
         actions={
           <>
             <Button asChild variant="outline" size="sm">
               <Link href="/app/contacts/doublons">
-                <Copy className="size-4" aria-hidden="true" /> Doublons
+                Doublons
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
@@ -52,7 +51,7 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link href="/app/contacts/import">
-                <Upload className="size-4" aria-hidden="true" /> Importer
+                 Importer
               </Link>
             </Button>
             {(contacts.length > 0 || hasFilters) && (
@@ -62,7 +61,7 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
                 disabledReason={atLimit ? `Votre offre ${usage.planName} est limitée à ${usage.limit} contacts personnels. Vous pouvez toujours consulter et exporter votre carnet ; passez à Organisateur Plus pour en ajouter.` : null}
                 trigger={
                   <Button size="sm">
-                    <Plus className="size-4" aria-hidden="true" /> Nouveau contact
+                     Nouveau contact
                   </Button>
                 }
               />
@@ -73,7 +72,6 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
 
       {usage.limit !== null && (
         <Alert variant={atLimit ? "destructive" : "default"}>
-          <BookUser className="size-4" aria-hidden="true" />
           <AlertTitle>
             {usage.used} / {usage.limit} contacts personnels ({usage.planName})
           </AlertTitle>
@@ -126,7 +124,7 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
             ))}
           </select>
         )}
-        <Button type="submit" variant="secondary" size="sm">
+        <Button type="submit" variant="outline" size="sm">
           Filtrer
         </Button>
       </form>
@@ -139,8 +137,8 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
             scene={AddressBookScene}
             title="Votre carnet d'adresses est vide"
             description="Famille, amis, prestataires, partenaires : un carnet privé que vous retrouvez d'un évènement à l'autre. Associez un contact à un évènement ou ajoutez-le comme invité en un clic ; la détection des doublons s'occupe des fichiers importés en vrac."
-            example="Maxime Girard — ami, témoin · maxime.girard@example.test · tags : amis, témoin"
-            action={<><Button asChild variant="outline"><Link href="/app/contacts/import"><Upload className="size-4" aria-hidden="true" /> Importer un CSV</Link></Button><ContactFormDialog scopes={scopes} onSubmit={createContactAction} disabledReason={atLimit ? `Votre offre ${usage.planName} est limitée à ${usage.limit} contacts personnels.` : null} trigger={<Button><Plus className="size-4" aria-hidden="true" /> Nouveau contact</Button>} /></>}
+            example="Maxime Girard, ami et témoin, maxime.girard@example.test, tags : amis, témoin"
+            action={<><Button asChild variant="outline"><Link href="/app/contacts/import">Importer un CSV</Link></Button><ContactFormDialog scopes={scopes} onSubmit={createContactAction} disabledReason={atLimit ? `Votre offre ${usage.planName} est limitée à ${usage.limit} contacts personnels.` : null} trigger={<Button>Nouveau contact</Button>} /></>}
             testId="contacts-empty"
           />
         )

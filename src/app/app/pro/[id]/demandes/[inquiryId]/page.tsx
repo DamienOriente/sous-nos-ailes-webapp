@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InquiryActions } from "@/components/inquiries/inquiry-actions";
@@ -29,11 +28,8 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
   const { inquiry, history } = data;
   return (
     <div className="space-y-6">
-      <Button asChild variant="ghost" size="sm">
-        <Link href={`/app/pro/${id}/demandes`}>
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Toutes les demandes
-        </Link>
+      <Button asChild variant="link" size="sm" className="px-0">
+        <Link href={`/app/pro/${id}/demandes`}>Toutes les demandes</Link>
       </Button>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -41,11 +37,10 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
             <CardHeader>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold tracking-wide text-primary uppercase">{INQUIRY_KIND_LABELS[inquiry.kind]}</p>
                   <CardTitle className="text-xl" data-testid="inquiry-requester">
                     {inquiry.requesterName}
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground">Reçue le {formatDateFr(inquiry.createdAt, { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                  <p className="text-sm text-muted-foreground">{INQUIRY_KIND_LABELS[inquiry.kind]} · reçue le {formatDateFr(inquiry.createdAt, { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
                 </div>
                 <InquiryStatusBadge status={inquiry.status} />
               </div>
@@ -53,11 +48,11 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
             <CardContent className="space-y-4">
               <dl className="grid gap-3 text-sm sm:grid-cols-2">
                 <Item label="E-mail" value={<a href={`mailto:${inquiry.requesterEmail}`} className="underline">{inquiry.requesterEmail}</a>} />
-                <Item label="Téléphone" value={inquiry.requesterPhone ?? "—"} />
-                <Item label="Évènement" value={inquiry.eventTypeLabel ?? "—"} />
-                <Item label="Date" value={inquiry.eventDate ?? "—"} />
-                <Item label="Ville" value={inquiry.eventCity ?? "—"} />
-                <Item label="Invités / enfants" value={`${inquiry.guestsCount ?? "—"} / ${inquiry.childrenCount ?? "—"}`} />
+                <Item label="Téléphone" value={inquiry.requesterPhone ?? "Non renseigné"} />
+                <Item label="Évènement" value={inquiry.eventTypeLabel ?? "Non renseigné"} />
+                <Item label="Date" value={inquiry.eventDate ?? "Non renseignée"} />
+                <Item label="Ville" value={inquiry.eventCity ?? "Non renseignée"} />
+                <Item label="Invités / enfants" value={`${inquiry.guestsCount ?? "n/d"} / ${inquiry.childrenCount ?? "n/d"}`} />
               </dl>
               <div>
                 <p className="mb-1 text-xs text-muted-foreground">Message</p>
@@ -70,8 +65,7 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
                   <p className="font-medium">Devis envoyé : {formatEuros(inquiry.quoteCents)}</p>
                   {inquiry.quoteNote && <p className="mt-1 text-muted-foreground">{inquiry.quoteNote}</p>}
                   {inquiry.quoteFileId && (
-                    <a href={privateFileHref(inquiry.quoteFileId)} className="mt-2 inline-flex items-center gap-1 underline" target="_blank" rel="noreferrer">
-                      <FileText className="size-4" aria-hidden="true" />
+                    <a href={privateFileHref(inquiry.quoteFileId)} className="mt-2 inline-block underline" target="_blank" rel="noreferrer">
                       Ouvrir le devis PDF
                     </a>
                   )}
@@ -93,15 +87,12 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
             <CardTitle>Historique</CardTitle>
           </CardHeader>
           <CardContent>
-            <ol className="space-y-3 text-sm">
+            <ol className="divide-y text-sm">
               {history.map((h) => (
-                <li key={h.id} className="border-l-2 pl-3">
+                <li key={h.id} className="py-3 first:pt-0 last:pb-0">
                   <p className="text-xs text-muted-foreground">{formatDateFr(h.createdAt, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                   {h.toStatus && (
-                    <p className="font-medium">
-                      {h.fromStatus ? `${INQUIRY_STATUS_LABELS[h.fromStatus]} → ` : ""}
-                      {INQUIRY_STATUS_LABELS[h.toStatus]}
-                    </p>
+                    <p className="font-medium">{h.fromStatus ? `De « ${INQUIRY_STATUS_LABELS[h.fromStatus]} » à « ${INQUIRY_STATUS_LABELS[h.toStatus]} »` : INQUIRY_STATUS_LABELS[h.toStatus]}</p>
                   )}
                   {h.note && <p className="whitespace-pre-wrap text-muted-foreground">{h.note}</p>}
                 </li>

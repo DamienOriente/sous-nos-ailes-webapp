@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,11 +36,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ id: st
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-0.5" aria-label={`${r.rating} sur 5`}>
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} className={`size-4 ${i < r.rating ? "fill-gold text-gold" : "text-muted-foreground/40"}`} aria-hidden="true" />
-                          ))}
-                        </span>
+                        <span className="font-semibold tabular-nums">{r.rating}/5</span>
                         <span className="text-sm font-medium">{r.authorName.split(/\s+/)[0]}</span>
                         <span className="text-xs text-muted-foreground">· {formatDateFr(r.createdAt)}</span>
                       </div>
@@ -52,7 +47,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ id: st
                   <p className="text-sm whitespace-pre-wrap">{r.body}</p>
                   {r.replyBody ? (
                     <div className="rounded-xl bg-muted/50 p-4 text-sm">
-                      <p className="mb-1 text-xs font-semibold text-muted-foreground uppercase">Votre réponse{r.repliedAt ? ` · ${formatDateFr(r.repliedAt)}` : ""}</p>
+                      <p className="mb-1 text-xs font-semibold text-muted-foreground">Votre réponse{r.repliedAt ? ` · ${formatDateFr(r.repliedAt)}` : ""}</p>
                       <p className="whitespace-pre-wrap">{r.replyBody}</p>
                     </div>
                   ) : r.status === "published" ? (

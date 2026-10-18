@@ -14,7 +14,7 @@ export default async function ToolsPage() {
   const rows = await listToolsAdmin(actor);
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Catalogue" title="Catalogue d'outils" description="Activation = pertinence métier ∧ rôle ∧ offre. L'usage agrégé provient des activations des fiches professionnelles." actions={<Button asChild><Link href="/admin/outils/nouveau">Nouvel outil</Link></Button>} />
+      <PageHeader title="Catalogue d'outils" description="Activation = pertinence métier ∧ rôle ∧ offre. L'usage agrégé provient des activations des fiches professionnelles." actions={<Button asChild><Link href="/admin/outils/nouveau">Nouvel outil</Link></Button>} />
       <TwoFactorBanner show={twoFactorWarning} />
       <AdminTable
         rows={rows}

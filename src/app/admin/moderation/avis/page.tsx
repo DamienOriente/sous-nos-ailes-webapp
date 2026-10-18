@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
 import { ActionForm, ActionSubmit } from "@/components/admin/action-form";
 import { dateTime } from "@/components/admin/admin-table";
 import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
@@ -23,7 +22,8 @@ export default async function ReviewsModerationPage({ searchParams }: { searchPa
   const canDecide = canGlobal(actor, "moderation.decide");
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow={<Link href="/admin/moderation" className="hover:underline">← Modération</Link>} title="Avis" description="Publication, masquage ou refus des avis laissés sur les fiches. Un avis masqué ou refusé est notifié à son auteur avec le motif." />
+      <Link href="/admin/moderation" className="text-sm text-muted-foreground hover:underline">Retour à la modération</Link>
+      <PageHeader  title="Avis" description="Publication, masquage ou refus des avis laissés sur les fiches. Un avis masqué ou refusé est notifié à son auteur avec le motif." />
       <TwoFactorBanner show={twoFactorWarning} />
       <nav className="flex flex-wrap gap-2 text-sm" aria-label="Filtres">
         {[undefined, "pending", "published", "hidden", "rejected"].map((s) => (
@@ -33,7 +33,7 @@ export default async function ReviewsModerationPage({ searchParams }: { searchPa
         ))}
       </nav>
       {rows.length === 0 ? (
-        <EmptyState icon={Star} title="Aucun avis" description="Rien à modérer avec ce filtre." />
+        <EmptyState title="Aucun avis" description="Rien à modérer avec ce filtre." />
       ) : (
         <ul className="space-y-3">
           {rows.map((r) => (

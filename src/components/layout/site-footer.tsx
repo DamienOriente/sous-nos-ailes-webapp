@@ -48,7 +48,7 @@ export function SiteFooter() {
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm text-muted-foreground text-pretty">
-            La plateforme qui réunit garde d'enfants, animation et professionnels de l'évènementiel pour des célébrations sereines.
+            Annuaire de professionnels de l'évènementiel et espace de coordination pour les organisateurs. Spécialité : la garde d'enfants pendant les mariages, baptêmes et séminaires.
           </p>
         </div>
         {COLUMNS.map((col) => (
@@ -68,8 +68,8 @@ export function SiteFooter() {
       </div>
       <div className="border-t">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>© {new Date().getFullYear()} Sous Nos Ailes — sousnosailes.fr. Plateforme de mise en relation et de coordination.</p>
-          <p>Les mentions de vérification décrivent précisément ce qui a été contrôlé. Aucune certification officielle n'est inventée.</p>
+          <p>© {new Date().getFullYear()} Sous Nos Ailes, sousnosailes.fr. Plateforme de mise en relation et de coordination.</p>
+          <p>Les mentions de vérification décrivent ce qui a été contrôlé. Elles ne valent pas certification.</p>
         </div>
       </div>
     </footer>

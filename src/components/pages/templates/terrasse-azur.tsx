@@ -3,9 +3,9 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Terrasse azur — summer parties by the water. Fullscreen hero, a ceramic
- * tile pattern on alternating bands, whitewashed panels with a blue edge, the
- * gallery as a scrolling band like a view from a terrace.
+ * Terrasse azur: summer parties by the water. Fullscreen hero, alternating
+ * bands in a pale blue tint, whitewashed panels on those bands, the gallery
+ * as a scrolling band like a view from a terrace.
  */
 const VARIANTS: VariantMap = { hero: "fullscreen", about: "two-column", services: "cards", pricing: "cards", gallery: "band", testimonials: "cards", faq: "cards", contact: "stacked", trust: "row", zone: "map", cta_quote: "band", availability: "grid" };
 
@@ -21,8 +21,8 @@ export default function TerrasseAzur({ data, ctx, blocks }: TemplateProps) {
         variants={VARIANTS}
         className="mt-8"
         wrap={(node, b, i) => (
-          <div className={i % 2 === 1 ? "pg-tex-tiles py-6" : ""}>
-            <div className={`mx-auto max-w-7xl px-5 py-12 sm:px-8 ${i % 2 === 1 && b.type !== "gallery" ? "[&>*]:rounded-(--pg-radius-lg) [&>*]:border-l-8 [&>*]:border-(--pg-accent) [&>*]:bg-(--pg-surface) [&>*]:p-6 [&>*]:sm:p-10" : ""}`}>{node}</div>
+          <div className={i % 2 === 1 ? "bg-(--pg-accent-soft) py-6" : ""}>
+            <div className={`mx-auto max-w-7xl px-5 py-12 sm:px-8 ${i % 2 === 1 && b.type !== "gallery" ? "[&>*]:rounded-(--pg-radius-lg) [&>*]:bg-(--pg-surface) [&>*]:p-6 [&>*]:sm:p-10" : ""}`}>{node}</div>
           </div>
         )}
       />

@@ -1,3 +1,4 @@
+import { preload } from "react-dom";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -7,7 +8,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.APP_URL),
-  title: { default: "Sous Nos Ailes — Garde d'enfants et professionnels pour vos évènements", template: "%s · Sous Nos Ailes" },
+  title: { default: "Sous Nos Ailes : garde d'enfants et professionnels pour vos évènements", template: "%s · Sous Nos Ailes" },
   description:
     "Trouvez des professionnels de la garde d'enfants et de l'évènementiel, organisez votre mariage, baptême ou séminaire et coordonnez tous vos prestataires depuis un seul espace.",
   applicationName: "Sous Nos Ailes",
@@ -26,6 +27,8 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  // Font preloads are discovered from the HTML, not after the CSS has been parsed.
+  for (const file of ["figtree-latin", "fraunces-latin"]) preload(`/fonts/${file}.woff2`, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   return (
     <html lang="fr" suppressHydrationWarning data-scroll-behavior="smooth">
       {/* suppressHydrationWarning: browser extensions (ColorZilla, Grammarly…) add attributes to <body> before React hydrates. */}

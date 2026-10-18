@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, CameraOff, CheckCircle2, KeyRound, ShieldAlert, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,12 +14,13 @@ type Outcome = Omit<CheckinOutcome, "scannedAt" | "previousScanAt"> & { scannedA
 type BarcodeDetectorLike = { detect(source: HTMLVideoElement): Promise<Array<{ rawValue: string }>> };
 type BarcodeDetectorCtor = new (opts: { formats: string[] }) => BarcodeDetectorLike;
 
-const RESULT_STYLE: Record<Outcome["result"], { tone: string; icon: typeof CheckCircle2 }> = {
-  accepted: { tone: "border-success bg-success/10 text-success", icon: CheckCircle2 },
-  duplicate: { tone: "border-warning bg-warning/15 text-warning-foreground", icon: ShieldAlert },
-  revoked: { tone: "border-destructive bg-destructive/10 text-destructive", icon: XCircle },
-  expired: { tone: "border-destructive bg-destructive/10 text-destructive", icon: XCircle },
-  invalid: { tone: "border-destructive bg-destructive/10 text-destructive", icon: XCircle },
+// The colour is the state itself (accepted, already used, refused): the label says the same in words.
+const RESULT_STYLE: Record<Outcome["result"], { tone: string }> = {
+  accepted: { tone: "border-success bg-success/10 text-success" },
+  duplicate: { tone: "border-warning bg-warning/15 text-warning-foreground" },
+  revoked: { tone: "border-destructive bg-destructive/10 text-destructive" },
+  expired: { tone: "border-destructive bg-destructive/10 text-destructive" },
+  invalid: { tone: "border-destructive bg-destructive/10 text-destructive" },
 };
 
 /**
@@ -130,8 +130,7 @@ export function CheckinConsole({ eventId }: { eventId: string }) {
     <div className="space-y-4">
       {last && style && (
         <div role="status" aria-live="polite" data-testid="checkin-result" data-result={last.result} className={cn("rounded-2xl border-2 p-5", style.tone)}>
-          <div className="flex items-start gap-3">
-            <style.icon className="mt-0.5 size-8 shrink-0" aria-hidden="true" />
+          <div>
             <div className="min-w-0">
               <p className="text-lg font-semibold">{last.label}</p>
               {last.invitation && (
@@ -147,9 +146,7 @@ export function CheckinConsole({ eventId }: { eventId: string }) {
       )}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <KeyRound className="size-4 text-primary" aria-hidden="true" /> Saisie manuelle
-          </CardTitle>
+          <CardTitle className="text-base">Saisie manuelle</CardTitle>
           <CardDescription>Collez l'URL du QR code ou tapez le code. La validation est faite côté serveur.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -179,15 +176,13 @@ export function CheckinConsole({ eventId }: { eventId: string }) {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Camera className="size-4 text-primary" aria-hidden="true" /> Scanner avec la caméra
-          </CardTitle>
+          <CardTitle className="text-base">Scanner avec la caméra</CardTitle>
           <CardDescription>Utilise l'API native du navigateur (BarcodeDetector), sans bibliothèque tierce.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {scannerSupported === false && (
-            <p className="flex items-start gap-2 text-sm text-muted-foreground">
-              <CameraOff className="mt-0.5 size-4 shrink-0" aria-hidden="true" /> Ce navigateur ne propose pas la lecture de QR code native (Chrome/Edge Android, Safari iOS 17+ la proposent). Utilisez la saisie manuelle ou l'appareil photo du téléphone, puis collez le code.
+            <p className="text-sm text-muted-foreground">
+              Ce navigateur ne propose pas la lecture de QR code native (Chrome/Edge Android, Safari iOS 17+ la proposent). Utilisez la saisie manuelle ou l'appareil photo du téléphone, puis collez le code.
             </p>
           )}
           {scannerSupported && (
@@ -201,7 +196,7 @@ export function CheckinConsole({ eventId }: { eventId: string }) {
                 </div>
               ) : (
                 <Button size="lg" className="h-12 w-full sm:w-auto" onClick={() => { setCameraError(null); setScanning(true); }}>
-                  <Camera className="size-4" aria-hidden="true" /> Démarrer le scan
+                   Démarrer le scan
                 </Button>
               )}
               {cameraError && (

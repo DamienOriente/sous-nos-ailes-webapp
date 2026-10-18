@@ -3,7 +3,7 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Lumière studio — beauty, portrait. Pure white, oversized Space Grotesk
+ * Lumière studio: beauty, portrait. Pure white, oversized Bricolage Grotesque
  * headline, a services table like a price list on a studio wall, images in a
  * strict grid. Sections are separated by nothing but whitespace.
  */

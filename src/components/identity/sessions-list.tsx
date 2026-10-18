@@ -1,7 +1,6 @@
 "use client";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Laptop, LogOut, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { revokeOtherSessionsAction, revokeSessionAction } from "@/app/app/compte/securite/actions";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -31,11 +30,8 @@ export function SessionsList({ sessions, timezone }: { sessions: SessionView[]; 
     <div className="space-y-4">
       <ul className="divide-y rounded-xl border">
         {sessions.map((s) => {
-          const mobile = /iOS|Android/.test(describeUserAgent(s.userAgent));
-          const Icon = mobile ? Smartphone : Laptop;
           return (
             <li key={s.id} className="flex items-center gap-4 px-4 py-3">
-              <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-2 font-medium">
                   {describeUserAgent(s.userAgent)}
@@ -47,9 +43,8 @@ export function SessionsList({ sessions, timezone }: { sessions: SessionView[]; 
                 </p>
               </div>
               {!s.isCurrent && (
-                <Button variant="ghost" size="sm" onClick={() => revoke(s.id)} disabled={pending} aria-label={`Déconnecter ${describeUserAgent(s.userAgent)}`}>
-                  <LogOut aria-hidden="true" />
-                  <span className="hidden sm:inline">Déconnecter</span>
+                <Button variant="outline" size="sm" onClick={() => revoke(s.id)} disabled={pending} aria-label={`Déconnecter ${describeUserAgent(s.userAgent)}`}>
+                  Déconnecter
                 </Button>
               )}
             </li>

@@ -89,7 +89,8 @@ export async function issueFileUrl(actor: Actor, fileId: string, opts: { downloa
  * professional) or, for an authenticated caller with access, any image.
  * Returns a 1 h signed URL for the requested variant.
  */
-export async function issuePublicImageUrl(actor: Actor | null, fileId: string, variant: ImageVariant, meta: RequestMeta = {}): Promise<{ url: string; mimeType: string }> {
+/** Resolves which stored object serves a public image variant (nothing is signed or fetched here). */
+export async function resolvePublicImage(actor: Actor | null, fileId: string, variant: ImageVariant, meta: RequestMeta = {}): Promise<{ bucket: string; key: string; mimeType: string; publiclyVisible: boolean }> {
   if (!UUID_RE.test(fileId)) throw new NotFoundError();
   const [file] = await db.select().from(files).where(eq(files.id, fileId)).limit(1);
   if (!file || file.status !== "clean" || !file.mimeType.startsWith("image/")) throw new NotFoundError();
@@ -99,11 +100,18 @@ export async function issuePublicImageUrl(actor: Actor | null, fileId: string, v
     throw new NotFoundError();
   }
   const v = variant !== "original" ? file.variants?.[variant] : undefined;
-  // Fall back to the largest available variant, then the original.
-  const fallback = v ?? file.variants?.large ?? file.variants?.medium ?? file.variants?.thumb;
+  // Missing variant (older uploads): the next larger one, then the original.
+  const order = ["thumb", "card", "medium", "large"] as const;
+  const larger = variant === "original" ? [] : order.slice(order.indexOf(variant as (typeof order)[number]) + 1).map((n) => file.variants?.[n]);
+  const fallback = v ?? larger.find(Boolean) ?? file.variants?.large ?? file.variants?.medium ?? file.variants?.thumb;
   const key = variant === "original" || !fallback ? file.storageKey : fallback.key;
   const mimeType = variant === "original" || !fallback ? file.mimeType : "image/webp";
-  const url = await presignGet(file.bucket, key, { expiresInSeconds: PUBLIC_URL_TTL_SECONDS, contentType: mimeType });
+  return { bucket: file.bucket, key, mimeType, publiclyVisible: publicOk };
+}
+
+export async function issuePublicImageUrl(actor: Actor | null, fileId: string, variant: ImageVariant, meta: RequestMeta = {}): Promise<{ url: string; mimeType: string }> {
+  const { bucket, key, mimeType } = await resolvePublicImage(actor, fileId, variant, meta);
+  const url = await presignGet(bucket, key, { expiresInSeconds: PUBLIC_URL_TTL_SECONDS, contentType: mimeType });
   return { url, mimeType };
 }
 

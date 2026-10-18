@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download, Link2, Plus, Upload } from "lucide-react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { CalendarView, type CalendarViewKind, type ClientOccurrence } from "@/components/calendar/calendar-view";
@@ -9,7 +9,7 @@ import { ENTRY_KINDS, ENTRY_KIND_LABELS, getUserTimezone, listEntriesByIds, list
 import { addDaysTz, dayKey, startOfDayTz, startOfMonthTz, startOfWeekTz, toLocalInputValue } from "@/modules/calendar/domain/datetime";
 import { createEntryAction, deleteEntryAction, excludeOccurrenceAction, updateEntryAction } from "./actions";
 
-export const metadata = { title: "Calendrier — Sous Nos Ailes" };
+export const metadata = { title: "Calendrier" };
 
 type Search = { view?: string; date?: string; scope?: string; kind?: string; pro?: string };
 const VIEWS: CalendarViewKind[] = ["day", "week", "month", "agenda"];
@@ -74,19 +74,18 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Agenda"
         title="Calendrier"
         description={`Prestations, disponibilités et évènements, affichés dans votre fuseau (${timezone}). Les entrées liées à un évènement sont en lecture seule.`}
         actions={
           <>
             <Button asChild variant="outline" size="sm">
               <Link href="/app/calendrier/connexions">
-                <Link2 className="size-4" aria-hidden="true" /> Connexions
+                 Connexions
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link href="/app/calendrier/import">
-                <Upload className="size-4" aria-hidden="true" /> Importer ICS
+                 Importer ICS
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
@@ -97,7 +96,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
             <EntryDialog
               trigger={
                 <Button size="sm">
-                  <Plus className="size-4" aria-hidden="true" /> Nouvelle entrée
+                   Nouvelle entrée
                 </Button>
               }
               timezone={timezone}
@@ -151,7 +150,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         monthDays={monthDays}
         actions={{ create: createEntryAction, update: updateEntryAction, remove: deleteEntryAction, excludeOccurrence: excludeOccurrenceAction }}
       />
-      <p className="text-xs text-muted-foreground">Raccourcis clavier : ← → changer de période, T aujourd'hui, 1–4 changer de vue.</p>
+      <p className="text-xs text-muted-foreground">Raccourcis clavier : flèches gauche et droite pour changer de période, T pour aujourd'hui, 1 à 4 pour changer de vue.</p>
     </div>
   );
 }

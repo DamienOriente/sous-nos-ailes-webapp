@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, FileDown, Pencil, Plus, Printer, Trash2, Undo2, UserMinus } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Pencil, Trash2, UserMinus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,7 +73,7 @@ function TableDialog({ trigger, initial, onSubmit, title }: { trigger: React.Rea
             <Input id="tbl-rotation" name="rotation" type="number" min={0} max={359} step={15} defaultValue={initial?.rotation ?? 0} />
           </div>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending}>
@@ -222,24 +222,24 @@ export function SeatingEditor({ eventId, plan, canManage, actions }: { eventId: 
             }}
             trigger={
               <Button size="sm" data-testid="add-table">
-                <Plus className="size-4" aria-hidden="true" /> Ajouter une table
+                 Ajouter une table
               </Button>
             }
           />
         )}
         {canManage && (
           <Button size="sm" variant="outline" onClick={undo} disabled={!undoStack}>
-            <Undo2 className="size-4" aria-hidden="true" /> Annuler le dernier déplacement
+             Annuler le dernier déplacement
           </Button>
         )}
         <Button asChild size="sm" variant="outline">
           <Link href={`/app/evenements/${eventId}/plan-de-table/impression`}>
-            <Printer className="size-4" aria-hidden="true" /> Vue impression
+             Vue impression
           </Link>
         </Button>
         <Button asChild size="sm" variant="outline">
           <a href={`/api/events/${eventId}/seating/pdf`}>
-            <FileDown className="size-4" aria-hidden="true" /> Export PDF
+             Export PDF
           </a>
         </Button>
         <p className="ml-auto text-sm text-muted-foreground" data-testid="seat-counter">
@@ -254,7 +254,7 @@ export function SeatingEditor({ eventId, plan, canManage, actions }: { eventId: 
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
-          <div className="overflow-hidden rounded-2xl border bg-card shadow-soft">
+          <div className="overflow-hidden rounded-2xl border bg-card">
             <svg
               ref={svgRef}
               viewBox={`0 0 ${CANVAS.width} ${CANVAS.height}`}
@@ -345,7 +345,7 @@ export function SeatingEditor({ eventId, plan, canManage, actions }: { eventId: 
                   className="border-0 bg-transparent px-0 py-2"
                   title="Aucune table pour le moment"
                   description="Ajoutez vos tables (ronde, rectangle, carrée, ovale), déplacez-les sur le plan puis placez les invités par glisser-déposer ou via « Placer à… »."
-                  example="Table d'honneur — rectangle, 10 places"
+                  example="Table d'honneur, rectangle, 10 places"
                   testId="seating-empty"
                 />
               ) : (
@@ -436,7 +436,7 @@ export function SeatingEditor({ eventId, plan, canManage, actions }: { eventId: 
                               {canManage && (
                                 <>
                                   <select aria-label={`Déplacer ${g.firstName} vers une autre table`} className="h-5 max-w-24 rounded border-0 bg-transparent text-[11px]" value="" onChange={(e) => e.target.value && assign(g.id, e.target.value, "move")}>
-                                    <option value="">→ table…</option>
+                                    <option value="">Changer de table…</option>
                                     {tables.filter((o) => o.id !== t.id).map((o) => (
                                       <option key={o.id} value={o.id}>
                                         {o.name}
@@ -466,7 +466,7 @@ export function SeatingEditor({ eventId, plan, canManage, actions }: { eventId: 
           </CardHeader>
           <CardContent className="space-y-3">
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher…" aria-label="Rechercher un invité non placé" />
-            {selected && canManage && <p className="text-xs text-muted-foreground">Table sélectionnée : <span className="font-medium text-foreground">{selected.name}</span> — glissez un invité sur le plan ou utilisez le sélecteur.</p>}
+            {selected && canManage && <p className="text-xs text-muted-foreground">Table sélectionnée : <span className="font-medium text-foreground">{selected.name}</span> : glissez un invité sur le plan ou utilisez le sélecteur.</p>}
             <ul className="max-h-[60dvh] space-y-1 overflow-y-auto" data-testid="unplaced-list">
               {unplaced.length === 0 && <li className="p-2 text-sm text-muted-foreground">{plan.unplaced.length === 0 ? "Tous les invités sont placés." : "Aucun résultat."}</li>}
               {unplaced.map((g) => (

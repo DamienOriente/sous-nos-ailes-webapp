@@ -1,4 +1,3 @@
-import { Check, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FeatureKey } from "@/modules/billing/domain/plans";
 
@@ -22,7 +21,7 @@ const SEATS = [
 export function SeatingPlanPreview({ className }: { className?: string }) {
   return (
     <figure className={cn("grid gap-0 @lg:grid-cols-[1fr_11rem]", INERT, className)} aria-label="Exemple de plan de table : cinq tables rondes et le coin enfants">
-      <div className="relative aspect-[16/10] bg-card bg-[repeating-linear-gradient(0deg,transparent,transparent_23px,var(--border)_24px),repeating-linear-gradient(90deg,transparent,transparent_23px,var(--border)_24px)]">
+      <div className="relative aspect-[16/10] bg-card">
         <div className="absolute left-[4%] top-[8%] flex h-[14%] w-[26%] items-center justify-center rounded-md bg-sky/60 text-[10px] font-medium text-foreground">Piste de danse</div>
         <div className="absolute bottom-[8%] left-[4%] flex h-[16%] w-[22%] items-center justify-center rounded-md border-2 border-dashed border-blush-deep/70 bg-blush/50 text-[10px] font-medium text-foreground">Coin enfants</div>
         {SEATS.map((t) => (
@@ -54,8 +53,6 @@ export function QrInvitationPreview({ className }: { className?: string }) {
   return (
     <figure className={cn("grid gap-0 bg-card @lg:grid-cols-2", INERT, className)} aria-label="Exemple d'invitation personnalisée avec QR code">
       <div className="relative m-4 overflow-hidden rounded-xl border bg-ivory p-5 shadow-soft dark:bg-card">
-        <div className="absolute -right-6 -top-6 size-24 rounded-full bg-blush/60" />
-        <div className="absolute -bottom-8 -left-4 size-20 rounded-full bg-sage-soft" />
         <p className="font-heading text-xs text-muted-foreground">Vous êtes invités au</p>
         <p className="font-heading text-xl leading-tight">Mariage de Louis &amp; Lisa</p>
         <p className="mt-2 text-xs text-muted-foreground">Samedi 12 juin 2027 · 15 h · Domaine d'Hélène, Lavaur</p>
@@ -87,9 +84,7 @@ export function QrInvitationPreview({ className }: { className?: string }) {
             </li>
           ))}
         </ul>
-        <p className="flex items-center gap-1.5 text-muted-foreground">
-          <QrCode className="size-3.5" aria-hidden="true" /> Le QR code sert au contrôle d'accès le jour J.
-        </p>
+        <p className="text-muted-foreground">Le QR code sert au contrôle d'accès le jour J.</p>
       </div>
     </figure>
   );
@@ -125,10 +120,7 @@ export function AdvancedDashboardPreview({ className, audience = "organizer" }: 
         <p className="font-medium">{pro ? "Origine des demandes" : "Prochaines échéances"}</p>
         <ul className="space-y-1.5 text-muted-foreground">
           {(pro ? ["Annuaire · 6", "Page publique · 4", "Recommandation · 1"] : ["Relancer 20 invités · J-45", "Finaliser le plan de table · J-14", "Confirmer la garde d'enfants · J-7"]).map((l) => (
-            <li key={l} className="flex items-start gap-1.5">
-              <Check className="mt-0.5 size-3 shrink-0 text-success" aria-hidden="true" />
-              {l}
-            </li>
+            <li key={l}>{l}</li>
           ))}
         </ul>
       </div>
@@ -141,8 +133,8 @@ export function SeoPreview({ className }: { className?: string }) {
     <figure className={cn("space-y-3 bg-card p-4", INERT, className)} aria-label="Exemple de recommandations SEO et d'aperçu Google indicatif">
       <div className="rounded-lg border bg-background p-3">
         <p className="text-[11px] text-muted-foreground">sousnosailes.fr › pro › marie-delcourt-garde-enfants</p>
-        <p className="font-medium text-sky-deep">Marie Delcourt — Garde d'enfants évènementielle à Toulouse</p>
-        <p className="text-xs text-muted-foreground">Des enfants heureux, des parents sereins, du premier toast à la dernière danse. Mariages, baptêmes et séminaires en Occitanie.</p>
+        <p className="font-medium text-sky-deep">Marie Delcourt, garde d'enfants évènementielle à Toulouse</p>
+        <p className="text-xs text-muted-foreground">Garde d'enfants pour mariages, baptêmes et séminaires, à Toulouse et en Occitanie.</p>
       </div>
       <ul className="grid gap-1.5 text-xs @md:grid-cols-2">
         {[
@@ -191,18 +183,18 @@ export function CalendarSyncPreview({ className }: { className?: string }) {
 
 export function TemplatesPreview({ className }: { className?: string }) {
   const swatches = [
-    ["Éditorial luxe", "from-foreground/80 to-foreground/40"],
-    ["Nuit électrique", "from-sky-deep to-blush-deep"],
-    ["Jardin fleuri", "from-sage-soft to-blush/50"],
-    ["Galerie noire", "from-foreground to-foreground/70"],
-    ["Table gourmande", "from-gold/70 to-sand"],
-    ["Panorama photo", "from-sky-deep/60 to-sky/40"],
+    ["Éditorial luxe", "bg-foreground/70"],
+    ["Nuit électrique", "bg-sky-deep"],
+    ["Jardin fleuri", "bg-sage-soft"],
+    ["Galerie noire", "bg-foreground"],
+    ["Table gourmande", "bg-gold/70"],
+    ["Panorama photo", "bg-sky/60"],
   ];
   return (
     <figure className={cn("grid grid-cols-3 gap-3 bg-card p-4", INERT, className)} aria-label="Exemple de la bibliothèque complète de modèles de page">
-      {swatches.map(([name, grad]) => (
+      {swatches.map(([name, fill]) => (
         <div key={name} className="overflow-hidden rounded-lg border">
-          <div className={cn("h-14 bg-gradient-to-br", grad)}>
+          <div className={cn("h-14", fill)}>
             <div className="m-2 h-2 w-1/2 rounded bg-background/70" />
             <div className="mx-2 h-1.5 w-1/3 rounded bg-background/50" />
           </div>
@@ -249,7 +241,7 @@ export const FEATURE_PREVIEWS: Partial<Record<FeatureKey, { render: (audience: "
   "dashboard.advanced": { render: (a) => <AdvancedDashboardPreview audience={a} />, changes: ["Courbes de réponses et de budget semaine par semaine", "Échéances calculées depuis la date de l'évènement", "Export des chiffres en CSV"] },
   "budget.advanced": { render: () => <BudgetPreview />, changes: ["Prévu, engagé et payé pour chaque poste", "Acomptes et reste à payer calculés automatiquement", "Export comptable PDF / CSV"] },
   "exports.advanced": { render: () => <BudgetPreview />, changes: ["Budget, invités et planning exportés en PDF", "Fichiers CSV pour vos tableurs", "Documents prêts à partager avec vos prestataires"] },
-  "templates.premium": { render: () => <TemplatesPreview />, changes: ["Modèles d'invitation et de page premium", "Couleurs et typographies personnalisables", "Nouveaux modèles ajoutés régulièrement"] },
+  "templates.premium": { render: () => <TemplatesPreview />, changes: ["Modèles d'invitation et de page premium", "Couleurs et typographies personnalisables", "Changement de modèle sans perdre le contenu"] },
   "collaboration.extended": { render: (a) => <AdvancedDashboardPreview audience={a} />, changes: ["Coorganisateurs illimités", "Droits fins par section (budget, enfants, invités)", "Historique des modifications"] },
   stats: { render: () => <AdvancedDashboardPreview audience="professional" />, changes: ["Vues, demandes et conversion de votre page", "Origine des demandes (annuaire, page, recommandation)", "Comparaison semaine par semaine"] },
   "seo.assistant": { render: () => <SeoPreview />, changes: ["Recommandations concrètes, champ par champ", "Aperçu indicatif de votre résultat Google", "Score de complétude recalculé à chaque modification"] },

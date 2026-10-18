@@ -25,6 +25,6 @@ export async function exportUserCalendarIcs(actor: Actor, executor: DbExecutor =
       createdAt: e.createdAt,
       updatedAt: e.updatedAt,
     })),
-    { calendarName: `Sous Nos Ailes — ${actor.name}` },
+    { calendarName: `Sous Nos Ailes, ${actor.name}` },
   );
 }

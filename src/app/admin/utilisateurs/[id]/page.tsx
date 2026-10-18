@@ -44,8 +44,8 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const revokeAll = revokeUserSessionsAction.bind(null, revokeAllFormData(u.id));
   return (
     <div className="space-y-6">
+      <Link href="/admin/utilisateurs" className="text-sm text-muted-foreground hover:underline">Retour aux utilisateurs</Link>
       <PageHeader
-        eyebrow={<Link href="/admin/utilisateurs" className="hover:underline">← Utilisateurs</Link>}
         title={u.name}
         description={u.email}
         actions={
@@ -66,12 +66,12 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
               <div><dt className="text-muted-foreground">Double authentification</dt><dd>{u.twoFactorEnabled ? "Activée" : "Non activée"}</dd></div>
               <div><dt className="text-muted-foreground">Inscrit le</dt><dd>{dateTime(u.createdAt)}</dd></div>
               <div><dt className="text-muted-foreground">Dernière connexion</dt><dd>{dateTime(u.lastLoginAt)}</dd></div>
-              <div><dt className="text-muted-foreground">Intention</dt><dd>{d.profile?.primaryIntent ?? "—"}</dd></div>
+              <div><dt className="text-muted-foreground">Intention</dt><dd>{d.profile?.primaryIntent ?? "Non renseignée"}</dd></div>
               <div><dt className="text-muted-foreground">Fuseau / langue</dt><dd>{u.timezone} · {u.locale}</dd></div>
               {u.banned && (
                 <div className="sm:col-span-2">
                   <dt className="text-muted-foreground">Suspension</dt>
-                  <dd>{u.banReason ?? "—"}{u.banExpires ? ` (jusqu'au ${dateTime(u.banExpires)})` : " (indéfinie)"}</dd>
+                  <dd>{u.banReason ?? "Non renseigné"}{u.banExpires ? ` (jusqu'au ${dateTime(u.banExpires)})` : " (indéfinie)"}</dd>
                 </div>
               )}
             </dl>
@@ -111,7 +111,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                       <ActionForm action={revokeSessionAction} successMessage="Session révoquée." className="space-y-0">
                         <input type="hidden" name="userId" value={u.id} />
                         <input type="hidden" name="sessionId" value={s.id} />
-                        <ActionSubmit size="sm" variant="ghost">Révoquer</ActionSubmit>
+                        <ActionSubmit size="sm" variant="outline">Révoquer</ActionSubmit>
                       </ActionForm>
                     )}
                   </li>
@@ -133,7 +133,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                   </li>
                 ))}
                 {d.appeals.map((a) => (
-                  <li key={a.id} className="py-2">Recours ({a.status}) · {dateTime(a.createdAt)} — {a.argument.slice(0, 120)}</li>
+                  <li key={a.id} className="py-2">Recours ({a.status}) · {dateTime(a.createdAt)} : {a.argument.slice(0, 120)}</li>
                 ))}
               </ul>
             )}
@@ -144,7 +144,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
               <ul className="divide-y text-sm">
                 {d.audit.map((a) => (
                   <li key={a.id} className="flex flex-wrap justify-between gap-2 py-1.5">
-                    <span><code className="text-xs">{a.action}</code> {a.resourceType}{a.reason ? ` — ${a.reason}` : ""}</span>
+                    <span><code className="text-xs">{a.action}</code> {a.resourceType}{a.reason ? ` : ${a.reason}` : ""}</span>
                     <span className="text-muted-foreground">{dateTime(a.createdAt)}</span>
                   </li>
                 ))}

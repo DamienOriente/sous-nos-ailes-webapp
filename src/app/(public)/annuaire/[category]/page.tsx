@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = geoTitle(cat.name, null);
   return {
     title,
-    description: `${cat.description ?? cat.name} Comparez des professionnels relus par notre équipe, leurs prestations, tarifs et vérifications. Contact gratuit.`,
+    description: `${cat.description ?? cat.name} Comparez les prestations, les tarifs et les vérifications de professionnels relus par notre équipe. Contact gratuit.`,
     alternates: { canonical: new URL(`/annuaire/${cat.slug}`, env.APP_URL).toString() },
   };
 }
@@ -51,18 +51,18 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   // One exact, reserved photo per trade: never a photo that a listing on the page also shows.
   const photos = [categoryPhoto(cat.slug, 0)];
   return (
-    <Section className="py-8 sm:py-12">
+    <Section>
       <Container size="wide" className="space-y-8">
         <CategoryJsonLd title={title} path={path} items={result.items} breadcrumbs={breadcrumbs} />
         <Breadcrumbs items={breadcrumbs} />
-        <DirectoryHeader eyebrow={cat.group} title={title} photos={photos}>
+        <DirectoryHeader title={title} photos={photos}>
           <CategoryIntro categoryName={cat.name} categoryDescription={cat.description} isChildcare={cat.isChildcare} geo={null} total={result.total} />
         </DirectoryHeader>
         <SearchFilters filters={filters} categories={categories.map((c) => ({ slug: c.slug, name: c.name, group: c.group }))} action={path} lockedCategory signedIn={Boolean(actor)} />
         <DirectoryResults result={result} filters={filters} basePath={path} signedIn={Boolean(actor)} suggestions={suggestions.categories} />
         {geoLinks.length > 0 && (
           <nav aria-label="Par zone" className="space-y-2">
-            <h2 className="font-heading text-xl font-semibold">{cat.name} par zone</h2>
+            <h2 className="font-heading text-2xl font-semibold">{cat.name} par zone</h2>
             <ul className="flex flex-wrap gap-2">
               {geoLinks.map((g) => {
                 const dept = g.geoSlug ? findDepartmentBySlug(g.geoSlug) : null;
@@ -77,10 +77,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             </ul>
           </nav>
         )}
-        <div className="grid gap-8 border-t pt-8 lg:grid-cols-2 lg:gap-10">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
           <CategoryFaq categoryName={cat.name} isChildcare={cat.isChildcare} geo={null} />
           <section aria-labelledby="demande-title" className="space-y-3">
-            <h2 id="demande-title" className="font-heading text-xl font-semibold">
+            <h2 id="demande-title" className="font-heading text-2xl font-semibold">
               Exemple de demande de devis
             </h2>
             <InquiryExample categoryName={cat.name} />

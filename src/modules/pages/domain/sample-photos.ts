@@ -25,7 +25,7 @@ export function samplePhotoFromFileId(id: string | null | undefined): DemoPhoto 
   return DEMO_PHOTOS[n] ?? null;
 }
 
-const VARIANT_WIDTH = { thumb: 480, medium: 1200, large: 1800, original: 2000 } as const;
+const VARIANT_WIDTH = { thumb: 480, card: 800, medium: 1200, large: 1800, original: 2000 } as const;
 export type SampleVariant = keyof typeof VARIANT_WIDTH;
 
 export function sampleImageSrc(photo: DemoPhoto, variant: SampleVariant = "medium"): string {

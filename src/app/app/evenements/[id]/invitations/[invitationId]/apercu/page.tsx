@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { InvitationCard } from "@/components/invitations/invitation-card";
 import { PrintButton } from "@/components/invitations/print-button";
 import { isAppError } from "@/lib/errors";
@@ -27,11 +26,7 @@ export default async function InvitationPreviewPage({ params }: { params: Promis
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
-        <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link href={`/app/evenements/${id}/invitations/${invitationId}`}>
-            <ArrowLeft className="size-4" aria-hidden="true" /> Retour
-          </Link>
-        </Button>
+        <Link href={`/app/evenements/${id}/invitations/${invitationId}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Retour</Link>
         <PrintButton />
       </div>
       <div className="print:fixed print:inset-0 print:flex print:items-center print:justify-center">

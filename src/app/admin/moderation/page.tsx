@@ -34,7 +34,6 @@ export default async function ModerationQueuePage({ searchParams }: { searchPara
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Modération"
         title="File de modération"
         description="Fiches soumises, modifications majeures, signalements, avis et recours. Chaque décision est motivée et historisée."
         actions={
@@ -88,9 +87,9 @@ export default async function ModerationQueuePage({ searchParams }: { searchPara
               );
             },
           },
-          { key: "proStatus", header: "Statut fiche", cell: (r) => (r.professionalStatus ? <StatusBadge tone={STATUS_TONES[r.professionalStatus as ProfessionalStatus]}>{STATUS_LABELS[r.professionalStatus as ProfessionalStatus]}</StatusBadge> : "—") },
+          { key: "proStatus", header: "Statut fiche", cell: (r) => (r.professionalStatus ? <StatusBadge tone={STATUS_TONES[r.professionalStatus as ProfessionalStatus]}>{STATUS_LABELS[r.professionalStatus as ProfessionalStatus]}</StatusBadge> : "n/d") },
           { key: "status", header: "Cas", cell: (r) => CASE_STATUS_LABELS[r.status] ?? r.status },
-          { key: "assignee", header: "Assigné à", cell: (r) => r.assignedToName ?? <span className="text-muted-foreground">—</span> },
+          { key: "assignee", header: "Assigné à", cell: (r) => r.assignedToName ?? <span className="text-muted-foreground">n/d</span> },
           { key: "created", header: "Depuis", cell: (r) => <span className="text-muted-foreground">{dateTime(r.createdAt)}</span> },
         ]}
       />

@@ -1,4 +1,3 @@
-import { FileText, ImageIcon } from "lucide-react";
 import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { formatDateFr } from "@/lib/utils";
@@ -24,12 +23,8 @@ export function FileList({ files, renderActions }: { files: FileStatusView[]; re
   return (
     <ul className="divide-y rounded-2xl border bg-card" data-testid="file-list">
       {files.map((f) => {
-        const isImage = f.mimeType.startsWith("image/");
         return (
           <li key={f.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center" data-testid="file-row" data-status={f.status}>
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground" aria-hidden="true">
-              {isImage ? <ImageIcon className="size-5" /> : <FileText className="size-5" />}
-            </span>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium" title={f.originalName}>
                 {f.originalName}

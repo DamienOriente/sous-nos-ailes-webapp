@@ -7,7 +7,7 @@ export function SeatingPrint({ plan }: { plan: SeatingPlan }) {
   return (
     <div className="space-y-8 print:space-y-0">
       <section className="print:break-after-page">
-        <h1 className="font-heading text-2xl font-semibold">Plan de table — {plan.eventName}</h1>
+        <h1 className="font-heading text-2xl font-semibold">Plan de table : {plan.eventName}</h1>
         <p className="text-sm text-muted-foreground">
           {plan.tables.length} tables · {plan.totalSeats} places · {plan.totalGuests - plan.unplaced.length}/{plan.totalGuests} invités placés
         </p>
@@ -45,7 +45,7 @@ export function SeatingPrint({ plan }: { plan: SeatingPlan }) {
                     {g.isChild ? " (enfant)" : ""}
                   </li>
                 ))}
-                {t.guests.length === 0 && <li className="list-none text-muted-foreground">—</li>}
+                {t.guests.length === 0 && <li className="list-none text-muted-foreground">Table vide</li>}
               </ol>
             </div>
           ))}

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Lightbulb, Wand2 } from "lucide-react";
 import { ListingPreviewCard, type ListingPreviewData } from "@/components/professionals/listing-preview-card";
 import { listingExample } from "@/components/professionals/listing-examples";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,7 @@ export function ProfessionalOnboardingAside({
   className?: string;
 }) {
   const example = listingExample(category?.formSchemaKey ?? "generic");
-  const tip = step === 2 ? example.tips.identity : step === 3 ? example.tips.trade : step === 4 ? example.tips.presentation : step === 1 ? "Choisissez le métier qui décrit le mieux ce que vous vendez : il détermine le formulaire suivant, les outils proposés et la famille de l'annuaire où vous apparaissez." : "Relisez comme un organisateur pressé : nom, ville, tarif, puis l'accroche. Le modèle de page se change plus tard sans perdre vos textes.";
+  const tip = step === 2 ? example.tips.identity : step === 3 ? example.tips.trade : step === 4 ? example.tips.presentation : step === 1 ? "Choisissez le métier qui décrit le mieux ce que vous vendez. Il détermine le formulaire de l'étape 3, les outils proposés et la catégorie de l'annuaire où vous apparaissez." : "Relisez comme un organisateur pressé : nom, ville, tarif, puis l'accroche. Le modèle de page se change plus tard sans perdre vos textes.";
   const exampleLines = step === 2 ? [example.displayName, `${example.city} (${example.postalCode}) · ${example.interventionRadiusKm} km`] : step === 4 ? [example.tagline, `${example.priceFromEuros} à ${example.priceToEuros} € ${priceUnitLabel(example.priceUnit)} · ${example.yearsExperience} ans d'expérience`] : step === 3 ? Object.entries(example.tradeDetails).slice(0, 3).map(([k, v]) => `${k} : ${Array.isArray(v) ? v.join(", ") : String(v)}`) : [];
   return (
     <aside className={cn("space-y-5", className)} aria-label="Aperçu et conseils">
@@ -35,10 +34,7 @@ export function ProfessionalOnboardingAside({
         <p className="text-sm font-medium">Votre fiche se dessine</p>
         <ListingPreviewCard listing={listing} category={category} step={step} />
       </div>
-      <div className="flex gap-3 rounded-2xl border bg-accent/40 p-4 text-sm">
-        <Lightbulb className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
-        <p className="text-pretty">{tip}</p>
-      </div>
+      <p className="rounded-2xl border bg-accent/40 p-4 text-sm text-pretty">{tip}</p>
       {step >= 2 && step <= 4 && exampleHref && (
         <div className="space-y-3 rounded-2xl border border-dashed p-4 text-sm" data-testid="onboarding-example">
           <p className="font-medium">Exemple pour un·e {category?.name.toLowerCase() ?? "professionnel"}</p>
@@ -54,7 +50,6 @@ export function ProfessionalOnboardingAside({
           ) : (
             <Button asChild variant="outline" size="sm">
               <Link href={exampleHref} scroll={false}>
-                <Wand2 className="size-4" aria-hidden="true" />
                 Utiliser cet exemple
               </Link>
             </Button>

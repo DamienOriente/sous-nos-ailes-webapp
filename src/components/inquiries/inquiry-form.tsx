@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -75,12 +74,9 @@ export function InquiryForm({ professionalId, professionalName, defaultKind = "c
   if (done) {
     return (
       <div className={className} role="status" data-testid="inquiry-success">
-        <div className="flex items-start gap-3 rounded-2xl border border-success/30 bg-success/10 p-5">
-          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" aria-hidden="true" />
-          <div>
-            <p className="font-semibold">Demande envoyée à {professionalName}</p>
-            <p className="mt-1 text-sm text-muted-foreground">Un e-mail de confirmation vous a été adressé. Le professionnel vous répondra directement.</p>
-          </div>
+        <div className="rounded-2xl bg-success/10 p-5">
+          <p className="font-semibold">Demande envoyée à {professionalName}</p>
+          <p className="mt-1 text-sm text-muted-foreground">Un e-mail de confirmation vous a été adressé. Le professionnel vous répondra directement.</p>
         </div>
       </div>
     );
@@ -117,7 +113,7 @@ export function InquiryForm({ professionalId, professionalName, defaultKind = "c
           <Field>
             <FieldLabel htmlFor="inq-type">Type d'évènement</FieldLabel>
             <select id="inq-type" name="eventTypeLabel" className="h-9 w-full rounded-lg border bg-background px-3 text-sm" defaultValue="">
-              <option value="">— Choisir —</option>
+              <option value="">Choisir</option>
               {EVENT_TYPE_OPTIONS.map((o) => (
                 <option key={o.value} value={o.label}>
                   {o.label}

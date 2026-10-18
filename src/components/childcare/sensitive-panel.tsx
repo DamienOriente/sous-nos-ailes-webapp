@@ -1,7 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, ShieldAlert, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -43,11 +42,11 @@ export function SensitivePanel({
   const hasData = summary.hasAllergies || summary.hasHealthNotes;
 
   return (
-    <section className="space-y-4 rounded-2xl border border-warning/40 bg-warning/5 p-4 sm:p-5" aria-labelledby="sensitive-title">
+    <section className="space-y-4 rounded-2xl border bg-card p-4 sm:p-5" aria-labelledby="sensitive-title">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
-          <h2 id="sensitive-title" className="flex items-center gap-2 text-base font-semibold">
-            <ShieldAlert className="size-4 text-warning-foreground" aria-hidden="true" /> Informations de santé
+          <h2 id="sensitive-title" className="text-base font-semibold">
+            Informations de santé
           </h2>
           <p className="text-sm text-muted-foreground">Chiffrées. Consultables uniquement avec un consentement actif, un motif, et chaque lecture est journalisée.</p>
         </div>
@@ -84,26 +83,26 @@ export function SensitivePanel({
             <Input id="purpose" name="purpose" required minLength={3} maxLength={200} placeholder="Ex. préparation du goûter, incident, remise" />
           </div>
           <Button type="submit" disabled={pending} aria-busy={pending}>
-            <Eye className="size-4" aria-hidden="true" /> {pending ? "Déchiffrement…" : "Consulter"}
+             {pending ? "Déchiffrement…" : "Consulter"}
           </Button>
         </form>
       )}
       <FormMessage error={error} />
 
       {revealed && (
-        <div className="space-y-3 rounded-xl border bg-card p-4" role="region" aria-label="Informations de santé déchiffrées">
+        <div className="space-y-3 rounded-xl border bg-muted/40 p-4" role="region" aria-label="Informations de santé déchiffrées">
           <dl className="space-y-2 text-sm">
             <div>
               <dt className="font-medium">Allergies</dt>
-              <dd className="whitespace-pre-wrap text-muted-foreground">{revealed.allergies ?? "—"}</dd>
+              <dd className="whitespace-pre-wrap text-muted-foreground">{revealed.allergies ?? "Non renseigné"}</dd>
             </div>
             <div>
               <dt className="font-medium">Notes de santé</dt>
-              <dd className="whitespace-pre-wrap text-muted-foreground">{revealed.healthNotes ?? "—"}</dd>
+              <dd className="whitespace-pre-wrap text-muted-foreground">{revealed.healthNotes ?? "Non renseigné"}</dd>
             </div>
           </dl>
-          <Button type="button" variant="ghost" size="sm" onClick={() => setRevealed(null)}>
-            <EyeOff className="size-4" aria-hidden="true" /> Masquer
+          <Button type="button" variant="outline" size="sm" onClick={() => setRevealed(null)}>
+             Masquer
           </Button>
         </div>
       )}
@@ -117,7 +116,7 @@ export function SensitivePanel({
           <ActionDialog
             trigger={
               <Button variant="outline" size="sm">
-                <ShieldCheck className="size-4" aria-hidden="true" /> {hasData ? "Mettre à jour" : "Renseigner"} avec consentement
+                 {hasData ? "Mettre à jour" : "Renseigner"} avec consentement
               </Button>
             }
             title="Informations de santé"
@@ -148,7 +147,7 @@ export function SensitivePanel({
           {summary.consentActive && (
             <ConfirmDialog
               trigger={
-                <Button variant="ghost" size="sm" className="text-destructive">
+                <Button variant="outline" size="sm" className="text-destructive">
                   Retirer le consentement
                 </Button>
               }

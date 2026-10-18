@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { WingsScene } from "@/components/illustrations";
-import { Feather } from "@/components/marketing/illustrations";
 import { PhotoFrame } from "@/components/marketing/photo-frame";
 import { Container, Section } from "@/components/shared/section";
 import { showcasePhoto } from "@/modules/media/demo-photos";
@@ -32,7 +31,7 @@ export default function AboutPage() {
                 Un mariage, un baptême, un séminaire d'entreprise avec les familles : il y a presque toujours des enfants, et presque jamais quelqu'un dont c'est le métier de s'en occuper. Les parents alternent entre la table et le coin jeux, les organisateurs improvisent, et la fête se vit à moitié.
               </p>
               <p>
-                Sous Nos Ailes part de là. La plateforme met en avant les professionnels de la garde d'enfants et de l'animation, puis tous les métiers de l'évènementiel autour d'eux, et donne à l'organisateur un espace unique pour coordonner tout ce monde : planning, invités, prestataires, messagerie, espace enfants.
+                Sous Nos Ailes part de là. La plateforme met en avant les professionnels de la garde d'enfants et de l'animation, puis tous les métiers de l'évènementiel autour d'eux, et donne à l'organisateur un espace commun pour coordonner tout ce monde : planning, invités, prestataires, messagerie, espace enfants.
               </p>
               <p>
                 Nous sommes une petite équipe. Le service est en phase de lancement : les fiches de démonstration sont signalées comme telles, les documents juridiques sont des brouillons en cours de validation, et nous préférons dire ce que nous ne faisons pas encore plutôt que de le promettre.
@@ -40,31 +39,28 @@ export default function AboutPage() {
             </div>
           </div>
           <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-            <PhotoFrame photo={photo} corner="tr" aspect="aspect-[4/5]" width={1000} height={1250} sizes="(max-width: 1024px) 100vw, 480px" caption="Photo de démonstration" alt="Enfant porté par sa mère — photo de démonstration" />
-            <WingsScene className="pointer-events-none absolute -bottom-4 -left-6 w-44 drop-shadow-[0_18px_30px_oklch(0.48_0.07_150_/_0.25)]" />
+            <PhotoFrame photo={photo} corner="tr" aspect="aspect-[4/5]" width={1000} height={1250} sizes="(max-width: 1024px) 100vw, 480px" caption="Photo de démonstration" alt="Enfant porté par sa mère, photo de démonstration" />
+            <WingsScene className="pointer-events-none absolute -bottom-4 -left-6 w-44" />
           </div>
         </Container>
       </Section>
       <Section className="bg-ivory-deep/60 dark:bg-ivory-deep/40">
         <Container size="narrow">
-          <h2 className="text-3xl font-semibold">Nos engagements</h2>
-          <ul className="mt-8 space-y-7">
+          <h2 className="text-3xl font-semibold text-balance sm:text-4xl">Nos engagements</h2>
+          <dl className="mt-8 divide-y border-y">
             {COMMITMENTS.map((c) => (
-              <li key={c.title} className="flex gap-4">
-                <Feather className="mt-1 size-5 shrink-0" />
-                <div>
-                  <h3 className="text-lg font-semibold">{c.title}</h3>
-                  <p className="mt-1 leading-7 text-muted-foreground text-pretty">{c.text}</p>
-                </div>
-              </li>
+              <div key={c.title} className="py-5">
+                <dt className="text-lg font-semibold">{c.title}</dt>
+                <dd className="mt-1 leading-7 text-muted-foreground text-pretty">{c.text}</dd>
+              </div>
             ))}
-          </ul>
+          </dl>
         </Container>
       </Section>
       <Section>
         <Container size="narrow">
-          <h2 className="text-3xl font-semibold">Ce que nous ne sommes pas</h2>
-          <ul className="mt-6 space-y-3 leading-7 text-muted-foreground">
+          <h2 className="text-3xl font-semibold text-balance sm:text-4xl">Ce que nous ne sommes pas</h2>
+          <ul className="mt-8 list-disc space-y-3 pl-5 leading-7 text-muted-foreground marker:text-primary">
             <li>Ni une agence de garde d'enfants, ni un employeur : chaque professionnel exerce sous sa propre responsabilité et ses propres assurances.</li>
             <li>Ni un intermédiaire de paiement entre organisateurs et prestataires : les abonnements payants ne concernent que les outils de la plateforme.</li>
             <li>Ni un organisme de certification : nos niveaux de vérification décrivent des contrôles documentaires, pas une garantie de qualité.</li>
@@ -74,7 +70,7 @@ export default function AboutPage() {
             <Link href="/mentions-legales" className="font-medium text-primary underline underline-offset-4">
               mentions légales
             </Link>
-            . Pour nous écrire :{" "}
+            . Pour nous écrire, voir la{" "}
             <Link href="/contact" className="font-medium text-primary underline underline-offset-4">
               page contact
             </Link>

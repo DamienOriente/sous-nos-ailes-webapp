@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { after } from "next/server";
-import { CalendarPlus } from "lucide-react";
 import { FavoriteButton } from "@/components/directory/favorite-button";
 import { VerificationBadge } from "@/components/directory/verification-badge";
 import { InquiryForm } from "@/components/inquiries/inquiry-form";
@@ -122,7 +121,6 @@ export default async function PublicProfessionalPage({ params }: { params: Promi
             <FavoriteButton professionalId={pro.id} isFavorite={favorite} signedIn={Boolean(actor)} />
             <Button asChild size="sm" variant="outline">
               <Link href={`/app/evenements?invite=${pro.id}`}>
-                <CalendarPlus aria-hidden="true" />
                 Inviter sur mon évènement
               </Link>
             </Button>

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, ArchiveRestore, Eye, Flag, Paperclip, Pencil, Send, Trash2, Users } from "lucide-react";
+import { Flag, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { FileUpload } from "@/components/files/file-upload";
@@ -94,8 +94,7 @@ export function MessageThread({ eventId, channel, members, allMembers, initialMe
           {canManage && channel.kind !== "general" && (
             <ConfirmDialog
               trigger={
-                <Button variant="ghost" size="sm">
-                  {channel.archived ? <ArchiveRestore className="size-3.5" aria-hidden="true" /> : <Archive className="size-3.5" aria-hidden="true" />}
+                <Button variant="outline" size="sm">
                   {channel.archived ? "Restaurer" : "Archiver"}
                 </Button>
               }
@@ -113,7 +112,6 @@ export function MessageThread({ eventId, channel, members, allMembers, initialMe
         </div>
       </header>
       <p className="flex items-center gap-2 border-b bg-muted/50 px-4 py-2 text-xs text-muted-foreground" role="note">
-        <Eye className="size-3.5 shrink-0" aria-hidden="true" />
         Les organisateurs de l'évènement peuvent lire tous les échanges de cet espace.
       </p>
 
@@ -198,7 +196,7 @@ function MessageItem({ m, grouped, eventId, currentUserId, canManage, actions }:
               <Button type="submit" size="sm" disabled={pending}>
                 Enregistrer
               </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
+              <Button type="button" size="sm" variant="outline" onClick={() => setEditing(false)}>
                 Annuler
               </Button>
             </div>
@@ -215,12 +213,10 @@ function MessageItem({ m, grouped, eventId, currentUserId, canManage, actions }:
                   <li key={a.id}>
                     {a.status === "clean" ? (
                       <a href={privateFileHref(a.fileId)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs hover:bg-muted">
-                        <Paperclip className="size-3" aria-hidden="true" />
                         {a.name ?? "Pièce jointe"}
                       </a>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs text-muted-foreground">
-                        <Paperclip className="size-3" aria-hidden="true" />
                         {a.name ?? "Pièce jointe"} · {a.status === "infected" || a.status === "rejected" ? "bloquée" : "analyse en cours"}
                       </span>
                     )}
@@ -316,7 +312,7 @@ function ReportDialog({ eventId, messageId, action }: { eventId: string; message
             <Textarea id="rep-details" value={details} onChange={(e) => setDetails(e.target.value)} rows={3} maxLength={1000} />
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annuler
             </Button>
             <Button type="submit" variant="destructive" disabled={pending}>
@@ -338,8 +334,7 @@ function MembersDialog({ channel, members, allMembers, canManage, eventId, actio
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <Users className="size-3.5" aria-hidden="true" />
+        <Button variant="outline" size="sm">
           {members.length}
         </Button>
       </DialogTrigger>
@@ -488,7 +483,6 @@ function Composer({ eventId, channelId, members, placeholder, action }: { eventI
         <ul className="flex flex-wrap gap-2 text-xs">
           {files.map((f) => (
             <li key={f.id} className="inline-flex items-center gap-1 rounded-lg border px-2 py-1">
-              <Paperclip className="size-3" aria-hidden="true" />
               {f.name}
               <button type="button" className="ml-1 text-muted-foreground hover:text-foreground" onClick={() => setFiles((l) => l.filter((x) => x.id !== f.id))} aria-label={`Retirer ${f.name}`}>
                 ×
@@ -500,12 +494,10 @@ function Composer({ eventId, channelId, members, placeholder, action }: { eventI
       {showUpload && files.length < 5 && <FileUpload scope="event" scopeId={eventId} purpose="attachment" maxFiles={5 - files.length} onUploaded={(f) => setFiles((l) => [...l, { id: f.id, name: f.originalName }])} />}
       <FormMessage error={error} />
       <div className="flex items-center justify-between">
-        <Button type="button" variant="ghost" size="sm" onClick={() => setShowUpload((v) => !v)} aria-pressed={showUpload}>
-          <Paperclip className="size-3.5" aria-hidden="true" />
+        <Button type="button" variant="outline" size="sm" onClick={() => setShowUpload((v) => !v)} aria-pressed={showUpload}>
           Pièce jointe
         </Button>
         <Button type="submit" size="sm" disabled={pending || (!body.trim() && files.length === 0)}>
-          <Send className="size-3.5" aria-hidden="true" />
           Envoyer
         </Button>
       </div>

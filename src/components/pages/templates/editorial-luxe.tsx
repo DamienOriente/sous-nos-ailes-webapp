@@ -2,9 +2,9 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Éditorial luxe — magazine spread. Twelve-column grid: section titles sit in
- * the left three columns as running heads, content spans the right nine.
- * Thin rules, numbered folios, no cards at all.
+ * Éditorial luxe: magazine spread. Wide left margin on desktop, content on
+ * the right nine columns of a twelve-column grid, a dark rule above each
+ * section, no cards at all.
  */
 const VARIANTS: VariantMap = { hero: "editorial", about: "two-column", services: "columns", pricing: "table", gallery: "masonry", testimonials: "large", faq: "lines", contact: "panel", trust: "list", zone: "text", cta_quote: "split", availability: "compact" };
 
@@ -18,12 +18,9 @@ export default function EditorialLuxe({ data, ctx, blocks }: TemplateProps) {
         blocks={blocks}
         variants={VARIANTS}
         className="mx-auto max-w-7xl px-5 sm:px-8"
-        wrap={(node, _b, i) => (
-          <div className="grid gap-6 border-t border-(--pg-border) py-14 md:grid-cols-12">
-            <p className="text-xs tabular-nums text-(--pg-muted) md:col-span-1" aria-hidden="true">
-              {String(i + 1).padStart(2, "0")}
-            </p>
-            <div className="md:col-span-11">{node}</div>
+        wrap={(node) => (
+          <div className="grid border-t border-(--pg-text) py-14 md:grid-cols-12">
+            <div className="md:col-span-9 md:col-start-4">{node}</div>
           </div>
         )}
       />

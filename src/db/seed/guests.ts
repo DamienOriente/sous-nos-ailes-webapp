@@ -115,7 +115,7 @@ const LOUIS_CONTACTS: Array<{ first: string; last: string; company?: string; ema
   { first: "Claire", last: "Dubois", email: "claire.dubois@example.test", category: "family", tags: ["famille", "végétarien"] },
   { first: "Alain", last: "Bertrand", email: "alain.bertrand@example.test", phone: "06 99 88 77 66", category: "family", tags: ["famille-lisa"] },
   { first: "Sarah", last: "Lemoine", email: "sarah.lemoine@example.test", category: "family", tags: ["famille-lisa"] },
-  { first: "Maxime", last: "Girard", email: "maxime.girard@example.test", phone: "07 12 34 56 78", category: "friend", tags: ["amis", "témoin"], notes: "Témoin de Louis — discours prévu." },
+  { first: "Maxime", last: "Girard", email: "maxime.girard@example.test", phone: "07 12 34 56 78", category: "friend", tags: ["amis", "témoin"], notes: "Témoin de Louis, discours prévu." },
   { first: "Romain", last: "Blanc", email: "romain.blanc@example.test", category: "friend", tags: ["amis"] },
   { first: "Aurélie", last: "Fontaine", email: "aurelie.fontaine@example.test", category: "friend", tags: ["amis"] },
   { first: "Élodie", last: "Renard", email: "elodie.renard@example.test", category: "friend", tags: ["amis", "musique"] },

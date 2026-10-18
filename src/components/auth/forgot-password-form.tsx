@@ -1,6 +1,6 @@
 "use client";
 import { useId, useState } from "react";
-import { Loader2, MailCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { describeAuthFailure } from "@/components/auth/auth-client-error";
 import { RateLimitNotice } from "@/components/auth/rate-limit-notice";
 import { WingsScene } from "@/components/illustrations";
@@ -44,12 +44,9 @@ export function ForgotPasswordForm() {
     return (
       <div className="space-y-4" role="status">
         <WingsScene className="mx-auto -mt-2 w-40" />
-        <div className="flex items-start gap-3 rounded-xl bg-success/15 p-4 text-sm">
-          <MailCheck className="mt-0.5 size-5 shrink-0 text-success" aria-hidden="true" />
-          <p>
-            Si un compte existe pour <strong>{email}</strong>, un e-mail contenant un lien de réinitialisation vient de partir. Le lien est valable une heure. Pensez à vérifier vos courriers indésirables.
-          </p>
-        </div>
+        <p className="rounded-xl bg-success/15 p-4 text-sm">
+          Si un compte existe pour <strong>{email}</strong>, un e-mail contenant un lien de réinitialisation vient de partir. Le lien est valable une heure. Pensez à vérifier vos courriers indésirables.
+        </p>
         <Button type="button" variant="outline" className="w-full" onClick={() => setSent(false)}>
           Utiliser une autre adresse
         </Button>

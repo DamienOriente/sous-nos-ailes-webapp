@@ -9,6 +9,7 @@ import { getPresenceDashboard, performHandover, recordAttendance } from "@/modul
 import { addAuthorizedPerson, createChild, getChildDetail, listAccessLogs, listChildren, readSensitiveInformation, setSensitiveInformation, withdrawSensitiveConsent } from "@/modules/childcare/application/children-service";
 import { getDietaryCounts } from "@/modules/childcare/application/dietary";
 import { anonymizeChildrenForEndedEvents } from "@/modules/childcare/application/retention";
+import { ANONYMIZED_PLACEHOLDER } from "@/modules/childcare/domain/rules";
 import { addMember, cleanupUsers, createEvent, createUser } from "./_fixtures";
 
 /**
@@ -193,8 +194,8 @@ describe("dietary counts and revocation", () => {
     const n = await anonymizeChildrenForEndedEvents(30, db, new Date("2027-08-01T00:00:00Z"), [eventA]);
     expect(n).toBeGreaterThanOrEqual(3);
     const [lea] = await db.select().from(eventChildren).where(eq(eventChildren.id, childIds.Lea!));
-    expect(lea!.firstName).toBe("—");
-    expect(lea!.guardianPhone).toBe("—");
+    expect(lea!.firstName).toBe(ANONYMIZED_PLACEHOLDER);
+    expect(lea!.guardianPhone).toBe(ANONYMIZED_PLACEHOLDER);
     expect(lea!.anonymizedAt).not.toBeNull();
     const sensitive = await db.select().from(childSensitiveInformation).where(eq(childSensitiveInformation.childId, childIds.Lea!));
     expect(sensitive).toHaveLength(0);

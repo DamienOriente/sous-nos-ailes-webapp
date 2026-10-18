@@ -145,7 +145,7 @@ export async function buildEventIcs(actor: Actor, eventId: string, executor: DbE
   for (const m of milestones) {
     list.push({ uid: `milestone-${m.id}@sousnosailes.fr`, summary: m.title, description: m.description, location: m.location ?? location, start: m.startsAt, end: m.endsAt, stamp: m.updatedAt });
   }
-  const body = buildIcsCalendar({ name: `${event.name} — planning`, events: list });
+  const body = buildIcsCalendar({ name: `${event.name} : planning`, events: list });
   const slug = event.name
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")

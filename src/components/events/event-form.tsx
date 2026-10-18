@@ -157,7 +157,7 @@ export function EventForm({ categories, firstName, mode, action, initialValues, 
       </ol>
 
       <form
-        className="space-y-6 rounded-2xl border bg-card p-5 sm:p-6"
+        className="space-y-6 rounded-2xl border bg-card p-6"
         onSubmit={(e) => {
           e.preventDefault();
           if (step < STEPS.length - 1) next();
@@ -272,7 +272,7 @@ export function EventForm({ categories, firstName, mode, action, initialValues, 
             <div className="space-y-4">
               {grouped.map(([group, list]) => (
                 <div key={group}>
-                  <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{group}</p>
+                  <p className="mb-2 text-xs font-semibold text-muted-foreground">{group}</p>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {list.map((c) => {
                       const checked = wanted.includes(c.slug);
@@ -297,7 +297,7 @@ export function EventForm({ categories, firstName, mode, action, initialValues, 
         <FormMessage error={error} />
 
         <div className="flex items-center justify-between gap-3 border-t pt-4">
-          <Button type="button" variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0 || pending}>
+          <Button type="button" variant="outline" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0 || pending}>
             <ArrowLeft className="size-4" aria-hidden="true" />
             Retour
           </Button>

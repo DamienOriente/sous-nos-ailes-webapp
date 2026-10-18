@@ -98,8 +98,9 @@ describe("Scenario E — secure file pipeline", () => {
     expect(row?.width).toBe(1600);
     expect(row?.height).toBe(2400);
     // After rotation the width is 1600: "large" (1920) would upscale, so it is not generated.
-    expect(Object.keys(row!.variants).sort()).toEqual(["medium", "thumb"]);
+    expect(Object.keys(row!.variants).sort()).toEqual(["card", "medium", "thumb"]);
     expect(row!.variants.thumb?.width).toBe(320);
+    expect(row!.variants.card?.width).toBe(640);
     expect(row!.variants.medium?.width).toBe(1024);
     expect(row!.variants.large).toBeUndefined();
 

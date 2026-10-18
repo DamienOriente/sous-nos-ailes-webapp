@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import type { NotificationItem } from "@/modules/notifications/domain/types";
-import { NotificationIcon, notificationLabel } from "./notification-icon";
+import { notificationLabel } from "./notification-label";
 
 export type { NotificationItem };
 
@@ -52,12 +52,9 @@ export function NotificationList({
               <button
                 type="button"
                 onClick={() => onOpen(item)}
-                className={cn("flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", unread && "bg-primary/5")}
+                className={cn("flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", unread && "bg-primary/5")}
                 aria-label={`${unread ? "Non lue : " : ""}${item.title}`}
               >
-                <span className={cn("mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full", unread ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>
-                  <NotificationIcon type={item.type} className="size-4" />
-                </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-baseline justify-between gap-x-3">
                     <span className={cn("truncate text-sm", unread ? "font-semibold" : "font-medium")}>{item.title}</span>

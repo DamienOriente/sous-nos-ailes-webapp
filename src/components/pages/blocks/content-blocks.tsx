@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { richTextToPlain } from "@/modules/pages/domain/page-schema";
 import { labelFor, PRICE_UNITS } from "@/modules/professionals/domain/listing-schema";
 import { FaqAccordion } from "./faq-accordion";
-import { anchorOf, type BlockProps, CtaButton, formatPrice, headingOr, Monogram, Picture, RichText, SectionHeading, Stars } from "./shared";
+import { anchorOf, type BlockProps, CtaButton, formatPrice, headingOr, Picture, RichText, SectionHeading, Stars } from "./shared";
 
 /**
  * Service cards stay text-only: a service has no photograph of its own, and
@@ -153,15 +153,18 @@ export function ServicesBlock({ block, ctx, variant = "cards" }: BlockProps<"ser
     return (
       <section id={id} aria-labelledby={`${id}-h`}>
         {head}
-        <ol className="relative space-y-8 border-l-2 border-dashed border-(--pg-accent) pl-8">
+        <ol className="divide-y divide-(--pg-border) border-y border-(--pg-border)">
           {items.map((it, i) => (
-            <li key={i} className="relative">
-              <span className="absolute -left-[2.55rem] flex size-8 items-center justify-center rounded-full bg-(--pg-accent) text-sm font-semibold text-(--pg-accent-contrast)" aria-hidden="true">
+            <li key={i} className="grid grid-cols-[3rem_1fr] gap-x-4 py-6 sm:grid-cols-[4.5rem_1fr]">
+              <span className="pg-heading text-4xl leading-none text-(--pg-accent) sm:text-5xl" aria-hidden="true">
                 {i + 1}
               </span>
-              <h3 className="text-xl">{it.name}</h3>
-              {it.description && <p className="mt-1 text-(--pg-muted) text-pretty">{it.description}</p>}
-              {it.priceLabel && <p className="mt-2 text-sm font-medium">{it.priceLabel}</p>}
+              <div>
+                <h3 className="text-xl">{it.name}</h3>
+                {it.description && <p className="mt-1 text-(--pg-muted) text-pretty">{it.description}</p>}
+                {it.meta.length > 0 && <p className="mt-1 text-xs text-(--pg-muted)">{it.meta.join(" · ")}</p>}
+                {it.priceLabel && <p className="mt-2 text-sm font-medium">{it.priceLabel}</p>}
+              </div>
             </li>
           ))}
         </ol>
@@ -197,7 +200,7 @@ export function ServicesBlock({ block, ctx, variant = "cards" }: BlockProps<"ser
         {head}
         <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((it, i) => (
-            <div key={i} className="border-t-2 border-(--pg-accent) pt-4">
+            <div key={i} className="border-t border-(--pg-text) pt-4">
               <h3 className="text-xl">{it.name}</h3>
               {it.description && <p className="mt-2 text-sm leading-relaxed text-(--pg-muted) text-pretty">{it.description}</p>}
               {it.priceLabel && <p className="mt-3 text-sm font-medium">{it.priceLabel}</p>}
@@ -364,22 +367,18 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
               « {first.body} »
             </blockquote>
             <figcaption className="mt-6 flex items-center justify-center gap-3 text-sm text-(--pg-muted)">
-              <Monogram name={first.authorName} size="sm" />
-              <span>{first.authorName} · avis vérifié{first.title ? ` · « ${first.title} »` : ""}</span>
+              <span>{first.authorName}, avis vérifié{first.title ? `, « ${first.title} »` : ""}</span>
             </figcaption>
           </figure>
         )}
         {rest.length > 0 && (
           <ul className="mt-12 grid gap-6 sm:grid-cols-2">
             {rest.map((r) => (
-              <li key={r.id} className="border-l-2 border-(--pg-accent) pl-4">
+              <li key={r.id} className="border-t border-(--pg-border) pt-4">
                 <Stars rating={r.rating} />
                 {r.title && <p className="mt-2 font-medium">{r.title}</p>}
                 <p className="mt-2 text-pretty">{r.body}</p>
-                <p className="mt-3 flex items-center gap-2 text-xs text-(--pg-muted)">
-                  <Monogram name={r.authorName} size="sm" />
-                  <span>{r.authorName} · avis vérifié</span>
-                </p>
+                <p className="mt-3 text-xs text-(--pg-muted)">{r.authorName}, avis vérifié</p>
                 {r.replyBody && <p className="mt-3 rounded-(--pg-radius-sm) bg-(--pg-surface) p-3 text-sm text-pretty">Réponse : {r.replyBody}</p>}
               </li>
             ))}
@@ -398,10 +397,7 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
           {selected.map((r) => (
             <li key={r.id} className="py-5">
               <div className="flex items-center justify-between gap-4">
-                <p className="flex items-center gap-3 font-medium">
-                  <Monogram name={r.authorName} size="sm" />
-                  <span>{r.authorName}</span>
-                </p>
+                <p className="font-medium">{r.authorName}</p>
                 <Stars rating={r.rating} />
               </div>
               {r.title && <p className="mt-1 font-medium">{r.title}</p>}
@@ -420,14 +416,11 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
       </SectionHeading>
       <ul className="grid gap-4 md:grid-cols-3">
         {selected.map((r) => (
-          <li key={r.id} className="flex flex-col rounded-(--pg-radius-lg) bg-(--pg-surface) p-6 shadow-[0_1px_0_var(--pg-border)]">
-            <div className="flex items-center justify-between gap-3">
-              <Monogram name={r.authorName} />
-              <Stars rating={r.rating} />
-            </div>
+          <li key={r.id} className="flex flex-col rounded-(--pg-radius-lg) border border-(--pg-border) bg-(--pg-surface) p-6">
+            <Stars rating={r.rating} />
             {r.title && <p className="mt-4 font-medium">{r.title}</p>}
             <p className="mt-2 flex-1 text-(--pg-muted) text-pretty">{r.body}</p>
-            <p className="mt-4 text-xs text-(--pg-muted)">{r.authorName} · avis vérifié</p>
+            <p className="mt-4 text-xs text-(--pg-muted)">{r.authorName}, avis vérifié</p>
             {r.replyBody && <p className="mt-3 border-t border-(--pg-border) pt-3 text-sm text-(--pg-muted) text-pretty">Réponse du professionnel : {r.replyBody}</p>}
           </li>
         ))}

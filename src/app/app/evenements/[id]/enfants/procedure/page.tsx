@@ -1,14 +1,13 @@
 import Link from "next/link";
-import { ArrowLeft, Phone, Siren } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
 import { requireActor } from "@/lib/session";
 import { listChildren } from "@/modules/childcare/application/children-service";
 import { guardPage } from "@/components/childcare/page-guard";
 
-export const metadata = { title: "Procédure d'urgence — Sous Nos Ailes" };
+export const metadata = { title: "Procédure d'urgence" };
 
 /**
  * Emergency procedure: national numbers, who to call, what to say, and the
@@ -21,35 +20,30 @@ export default async function EmergencyProcedurePage({ params }: { params: Promi
   const { children } = await guardPage(() => listChildren(actor, eventId));
   return (
     <div className="space-y-6">
-      <Button asChild variant="ghost" size="sm">
-        <Link href={`/app/evenements/${eventId}/enfants`}>
-          <ArrowLeft className="size-4" aria-hidden="true" /> Enfants
-        </Link>
-      </Button>
-      <PageHeader eyebrow="Garde d'enfants" title="Procédure d'urgence" description="À lire avant l'évènement et à garder sous la main le jour J." />
+      <Link href={`/app/evenements/${eventId}/enfants`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Enfants</Link>
+      <PageHeader title="Procédure d'urgence" description="À lire avant l'évènement et à garder sous la main le jour J." />
       <Alert className="border-destructive/40 bg-destructive/5">
-        <Siren className="size-4" aria-hidden="true" />
         <AlertTitle>Urgence vitale : appelez d'abord les secours</AlertTitle>
         <AlertDescription>
           <div className="flex flex-wrap gap-3 pt-1">
             <a href="tel:15" className="rounded-full bg-destructive px-4 py-1.5 font-semibold text-white">
-              15 — SAMU
+              15 : SAMU
             </a>
             <a href="tel:112" className="rounded-full bg-destructive px-4 py-1.5 font-semibold text-white">
-              112 — Urgences (UE)
+              112 : urgences (UE)
             </a>
             <a href="tel:18" className="rounded-full border px-4 py-1.5 font-semibold">
-              18 — Pompiers
+              18 : pompiers
             </a>
             <a href="tel:114" className="rounded-full border px-4 py-1.5 font-semibold">
-              114 — SMS / malentendants
+              114 : SMS pour sourds et malentendants
             </a>
           </div>
         </AlertDescription>
       </Alert>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="gap-3 p-5">
+        <Card className="gap-3 p-6">
           <h2 className="font-semibold">Conduite à tenir</h2>
           <ol className="list-decimal space-y-2 pl-5 text-sm">
             <li>Mettre l'enfant en sécurité et ne jamais le laisser seul ; un membre de l'équipe reste avec les autres enfants.</li>
@@ -66,7 +60,7 @@ export default async function EmergencyProcedurePage({ params }: { params: Promi
             <li>Aucun QR code ni message ne remplace cette vérification.</li>
           </ul>
         </Card>
-        <Card className="gap-3 p-5">
+        <Card className="gap-3 p-6">
           <h2 className="font-semibold">Responsables légaux à joindre</h2>
           {children.length === 0 ? (
             <p className="text-sm text-muted-foreground">Aucun enfant dans votre périmètre.</p>
@@ -81,7 +75,7 @@ export default async function EmergencyProcedurePage({ params }: { params: Promi
                     <div className="text-xs text-muted-foreground">{c.guardianName}</div>
                   </div>
                   <a href={`tel:${c.guardianPhone}`} className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium hover:bg-muted">
-                    <Phone className="size-3" aria-hidden="true" /> {c.guardianPhone}
+                     {c.guardianPhone}
                   </a>
                 </li>
               ))}

@@ -28,12 +28,12 @@ export function ContactsTable({ contacts, orgNames }: { contacts: ContactListIte
                 {c.company && (c.firstName || c.lastName) && <p className="text-xs text-muted-foreground">{c.company}</p>}
                 <p className="text-xs text-muted-foreground md:hidden">{[c.email, c.phone].filter(Boolean).join(" · ")}</p>
               </TableCell>
-              <TableCell className="hidden text-sm text-muted-foreground md:table-cell">{[c.email, c.phone].filter(Boolean).join(" · ") || "—"}</TableCell>
-              <TableCell className="hidden sm:table-cell">{c.category ? CONTACT_CATEGORY_LABELS[c.category as ContactCategory] ?? c.category : "—"}</TableCell>
+              <TableCell className="hidden text-sm text-muted-foreground md:table-cell">{[c.email, c.phone].filter(Boolean).join(" · ") || "Non renseigné"}</TableCell>
+              <TableCell className="hidden sm:table-cell">{c.category ? CONTACT_CATEGORY_LABELS[c.category as ContactCategory] ?? c.category : "Non renseignée"}</TableCell>
               <TableCell className="hidden lg:table-cell">
                 <div className="flex flex-wrap gap-1">
                   {c.tags.slice(0, 4).map((t) => (
-                    <Badge key={t} variant="secondary" className="rounded-full">
+                    <Badge key={t} variant="outline" className="rounded-full">
                       {t}
                     </Badge>
                   ))}

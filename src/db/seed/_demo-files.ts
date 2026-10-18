@@ -32,7 +32,7 @@ export async function buildDemoPdf(rawTitle: string, rawLines: string[]): Promis
   // Fixed metadata: identical bytes on every run → the pipeline deduplicates inside the event scope.
   const fixed = new Date("2026-02-01T09:00:00.000Z");
   doc.setTitle(title);
-  doc.setProducer("Sous Nos Ailes — données de démonstration");
+  doc.setProducer("Sous Nos Ailes, données de démonstration");
   doc.setCreator("Sous Nos Ailes");
   doc.setCreationDate(fixed);
   doc.setModificationDate(fixed);
@@ -40,7 +40,7 @@ export async function buildDemoPdf(rawTitle: string, rawLines: string[]): Promis
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const page = doc.addPage([595.28, 841.89]);
   page.drawRectangle({ x: 0, y: 780, width: 595.28, height: 61.89, color: rgb(0.42, 0.56, 0.44) });
-  page.drawText("SOUS NOS AILES — DOCUMENT DE DÉMONSTRATION", { x: 40, y: 805, size: 11, font: bold, color: rgb(1, 1, 1) });
+  page.drawText("Sous Nos Ailes : document de démonstration", { x: 40, y: 805, size: 11, font: bold, color: rgb(1, 1, 1) });
   page.drawText(title, { x: 40, y: 730, size: 18, font: bold, color: rgb(0.18, 0.2, 0.22), maxWidth: 515 });
   let y = 690;
   for (const line of lines) {

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Download } from "lucide-react";
 import { AdminTable, dateTime } from "@/components/admin/admin-table";
 import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
 import { PageHeader } from "@/components/shared/page-header";
@@ -43,7 +42,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
   const exportQs = new URLSearchParams(Object.entries(sp).filter(([, v]) => Boolean(v)) as [string, string][]).toString();
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Administration" title="Sécurité et audit" description="Journal d'audit filtrable (export CSV), évènements de sécurité, état des files de traitement." actions={<Button asChild variant="outline" size="sm"><a href={`/admin/securite/export${exportQs ? `?${exportQs}` : ""}`}><Download className="size-4" aria-hidden="true" /> Export CSV</a></Button>} />
+      <PageHeader title="Sécurité et audit" description="Journal d'audit filtrable (export CSV), évènements de sécurité, état des files de traitement." actions={<Button asChild variant="outline" size="sm"><a href={`/admin/securite/export${exportQs ? `?${exportQs}` : ""}`}>Export CSV</a></Button>} />
       <TwoFactorBanner show={twoFactorWarning} />
       <SecuritySubnav current="/admin/securite" showBreakGlass={canGlobal(actor, "admin.break_glass")} />
       <Card className="gap-3 p-6">
@@ -65,8 +64,8 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
           columns={[
             { key: "sev", header: "Sévérité", cell: (r) => <StatusBadge tone={r.severity === "critical" || r.severity === "high" ? "danger" : r.severity === "medium" ? "warning" : "neutral"}>{r.severity}</StatusBadge> },
             { key: "type", header: "Type", cell: (r) => <code className="text-xs">{r.type}</code> },
-            { key: "user", header: "Compte", cell: (r) => r.userEmail ?? <span className="text-muted-foreground">—</span> },
-            { key: "ip", header: "IP", cell: (r) => <span className="text-muted-foreground">{r.ipAddress ?? "—"}</span> },
+            { key: "user", header: "Compte", cell: (r) => r.userEmail ?? <span className="text-muted-foreground">n/d</span> },
+            { key: "ip", header: "IP", cell: (r) => <span className="text-muted-foreground">{r.ipAddress ?? "n/d"}</span> },
             { key: "details", header: "Détails", cell: (r) => <code className="text-xs text-muted-foreground">{JSON.stringify(r.details).slice(0, 80)}</code> },
             { key: "date", header: "Date", cell: (r) => <span className="text-muted-foreground">{dateTime(r.createdAt)}</span> },
           ]}

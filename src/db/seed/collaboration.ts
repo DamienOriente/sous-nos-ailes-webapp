@@ -17,7 +17,7 @@ type AttachmentSpec = { key: string; uploaderKey: string; title: string; lines: 
 const FIRST_NAMES: Record<string, string> = { louis: "Louis", lisa: "Lisa", camille: "Camille", marie: "Marie", nora: "Nora", julien: "Julien", helene: "Hélène", theo: "Théo", ines: "Inès", paul: "Paul", sofia: "Sofia" };
 
 const WEDDING_ATTACHMENTS: AttachmentSpec[] = [
-  { key: "plan", uploaderKey: "helene", title: "Plan de l'orangerie — implantation 12 tables", lines: ["Orangerie 24 × 12 m : 12 tables rondes de 10, piste 6 × 6 m au centre", "Régie DJ à droite de la piste, buffet desserts côté terrasse", "Issues de secours : 3, à laisser dégagées"] },
+  { key: "plan", uploaderKey: "helene", title: "Plan de l'orangerie, implantation de 12 tables", lines: ["Orangerie 24 × 12 m : 12 tables rondes de 10, piste 6 × 6 m au centre", "Régie DJ à droite de la piste, buffet desserts côté terrasse", "Issues de secours : 3, à laisser dégagées"] },
   { key: "programme", uploaderKey: "marie", title: "Programme de l'espace enfants (version 2)", lines: ["14h30 accueil et pointage", "15h chasse au trésor dans le parc (pendant la cérémonie)", "16h30 goûter sans fruits à coque · 18h atelier masques", "19h dîner des enfants · 21h film et coucher des petits"] },
   { key: "fiche-tech", uploaderKey: "theo", title: "Fiche technique sonorisation", lines: ["Façade : 2 × 15\" actives + 2 caissons 18\"", "Alimentation : 2 × 16A dédiés en régie + 1 × 16A terrasse", "2 micros HF main (discours), 1 micro serre-tête (cérémonie)", "Installation 16h → 17h30, balances 17h30"] },
 ];

@@ -39,11 +39,11 @@ test.describe("Premium subscription (mock provider)", () => {
 
   test("pricing page explains billing and shows the non-live banner", async ({ page }) => {
     await page.goto("/tarifs");
-    await expect(page.getByRole("heading", { name: "Une offre claire, sans engagement" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tarifs", level: 1 })).toBeVisible();
     await expect(page.getByText("Paiement réel non activé sur cet environnement.")).toBeVisible();
     await page.getByRole("button", { name: "Comment annuler ?" }).click();
-    await expect(page.getByText(/deux clics/)).toBeVisible();
-    await expect(page.getByText(/sécurisé par Stripe/).first()).toBeVisible();
+    await expect(page.getByText(/bouton « Résilier à l'échéance »/)).toBeVisible();
+    await expect(page.getByText(/Paiement par Stripe/).first()).toBeVisible();
   });
 });
 

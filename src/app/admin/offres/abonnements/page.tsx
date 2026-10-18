@@ -15,7 +15,7 @@ export default async function SubscriptionsAdminPage({ searchParams }: { searchP
   const [rows, mrr] = await Promise.all([listSubscriptionsAdmin(actor, { status: sp.statut || undefined }), computeMrr()]);
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Monétisation" title="Abonnements" description={`MRR ${mrr.isDemoOnly ? "(démo) " : ""}${formatEuros(mrr.totalCents)}${mrr.demoCents > 0 && !mrr.isDemoOnly ? ` dont ${formatEuros(mrr.demoCents)} de démo` : ""} · ${rows.length} abonnement(s) listé(s).`} />
+      <PageHeader title="Abonnements" description={`MRR ${mrr.isDemoOnly ? "(démo) " : ""}${formatEuros(mrr.totalCents)}${mrr.demoCents > 0 && !mrr.isDemoOnly ? ` dont ${formatEuros(mrr.demoCents)} de démo` : ""} · ${rows.length} abonnement(s) listé(s).`} />
       <OffersSubnav current="/admin/offres/abonnements" />
       <form className="flex gap-2 text-sm">
         <select name="statut" defaultValue={sp.statut ?? ""} className="h-9 rounded-md border bg-background px-2" aria-label="Statut">

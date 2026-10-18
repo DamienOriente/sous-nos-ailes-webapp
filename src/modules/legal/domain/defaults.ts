@@ -33,7 +33,7 @@ export const LEGAL_DEFAULTS: Record<LegalSlug, LegalDefault> = {
 ${PUBLISHER_BLOCK}
 
 ## Nature du service
-Sous Nos Ailes est une plateforme de mise en relation et de coordination entre des personnes qui organisent un évènement (particuliers ou organisations) et des professionnels indépendants (garde d'enfants évènementielle, animation, prestataires de l'évènementiel). La Plateforme n'est ni l'employeur, ni le mandataire des professionnels référencés ; elle ne fournit pas elle-même les prestations. [À COMPLÉTER : qualification juridique précise du rôle de la Plateforme après analyse — voir docs/legal-review.md.]
+Sous Nos Ailes est une plateforme de mise en relation et de coordination entre des personnes qui organisent un évènement (particuliers ou organisations) et des professionnels indépendants (garde d'enfants évènementielle, animation, prestataires de l'évènementiel). La Plateforme n'est ni l'employeur, ni le mandataire des professionnels référencés ; elle ne fournit pas elle-même les prestations. [À COMPLÉTER : qualification juridique précise du rôle de la Plateforme après analyse, voir docs/legal-review.md.]
 
 ## Propriété intellectuelle
 Les éléments de la Plateforme (textes, illustrations, logos, structure) sont protégés par le droit de la propriété intellectuelle. Les contenus publiés par les professionnels (textes, photos) restent leur propriété ; ils accordent à la Plateforme une licence d'affichage limitée à la diffusion de leur fiche. [À COMPLÉTER : étendue exacte de la licence.]
@@ -45,7 +45,7 @@ Les informations figurant sur les fiches professionnelles sont déclarées par l
 Tout contenu illicite ou inapproprié peut être signalé depuis la page [Signaler un contenu](/signalement). La procédure est décrite dans la [procédure de signalement](/signalement-procedure).
 
 ## Médiation et litiges
-[À COMPLÉTER : médiateur de la consommation désigné — {{legal.mediator}} — et modalités de saisine ; droit applicable ; juridiction compétente.]`,
+[À COMPLÉTER : médiateur de la consommation désigné ({{legal.mediator}}) et modalités de saisine ; droit applicable ; juridiction compétente.]`,
   },
   cgu: {
     slug: "cgu",
@@ -132,14 +132,14 @@ Les réclamations sont adressées à {{legal.contact_email}}. [À COMPLÉTER : g
 {{legal.company_name}}, {{legal.company_address}}. Contact protection des données : {{legal.dpo_email}}. [À COMPLÉTER : désignation formelle d'un DPO si requise.]
 
 ## Ce que nous collectons et pourquoi
-- **Compte** (nom, e-mail, mot de passe haché, téléphone facultatif, préférences) — exécution du contrat ; conservation : durée du compte puis {{retention.inactive_account_months}} mois d'inactivité avant traitement de suppression.
-- **Fiche professionnelle** (activité, zone, tarifs, photos, pièces justificatives) — exécution du contrat et intérêt légitime (sécurité de la mise en relation) ; les pièces justificatives ne sont visibles que par l'équipe de modération. [À COMPLÉTER : base légale et durée exactes pour les justificatifs.]
-- **Évènements, invités, contacts** — données saisies par l'organisateur sous sa responsabilité ; conservation : durée de l'évènement puis archivage/suppression par l'organisateur.
-- **Enfants pris en charge** (prénom, âge, responsable légal, personnes autorisées, consignes) — exécution de la prestation de garde, au nom de l'organisateur ; anonymisation automatique {{retention.children_days_after_event}} jours après la fin de l'évènement.
-- **Informations de santé d'un enfant** (allergies, consignes médicales) — consentement explicite du responsable légal, chiffrement colonne par colonne, accès réservé à l'équipe de garde affectée, chaque consultation journalisée.
-- **Messages et demandes** — exécution du contrat ; conservation : durée de l'évènement ou de la relation commerciale.
-- **Journaux techniques et de sécurité** (adresse IP, actions sensibles) — intérêt légitime (sécurité) ; conservation : {{retention.audit_logs_months}} mois.
-- **Mesure d'audience** — uniquement avec votre consentement (voir la [politique cookies](/cookies)) ; aucun outil tiers n'est utilisé en V1.
+- **Compte** (nom, e-mail, mot de passe haché, téléphone facultatif, préférences) : exécution du contrat ; conservation : durée du compte puis {{retention.inactive_account_months}} mois d'inactivité avant traitement de suppression.
+- **Fiche professionnelle** (activité, zone, tarifs, photos, pièces justificatives) : exécution du contrat et intérêt légitime (sécurité de la mise en relation) ; les pièces justificatives ne sont visibles que par l'équipe de modération. [À COMPLÉTER : base légale et durée exactes pour les justificatifs.]
+- **Évènements, invités, contacts** : données saisies par l'organisateur sous sa responsabilité ; conservation : durée de l'évènement puis archivage/suppression par l'organisateur.
+- **Enfants pris en charge** (prénom, âge, responsable légal, personnes autorisées, consignes) : exécution de la prestation de garde, au nom de l'organisateur ; anonymisation automatique {{retention.children_days_after_event}} jours après la fin de l'évènement.
+- **Informations de santé d'un enfant** (allergies, consignes médicales) : consentement explicite du responsable légal, chiffrement colonne par colonne, accès réservé à l'équipe de garde affectée, chaque consultation journalisée.
+- **Messages et demandes** : exécution du contrat ; conservation : durée de l'évènement ou de la relation commerciale.
+- **Journaux techniques et de sécurité** (adresse IP, actions sensibles) : intérêt légitime (sécurité) ; conservation : {{retention.audit_logs_months}} mois.
+- **Mesure d'audience** : uniquement avec votre consentement (voir la [politique cookies](/cookies)) ; aucun outil tiers n'est utilisé en V1.
 
 ## Destinataires et sous-traitants
 Les données sont hébergées en Union européenne chez {{legal.host}}. Nous recourons à des sous-traitants pour le paiement, l'envoi d'e-mails transactionnels et le stockage de fichiers. [À COMPLÉTER : liste nominative, pays, garanties.] Aucune donnée n'est vendue.
@@ -187,7 +187,7 @@ Refuser est aussi simple qu'accepter : les deux boutons ont le même poids. Vous
 - Les contenus signalés (fiches, messages, avis, comptes).
 
 ## Critères
-Exactitude des informations déclarées, respect des [conditions d'utilisation](/cgu), absence de contenu illicite ou trompeur, cohérence entre le métier déclaré et les services proposés, qualité des photos (droit à l'image des personnes et des enfants). [À COMPLÉTER : exigences spécifiques par métier — diplômes, agréments.]
+Exactitude des informations déclarées, respect des [conditions d'utilisation](/cgu), absence de contenu illicite ou trompeur, cohérence entre le métier déclaré et les services proposés, qualité des photos (droit à l'image des personnes et des enfants). [À COMPLÉTER : exigences spécifiques par métier : diplômes, agréments.]
 
 ## Décisions possibles
 Approbation, demande de modifications, refus, suspension, rétablissement. Chaque décision est motivée par écrit, notifiée à la personne concernée et conservée dans un historique.

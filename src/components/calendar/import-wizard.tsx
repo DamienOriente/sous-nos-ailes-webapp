@@ -1,7 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { FileUp, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -59,7 +58,7 @@ export function ImportWizard({
 
       {preview && (
         <div className="space-y-4 rounded-2xl border bg-card p-4">
-          <h2 className="font-semibold">Aperçu — {fileName}</h2>
+          <h2 className="font-semibold">Aperçu de {fileName}</h2>
           {preview.errors.map((e) => (
             <FormMessage key={e} error={e} />
           ))}
@@ -93,7 +92,7 @@ export function ImportWizard({
               <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
                 {preview.skipped.map((s) => (
                   <li key={s.uid}>
-                    {s.uid} — {s.reason}
+                    {s.uid} : {s.reason}
                   </li>
                 ))}
               </ul>
@@ -127,7 +126,7 @@ export function ImportWizard({
                   })
                 }
               >
-                <Upload className="size-4" aria-hidden="true" /> Importer {preview.toCreate.length + preview.toUpdate.length} évènement(s)
+                 Importer {preview.toCreate.length + preview.toUpdate.length} évènement(s)
               </Button>
             </div>
           )}
@@ -135,7 +134,7 @@ export function ImportWizard({
       )}
       {!preview && !pending && (
         <div className="flex items-center gap-3 rounded-2xl border border-dashed p-6 text-sm text-muted-foreground">
-          <FileUp className="size-5" aria-hidden="true" /> Sélectionnez un fichier pour afficher l'aperçu avant import.
+           Sélectionnez un fichier pour afficher l'aperçu avant import.
         </div>
       )}
     </div>

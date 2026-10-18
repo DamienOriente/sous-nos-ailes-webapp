@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, FileIcon, Loader2, UploadCloud, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
@@ -204,12 +204,11 @@ export function FileUpload({ scope, scopeId, purpose, accept, maxFiles = 1, onUp
           if (!full) handleFiles(e.dataTransfer.files);
         }}
         className={cn(
-          "flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-colors",
-          dragging ? "border-primary bg-primary/5" : "border-border bg-card/60",
+          "flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-colors duration-150",
+          dragging ? "border-primary bg-primary/5" : "border-border bg-card",
           (disabled || full) && "opacity-60",
         )}
       >
-        <UploadCloud className="size-8 text-primary" aria-hidden="true" />
         <p id={`${inputId}-label`} className="text-sm font-medium">
           {label ?? (maxFiles > 1 ? "Glissez vos fichiers ici" : "Glissez votre fichier ici")}
         </p>
@@ -234,9 +233,11 @@ export function FileUpload({ scope, scopeId, purpose, accept, maxFiles = 1, onUp
         <ul className="space-y-2" aria-live="polite">
           {items.map((item) => (
             <li key={item.key} className="flex items-start gap-3 rounded-xl border bg-card px-3 py-2.5 text-sm" data-testid="file-upload-item" data-status={item.status ?? item.phase}>
-              <span className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true">
-                {item.phase === "uploading" || item.phase === "processing" ? <Loader2 className="size-4 animate-spin" /> : item.phase === "error" || item.status === "rejected" || item.status === "infected" ? <AlertCircle className="size-4 text-destructive" /> : item.status === "clean" ? <CheckCircle2 className="size-4 text-success" /> : <FileIcon className="size-4" />}
-              </span>
+              {(item.phase === "uploading" || item.phase === "processing") && (
+                <span className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true">
+                  <Loader2 className="size-4 animate-spin" />
+                </span>
+              )}
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                   <span className="truncate font-medium" title={item.name}>

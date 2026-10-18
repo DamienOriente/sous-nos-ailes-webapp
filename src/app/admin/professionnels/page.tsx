@@ -31,7 +31,7 @@ export default async function ProfessionalsAdminPage({ searchParams }: { searchP
     .limit(300);
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Administration" title="Professionnels" description="Toutes les fiches, quel que soit leur statut. Les décisions se prennent depuis la fiche ou la file de modération." />
+      <PageHeader title="Professionnels" description="Toutes les fiches, quel que soit leur statut. Les décisions se prennent depuis la fiche ou la file de modération." />
       <TwoFactorBanner show={twoFactorWarning} />
       <form className="flex flex-wrap items-end gap-2" role="search">
         <div className="flex-1 min-w-56">
@@ -51,7 +51,7 @@ export default async function ProfessionalsAdminPage({ searchParams }: { searchP
         rowKey={(r) => r.id}
         emptyTitle="Aucune fiche"
         columns={[
-          { key: "name", header: "Fiche", cell: (r) => (<div><Link href={`/admin/professionnels/${r.id}`} className="font-medium hover:underline">{r.displayName}</Link><p className="text-xs text-muted-foreground">{r.categoryName} · {r.city ?? "—"} · {r.ownerEmail}{r.isDemo ? " · démo" : ""}</p></div>) },
+          { key: "name", header: "Fiche", cell: (r) => (<div><Link href={`/admin/professionnels/${r.id}`} className="font-medium hover:underline">{r.displayName}</Link><p className="text-xs text-muted-foreground">{r.categoryName} · {r.city ?? "ville non renseignée"} · {r.ownerEmail}{r.isDemo ? " · démo" : ""}</p></div>) },
           { key: "status", header: "Statut", cell: (r) => <StatusBadge tone={STATUS_TONES[r.status as ProfessionalStatus]}>{STATUS_LABELS[r.status as ProfessionalStatus]}</StatusBadge> },
           { key: "quality", header: "Complétude / vérif.", cell: (r) => <span className="tabular-nums">{r.completenessScore} % · niv. {r.verificationLevel}</span> },
           { key: "created", header: "Créée le", cell: (r) => <span className="text-muted-foreground">{dateTime(r.createdAt)}</span> },

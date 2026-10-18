@@ -7,7 +7,6 @@ export const metadata: Metadata = { title: "Mot de passe oublié" };
 export default function ForgotPasswordPage() {
   return (
     <AuthCard
-      eyebrow="Assistance"
       title="Mot de passe oublié"
       description="Indiquez l'adresse de votre compte : nous vous envoyons un lien pour choisir un nouveau mot de passe."
       footer={

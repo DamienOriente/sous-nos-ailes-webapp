@@ -1,7 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Merge } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,7 +20,7 @@ export function DuplicateGroups({ groups, onMerge }: { groups: Array<{ key: stri
       {groups.map((g) => {
         const primary = choice[g.key] ?? g.items[0]!.id;
         return (
-          <Card key={g.key} className="gap-4 p-5">
+          <Card key={g.key} className="gap-4 p-6">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-medium">
                 {g.items.length} fiches partagent {g.key.startsWith("email:") ? "l'e-mail" : "le téléphone"} <span className="font-mono text-xs">{g.key.split(":").slice(1).join(":")}</span>
@@ -39,7 +38,7 @@ export function DuplicateGroups({ groups, onMerge }: { groups: Array<{ key: stri
                   })
                 }
               >
-                <Merge className="size-4" aria-hidden="true" /> Fusionner
+                 Fusionner
               </Button>
             </div>
             <RadioGroup value={primary} onValueChange={(v) => setChoice((c) => ({ ...c, [g.key]: v }))} className="grid gap-2 sm:grid-cols-2">

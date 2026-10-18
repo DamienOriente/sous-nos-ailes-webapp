@@ -1,4 +1,3 @@
-import { Check, Minus, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn, formatEuros } from "@/lib/utils";
 import { FEATURES, type FeatureKey } from "@/modules/billing/domain/plans";
@@ -76,31 +75,26 @@ export function PlanComparison({
           const current = plan.key === currentPlanKey;
           const paid = plan.priceMonthlyCents > 0;
           return (
-            <Card key={plan.id} className={cn("relative gap-4 overflow-hidden p-6", paid && "border-primary/40 shadow-soft")} data-plan={plan.key}>
-              {paid && <div className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-accent/70" aria-hidden="true" />}
-              <div className="relative space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  {paid && <Sparkles className="size-4 text-primary" aria-hidden="true" />}
-                  <h3 className="font-heading text-xl font-semibold">{plan.name}</h3>
-                  {current && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Votre offre actuelle</span>}
-                </div>
+            <Card key={plan.id} className="gap-4 p-6" data-plan={plan.key}>
+              <div className="space-y-1">
+                <h3 className="font-heading text-xl font-semibold">{plan.name}</h3>
+                {current && <p className="text-sm font-medium text-primary">Votre offre actuelle</p>}
                 <p className="text-sm text-muted-foreground text-pretty">{plan.description}</p>
               </div>
-              <p className="relative font-heading text-3xl font-semibold">
+              <p className="font-heading text-3xl font-semibold tabular-nums">
                 {paid ? formatEuros(plan.priceMonthlyCents) : "0 €"}
                 <span className="text-sm font-normal text-muted-foreground"> TTC / mois{paid ? ", sans engagement" : ""}</span>
               </p>
               {paid && extras.length > 0 && (
-                <ul className="relative grid gap-1.5 text-sm sm:grid-cols-2">
+                <ul className="grid list-disc gap-1.5 pl-5 text-sm sm:grid-cols-2">
                   {extras.slice(0, 6).map((k) => (
-                    <li key={k} className={cn("flex items-start gap-1.5", k === highlightFeature && "font-medium text-primary")}>
-                      <Check className="mt-0.5 size-3.5 shrink-0 text-success" aria-hidden="true" />
+                    <li key={k} className={cn(k === highlightFeature && "font-medium text-primary")}>
                       {FEATURES[k]}
                     </li>
                   ))}
                 </ul>
               )}
-              {renderCta ? <div className="relative">{renderCta(plan)}</div> : null}
+              {renderCta ? <div>{renderCta(plan)}</div> : null}
             </Card>
           );
         })}
@@ -133,9 +127,9 @@ export function PlanComparison({
                 return (
                   <tr key={key} className={cn("border-b last:border-0", highlighted && "bg-accent/60")} data-feature={key}>
                     <th scope="row" className="px-4 py-2.5 text-left font-normal">
-                      <span className="flex flex-wrap items-center gap-2">
+                      <span className="flex flex-wrap items-baseline gap-x-2">
                         <span className="font-medium">{FEATURES[key]}</span>
-                        {highlighted && <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">Ce qui vous intéresse</span>}
+                        {highlighted && <span className="text-xs font-medium text-primary">Ce qui vous intéresse</span>}
                       </span>
                       {MEANING[key] && <span className="block text-xs text-muted-foreground">{MEANING[key]}</span>}
                     </th>
@@ -143,17 +137,7 @@ export function PlanComparison({
                       const f = p.features.find((x) => x.key === key);
                       return (
                         <td key={p.id} className="px-4 py-2.5 text-center">
-                          {f?.enabled ? (
-                            <span className="inline-flex items-center gap-1 text-success">
-                              <Check className="size-4" aria-hidden="true" />
-                              <span className={f.limit !== null ? "text-foreground" : "sr-only"}>{f.limit !== null ? `jusqu'à ${f.limit}` : "Inclus"}</span>
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">
-                              <Minus className="inline size-4" aria-hidden="true" />
-                              <span className="sr-only">Non inclus</span>
-                            </span>
-                          )}
+                          {f?.enabled ? <span className="font-medium">{f.limit !== null ? `Jusqu'à ${f.limit}` : "Inclus"}</span> : <span className="text-muted-foreground">Non inclus</span>}
                         </td>
                       );
                     })}

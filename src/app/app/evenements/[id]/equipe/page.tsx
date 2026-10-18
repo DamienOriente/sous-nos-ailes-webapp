@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ScrollText, Users } from "lucide-react";
 import { InviteDialog } from "@/components/events/provider-forms";
 import { LeaveEventButton, MemberRow, PendingInvitationRow } from "@/components/events/team-forms";
 import { EmptyState, PageHeader } from "@/components/shared";
@@ -54,17 +53,17 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
       {access.isOrganizer && (
         <div className="flex gap-1 border-b" role="tablist">
           <Link role="tab" aria-selected={onglet !== "journal"} href={base} className={cn("inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium", onglet !== "journal" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground")}>
-            <Users className="size-4" aria-hidden="true" /> Membres
+             Membres
           </Link>
           <Link role="tab" aria-selected={onglet === "journal"} href={`${base}?onglet=journal`} className={cn("inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium", onglet === "journal" ? "border-b-2 border-primary text-foreground" : "text-muted-foreground")}>
-            <ScrollText className="size-4" aria-hidden="true" /> Journal
+             Journal
           </Link>
         </div>
       )}
 
       {journal ? (
         journal.length === 0 ? (
-          <EmptyState icon={ScrollText} title="Journal vide" />
+          <EmptyState title="Journal vide" />
         ) : (
           <ol className="divide-y rounded-2xl border bg-card text-sm">
             {journal.map((l) => (
@@ -84,8 +83,8 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
         )
       ) : (
         <>
-          <section aria-labelledby="active" className="space-y-2">
-            <h2 id="active" className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+          <section aria-labelledby="active" className="space-y-3">
+            <h2 id="active" className="text-sm font-semibold text-muted-foreground">
               Membres actifs ({active.length})
             </h2>
             <ul className="divide-y rounded-2xl border bg-card">
@@ -103,8 +102,8 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
             </ul>
           </section>
           {pending.length > 0 && (
-            <section aria-labelledby="pending" className="space-y-2">
-              <h2 id="pending" className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+            <section aria-labelledby="pending" className="space-y-3">
+              <h2 id="pending" className="text-sm font-semibold text-muted-foreground">
                 Invitations en attente ({pending.length})
               </h2>
               <ul className="divide-y rounded-2xl border bg-card">
@@ -115,8 +114,8 @@ export default async function TeamPage({ params, searchParams }: { params: Promi
             </section>
           )}
           {inactive.length > 0 && canManage && (
-            <section aria-labelledby="inactive" className="space-y-2">
-              <h2 id="inactive" className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+            <section aria-labelledby="inactive" className="space-y-3">
+              <h2 id="inactive" className="text-sm font-semibold text-muted-foreground">
                 Anciens membres ({inactive.length})
               </h2>
               <ul className="divide-y rounded-2xl border bg-card text-sm">

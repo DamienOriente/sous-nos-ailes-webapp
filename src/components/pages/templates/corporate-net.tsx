@@ -3,7 +3,7 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Corporate net — venues, logistics, B2B. Low band hero, then a two-column
+ * Corporate net: venues, logistics, B2B. Low band hero, then a two-column
  * layout with a sticky table of contents on the left and regular information
  * panels on the right. Key facts (city, radius, price, experience) in a strip.
  */

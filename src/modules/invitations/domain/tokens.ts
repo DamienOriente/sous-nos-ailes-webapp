@@ -58,8 +58,8 @@ export function rsvpUrl(appUrl: string, token: string): string {
 }
 
 export const CHECKIN_RESULT_LABELS: Record<"accepted" | "duplicate" | "revoked" | "expired" | "invalid", string> = {
-  accepted: "Invitation valide — vérifiez l'identité si nécessaire",
-  duplicate: "Déjà utilisée — ce code a déjà été validé",
+  accepted: "Invitation valide : vérifiez l'identité si nécessaire",
+  duplicate: "Déjà utilisée : ce code a déjà été validé",
   revoked: "Invitation révoquée",
   expired: "Invitation expirée",
   invalid: "Code inconnu pour cet évènement",

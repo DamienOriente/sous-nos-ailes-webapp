@@ -12,6 +12,14 @@ export type SnapshotForDefaults = Pick<
   "displayName" | "tagline" | "description" | "categoryName" | "city" | "department" | "interventionRadiusKm" | "priceFromCents" | "publicEmail" | "publicPhone" | "website" | "socialLinks" | "yearsExperience" | "eventTypes"
 >;
 
+/** "Marie Delcourt, garde d'enfants évènementielle" -> "Marie Delcourt": the trade is already said under the title. */
+function heroTitleOf(pro: SnapshotForDefaults): string {
+  const [head, ...rest] = pro.displayName.split(", ");
+  const tail = rest.join(", ").toLowerCase();
+  const trade = pro.categoryName.toLowerCase();
+  return head && tail && (trade.includes(tail) || tail.includes(trade)) ? head : pro.displayName;
+}
+
 export function defaultBlockFor(type: BlockType, pro: SnapshotForDefaults, id = `blk-${type}`): Block {
   const where = pro.city ? ` à ${pro.city}` : "";
   switch (type) {
@@ -21,7 +29,7 @@ export function defaultBlockFor(type: BlockType, pro: SnapshotForDefaults, id = 
         type,
         hidden: false,
         props: {
-          title: pro.displayName,
+          title: heroTitleOf(pro),
           subtitle: pro.tagline ?? `${pro.categoryName}${where}`,
           kicker: `${pro.categoryName}${where}`,
           cta: { label: "Demander un devis", action: "quote" },

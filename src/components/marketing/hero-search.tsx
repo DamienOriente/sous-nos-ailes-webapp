@@ -21,7 +21,7 @@ export function HeroSearch({ categories, defaultSlug }: { categories: SearchCate
     <form
       role="search"
       aria-label="Rechercher un professionnel"
-      className="flex flex-col gap-2 rounded-3xl border bg-card p-2 shadow-soft sm:flex-row sm:items-stretch sm:rounded-full"
+      className="flex flex-col gap-2 rounded-3xl border bg-card p-2 sm:flex-row sm:items-stretch sm:rounded-full"
       onSubmit={(e) => {
         e.preventDefault();
         const params = new URLSearchParams();

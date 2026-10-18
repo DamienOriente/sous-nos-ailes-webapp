@@ -30,7 +30,7 @@ export function CategoryForm({ action, values, submitLabel }: { action: FormActi
           </datalist>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="icon">Icône (nom lucide, kebab-case)</Label>
+          <Label htmlFor="icon">Identifiant d'icône du catalogue (non affiché)</Label>
           <Input id="icon" name="icon" required defaultValue={values.icon} pattern="[a-z0-9-]+" />
         </div>
         <div className="space-y-1.5">

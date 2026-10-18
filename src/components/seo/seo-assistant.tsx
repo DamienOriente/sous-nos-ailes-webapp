@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Info, Lightbulb, ShieldCheck, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, XCircle } from "lucide-react";
 import { Paywall } from "@/components/billing/paywall";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import type { SeoItem, SeoReport } from "@/modules/seo/application/seo-service";
 
 /**
- * SEO/GEO assistant. Two visual registers, never mixed: "Vérifié" (a fact the
- * platform checked, shield icon) and "Conseil" (a recommendation, bulb icon).
+ * SEO/GEO assistant. Two registers, never mixed: "Vérifié" (a fact the
+ * platform checked) and "Conseil" (a recommendation), each a plain text label.
  * Free plan: score only, the rest behind the paywall.
  */
 function LevelIcon({ level }: { level: SeoItem["level"] }) {
@@ -19,15 +19,7 @@ function LevelIcon({ level }: { level: SeoItem["level"] }) {
 }
 
 function KindTag({ kind }: { kind: SeoItem["kind"] }) {
-  return kind === "verified" ? (
-    <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success">
-      <ShieldCheck className="size-3" aria-hidden="true" /> Vérifié
-    </span>
-  ) : (
-    <span className="inline-flex items-center gap-1 rounded-full bg-sky/40 px-2 py-0.5 text-[11px] font-medium text-sky-deep">
-      <Lightbulb className="size-3" aria-hidden="true" /> Conseil
-    </span>
-  );
+  return kind === "verified" ? <span className="text-xs font-medium text-success">Vérifié par la plateforme</span> : <span className="text-xs font-medium text-muted-foreground">Conseil</span>;
 }
 
 function ItemList({ items }: { items: SeoItem[] }) {

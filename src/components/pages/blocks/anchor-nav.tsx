@@ -15,10 +15,10 @@ export function AnchorNav({ blocks, style = "sticky", className, label }: { bloc
   if (style === "side") {
     return (
       <nav aria-label={label ?? "Sections de la page"} className={cn("text-sm", className)}>
-        <ul className="space-y-2 border-l border-(--pg-border)">
+        <ul className="space-y-2">
           {items.map((b) => (
             <li key={b.id}>
-              <a href={`#${anchorOf(b)}`} className="-ml-px block border-l-2 border-transparent pl-4 text-(--pg-muted) hover:border-(--pg-accent) hover:text-(--pg-text)">
+              <a href={`#${anchorOf(b)}`} className="block text-(--pg-muted) underline-offset-4 hover:text-(--pg-text) hover:underline">
                 {linkLabel(b)}
               </a>
             </li>
@@ -33,7 +33,7 @@ export function AnchorNav({ blocks, style = "sticky", className, label }: { bloc
         <ul className="flex gap-2">
           {items.map((b) => (
             <li key={b.id}>
-              <a href={`#${anchorOf(b)}`} className="inline-flex whitespace-nowrap rounded-full border border-(--pg-border) bg-(--pg-surface) px-3.5 py-1.5 text-sm hover:border-(--pg-accent) hover:text-(--pg-accent)">
+              <a href={`#${anchorOf(b)}`} className="inline-flex whitespace-nowrap rounded-full border border-(--pg-border) bg-(--pg-surface) px-3.5 py-1.5 text-sm hover:bg-(--pg-accent-soft)">
                 {linkLabel(b)}
               </a>
             </li>
@@ -58,12 +58,12 @@ export function AnchorNav({ blocks, style = "sticky", className, label }: { bloc
     );
   }
   return (
-    <nav aria-label={label ?? "Sections de la page"} className={cn("sticky top-0 z-20 border-b border-(--pg-border) bg-(--pg-bg)/85 backdrop-blur", className)}>
+    <nav aria-label={label ?? "Sections de la page"} className={cn("sticky top-0 z-20 border-b border-(--pg-border) bg-(--pg-bg)", className)}>
       <div className="pg-scroll-x mx-auto max-w-7xl px-5 sm:px-8">
         <ul className="flex gap-6 text-sm">
           {items.map((b) => (
             <li key={b.id}>
-              <a href={`#${anchorOf(b)}`} className="block whitespace-nowrap border-b-2 border-transparent py-3 text-(--pg-muted) hover:border-(--pg-accent) hover:text-(--pg-text)">
+              <a href={`#${anchorOf(b)}`} className="block whitespace-nowrap py-3 text-(--pg-muted) underline-offset-8 hover:text-(--pg-text) hover:underline">
                 {linkLabel(b)}
               </a>
             </li>

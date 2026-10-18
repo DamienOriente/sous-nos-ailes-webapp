@@ -31,12 +31,11 @@ export default async function ProfessionalSubscriptionPage({ params, searchParam
   const feature = sp.feature && sp.feature in FEATURES ? (sp.feature as FeatureKey) : null;
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Fiche professionnelle" title="Abonnement de la fiche" description="L'offre Premium débloque la bibliothèque complète de templates, les outils métier, les statistiques et la synchronisation des calendriers." />
+      <PageHeader title="Abonnement de la fiche" description="L'offre Premium débloque la bibliothèque complète de templates, les outils métier, les statistiques et la synchronisation des calendriers." />
       <LiveBillingBanner show={!stripeConfigured || !overview.liveEnabled} />
       {feature && (
         <Card className="gap-1 border-primary/40 bg-accent/40 p-5" data-testid="feature-highlight">
-          <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">Fonctionnalité demandée</p>
-          <p className="font-medium">{FEATURES[feature]}</p>
+          <p className="font-medium">Fonctionnalité demandée : {FEATURES[feature]}</p>
           <p className="text-sm text-muted-foreground">Incluse dans Professionnel Premium. Le comparatif ci-dessous la met en évidence.</p>
         </Card>
       )}
@@ -62,7 +61,7 @@ export default async function ProfessionalSubscriptionPage({ params, searchParam
                   <Label htmlFor={`promo-${plan.key}`} className="text-xs">
                     Code promo (facultatif)
                   </Label>
-                  <Input id={`promo-${plan.key}`} name="promoCode" placeholder="BIENVENUE20" autoComplete="off" className="uppercase" />
+                  <Input id={`promo-${plan.key}`} name="promoCode" placeholder="BIENVENUE20" autoComplete="off" />
                 </div>
                 <ActionSubmit className="w-full" pendingLabel="Redirection…">
                   Souscrire pour {formatEuros(plan.priceMonthlyCents)} / mois

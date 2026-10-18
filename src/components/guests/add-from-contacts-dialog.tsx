@@ -1,7 +1,6 @@
 "use client";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { BookUser } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,7 +32,7 @@ export function AddFromContactsDialog({ eventId, contacts, groups, onAdd }: { ev
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" disabled={contacts.length === 0} title={contacts.length === 0 ? "Tous vos contacts sont déjà invités, ou votre carnet est vide." : undefined}>
-          <BookUser className="size-4" aria-hidden="true" /> Depuis mes contacts
+           Depuis mes contacts
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">

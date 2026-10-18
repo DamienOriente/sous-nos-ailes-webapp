@@ -56,6 +56,9 @@ Règles :
 - 2026-10-17 — Chantier « vitalité » : photos de démonstration Unsplash (catalogue vérifié `modules/media/demo-photos.ts`, réservé aux profils fictifs et pages marketing, à remplacer avant commercialisation, cf. docs/assets.md) + illustrations SVG originales (`components/illustrations/*`) ; états vides illustrés (`IllustratedEmpty`), exemples intégrés réels (`modules/events/domain/suggestions.ts`, `modules/tools/domain/tool-examples.ts`, `components/professionals/listing-examples.ts`, `modules/identity/domain/next-actions.ts`) ; couverture d'évènement (`events.cover_photo_id` / `cover_file_id`, migration 0001).
 
 ## Pièges rencontrés
+- Un chargeur `images.loader: "custom"` global supprime la route `/_next/image` (404 pour tout le reste) : garder le chargeur par composant (`FilesImage`, composant client car une fonction ne passe pas d'un Server Component).
+- Une photo Unsplash chargée directement par le navigateur coûte une connexion DNS/TLS supplémentaire (environ 600 ms en 4G simulée) : la servir via l'optimiseur Next, même origine.
+- Les polices fontsource chargées depuis le CSS arrivent tard et décalent les titres (CLS 0,08) : latin auto-hébergé et préchargé.
 
 - pnpm 12 applique `minimumReleaseAge` (24 h) : un paquet publié le jour même est refusé → reculer d'une version, ne pas désactiver la politique.
 - shadcn CLI 4.22 échoue sur le même contrôle ; 4.21.5 fonctionne. Les composants importent `cn` depuis le paquet npm `cn` (ajouté par shadcn), notre `@/lib/utils` expose aussi `cn`.
@@ -69,6 +72,9 @@ Règles :
 - Next 16 `next/image` : une URL locale avec query string (`/api/files/<id>/public?v=medium`) exige `images.localPatterns`, sinon 500 ; les images du pipeline fichiers sont rendues `unoptimized` (variantes WebP déjà produites côté serveur).
 - Photos de démo : une photo n'est attribuée qu'à une seule fiche, uniquement dans les thèmes de son métier, et les photos vitrine (`RESERVED_PHOTO_IDS`) ne sont jamais données aux fiches ; vérifier toute nouvelle photo à l'œil avant de la cataloguer (docs/assets.md).
 - Images Docker : `minio/minio` doit être pré-tiré (quay.io inaccessible depuis ce poste) ; `clamav/clamav-debian:stable` pour arm64.
+
+- 2026-10-18 : images des fiches servies par `/api/files/[id]/public` en streaming (plus de redirection vers une URL signée qui change à chaque requête), `Cache-Control: public, max-age=86400, stale-while-revalidate` pour les images publiques, `private, no-store` sinon. Variante `card` (640 px) ajoutée ; les anciens fichiers la reçoivent avec `pnpm exec tsx scripts/backfill-card-variant.ts`. Les images de l'API fichiers passent par `FilesImage` (chargeur `filesImageLoader`, choisit thumb/card/medium/large selon la largeur demandée), le reste (photos Unsplash de démo) par l'optimiseur de Next.
+- 2026-10-18 : polices latin de Fraunces et Figtree hébergées dans `public/fonts`, préchargées depuis le layout (en-tête `Link`), cache immuable. `experimental.inlineCss: true`.
 
 ## État d'avancement
 

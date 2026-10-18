@@ -1,7 +1,6 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -80,13 +79,13 @@ export function HandoverWizard({
     >
       <DialogTrigger asChild>
         <Button disabled={Boolean(disabled)} title={disabled ?? undefined}>
-          <UserCheck className="size-4" aria-hidden="true" /> Remettre l'enfant
+           Remettre l'enfant
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Remise de {childName}</DialogTitle>
-          <DialogDescription>Étape {step} sur 3 — aucune remise sans personne autorisée, vérification d'identité et confirmation d'un membre de l'équipe.</DialogDescription>
+          <DialogDescription>Étape {step} sur 3. Aucune remise sans personne autorisée, vérification d'identité et confirmation d'un membre de l'équipe.</DialogDescription>
         </DialogHeader>
         <ol className="flex gap-2 text-xs" aria-label="Progression">
           {["Personne autorisée", "Identité vérifiée", "Confirmation"].map((label, i) => (
@@ -106,7 +105,7 @@ export function HandoverWizard({
                   <label key={p.id} className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 has-data-[state=checked]:border-primary">
                     <RadioGroupItem value={p.id} id={`p-${p.id}`} className="mt-0.5" />
                     <span className="flex-1 text-sm">
-                      <span className="font-medium">{p.name}</span> <span className="text-muted-foreground">— {p.relationship}</span>
+                      <span className="font-medium">{p.name}</span> <span className="text-muted-foreground">({p.relationship})</span>
                       {p.isPrimaryGuardian && <span className="ml-2 rounded-full bg-primary/10 px-1.5 text-[11px] text-primary">responsable légal</span>}
                       {p.identityCheckHint && <span className="mt-1 block text-xs text-muted-foreground">Vérification attendue : {p.identityCheckHint}</span>}
                     </span>
@@ -138,7 +137,7 @@ export function HandoverWizard({
               <Input id="identityCheckDetails" value={details} onChange={(e) => setDetails(e.target.value)} maxLength={300} placeholder="Ex. carte d'identité au nom de…" />
             </div>
             <div className="flex justify-between">
-              <Button type="button" variant="ghost" onClick={() => setStep(1)}>
+              <Button type="button" variant="outline" onClick={() => setStep(1)}>
                 Retour
               </Button>
               <Button type="button" disabled={!method || (method === "other" && details.trim().length < 3)} onClick={() => setStep(3)}>
@@ -159,7 +158,7 @@ export function HandoverWizard({
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Identité</dt>
-                <dd className="text-right">{method ? IDENTITY_CHECK_LABELS[method] : ""}{details ? ` — ${details}` : ""}</dd>
+                <dd className="text-right">{method ? IDENTITY_CHECK_LABELS[method] : ""}{details ? ` : ${details}` : ""}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Confirmé par</dt>
@@ -172,11 +171,11 @@ export function HandoverWizard({
             </div>
             <FormMessage error={error} />
             <div className="flex justify-between">
-              <Button type="button" variant="ghost" onClick={() => setStep(2)} disabled={pending}>
+              <Button type="button" variant="outline" onClick={() => setStep(2)} disabled={pending}>
                 Retour
               </Button>
               <Button type="button" onClick={confirm} disabled={pending} aria-busy={pending}>
-                <CheckCircle2 className="size-4" aria-hidden="true" /> {pending ? "Enregistrement…" : "Confirmer la remise"}
+                 {pending ? "Enregistrement…" : "Confirmer la remise"}
               </Button>
             </div>
           </div>

@@ -13,7 +13,7 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
   const { token, error } = await searchParams;
   if (!token) {
     return (
-      <AuthCard eyebrow="Assistance" title="Lien invalide" description="Ce lien de réinitialisation n'est pas valide ou a déjà été utilisé.">
+      <AuthCard title="Lien invalide" description="Ce lien de réinitialisation n'est pas valide ou a déjà été utilisé.">
         <div className="space-y-4">
           <FormMessage error={authErrorMessage(error ?? "INVALID_TOKEN")} />
           <Button asChild className="w-full">
@@ -25,7 +25,6 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
   }
   return (
     <AuthCard
-      eyebrow="Assistance"
       title="Choisir un nouveau mot de passe"
       description="Pour votre sécurité, toutes vos autres sessions seront déconnectées."
       footer={

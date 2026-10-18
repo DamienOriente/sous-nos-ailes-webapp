@@ -16,8 +16,7 @@ export default function TemplatesGalleryPage() {
     <Section>
       <Container size="wide" className="space-y-12">
         <PageHeader
-          eyebrow="Pages professionnelles"
-          title="24 mises en page, une seule qui vous ressemble"
+          title="24 mises en page pour votre page professionnelle"
           description="Chaque template change réellement la structure de la page : en-tête plein écran ou divisé, galerie mosaïque ou pellicule, navigation latérale ou ancrée. Les contenus ci-dessous sont fictifs ; six templates sont inclus dans l'offre gratuite, les autres dans Professionnel Premium."
         />
         {TEMPLATE_UNIVERSES.map((universe) => {
@@ -30,7 +29,7 @@ export default function TemplatesGalleryPage() {
               <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {/* The thumbnail renders a real page (with its own links), so it must not sit inside the card link: a "stretched" link covers the card instead. */}
                 {list.map((t) => (
-                  <li key={t.key} className="group relative rounded-2xl border bg-card p-3 transition-shadow focus-within:outline-2 hover:shadow-lift">
+                  <li key={t.key} className="group relative rounded-2xl border bg-card p-3 focus-within:outline-2">
                     <TemplateThumbnail templateKey={t.key} className="aspect-[4/3] w-full overflow-hidden rounded-xl border" />
                     <div className="mt-3 flex items-start justify-between gap-3 px-1">
                       <div>
@@ -41,7 +40,7 @@ export default function TemplatesGalleryPage() {
                         </p>
                         <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{t.description}</p>
                       </div>
-                      <span className={t.isFree ? "shrink-0 rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground" : "shrink-0 rounded-full bg-gold/20 px-2 py-0.5 text-xs font-medium"}>{t.isFree ? "Gratuit" : "Premium"}</span>
+                      <span className="shrink-0 text-xs font-medium text-muted-foreground">{t.isFree ? "Gratuit" : "Premium"}</span>
                     </div>
                   </li>
                 ))}

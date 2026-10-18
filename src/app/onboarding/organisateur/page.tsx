@@ -6,7 +6,7 @@ import { OrganizerOnboardingAside } from "@/components/identity/organizer-onboar
 import { requireActor } from "@/lib/session";
 import { createEventAction } from "./actions";
 
-export const metadata: Metadata = { title: "Créer mon espace évènement — Sous Nos Ailes" };
+export const metadata: Metadata = { title: "Créer mon espace évènement" };
 
 export default async function OrganizerOnboardingPage() {
   const actor = await requireActor("/onboarding/organisateur");
@@ -20,9 +20,8 @@ export default async function OrganizerOnboardingPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">Bienvenue {firstName}</p>
         <h1 className="font-heading text-3xl font-semibold text-balance">Préparons votre évènement</h1>
-        <p className="max-w-xl text-muted-foreground text-pretty">Quatre questions pour créer votre espace : liste de tâches adaptée, budget par poste, équipe et messagerie. Le résumé à droite se remplit au fur et à mesure ; tout reste modifiable ensuite.</p>
+        <p className="max-w-xl text-muted-foreground text-pretty">Bienvenue, {firstName}. Quatre questions pour créer votre espace : liste de tâches adaptée, budget par poste, équipe et messagerie. Le résumé à droite se remplit au fur et à mesure ; tout reste modifiable ensuite.</p>
       </div>
       <OrganizerOnboardingAside firstName={firstName} form={{ categories, firstName, mode: "onboarding", action: createEventAction }} />
     </div>

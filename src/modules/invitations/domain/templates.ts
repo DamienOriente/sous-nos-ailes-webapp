@@ -3,10 +3,10 @@ export const INVITATION_TEMPLATES = ["classic", "rustic", "modern", "kids"] as c
 export type InvitationTemplateKey = (typeof INVITATION_TEMPLATES)[number];
 
 export const INVITATION_TEMPLATE_META: Record<InvitationTemplateKey, { label: string; description: string; premium: boolean }> = {
-  classic: { label: "Classique", description: "Sobre et élégant, typographie serif, encadré fin.", premium: false },
-  rustic: { label: "Champêtre", description: "Tons sable et sauge, feuillages, ambiance nature.", premium: true },
-  modern: { label: "Moderne", description: "Aplats de couleur, typographie affirmée, mise en page asymétrique.", premium: true },
-  kids: { label: "Enfantin raffiné", description: "Pastels doux, étoiles et confettis discrets, pour baptêmes et anniversaires.", premium: true },
+  classic: { label: "Classique", description: "Fond blanc, texte centré, un filet fin autour.", premium: false },
+  rustic: { label: "Champêtre", description: "Fond sable, texte centré, date en vert sauge.", premium: true },
+  modern: { label: "Moderne", description: "Fond sombre, texte aligné à gauche, très grand titre.", premium: true },
+  kids: { label: "Enfantin raffiné", description: "Fond rose pâle, titre bleu, pour baptêmes et anniversaires.", premium: true },
 };
 
 export function isTemplateAllowed(key: string, premium: boolean): key is InvitationTemplateKey {

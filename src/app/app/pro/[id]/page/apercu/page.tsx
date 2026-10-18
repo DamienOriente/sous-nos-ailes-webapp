@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { PageRenderer } from "@/components/pages/renderer";
 import { Button } from "@/components/ui/button";
 import { isAppError } from "@/lib/errors";
@@ -20,13 +19,10 @@ export default async function DraftPreviewPage({ params }: { params: Promise<{ i
   }
   return (
     <div className="-mx-4 -my-6 sm:-mx-6 lg:-mx-8" data-testid="draft-preview">
-      <div className="sticky top-14 z-30 flex items-center justify-between gap-3 border-b bg-background/90 px-4 py-2 text-sm backdrop-blur sm:px-6">
+      <div className="sticky top-14 z-30 flex items-center justify-between gap-3 border-b bg-background px-4 py-2 text-sm sm:px-6">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" size="sm">
-            <Link href={`/app/pro/${id}/page`}>
-              <ArrowLeft aria-hidden="true" />
-              Retour à l'éditeur
-            </Link>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/app/pro/${id}/page`}>Retour à l'éditeur</Link>
           </Button>
           <p className="text-muted-foreground">
             Aperçu du brouillon · version {state.draft.versionNumber}

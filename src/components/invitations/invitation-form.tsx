@@ -2,7 +2,6 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -111,7 +110,7 @@ export function InvitationForm({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="inv-email">E-mail (pour l'envoi)</Label>
-            <Input id="inv-email" type="email" value={recipientEmail} onChange={(e) => setRecipientEmail(e.target.value)} placeholder="facultatif — sinon partagez le lien" />
+            <Input id="inv-email" type="email" value={recipientEmail} onChange={(e) => setRecipientEmail(e.target.value)} placeholder="Facultatif, sinon partagez le lien" />
           </div>
         </div>
 
@@ -120,7 +119,7 @@ export function InvitationForm({
             <Label>Invité(s) couvert(s) {kind === "individual" ? "(un seul)" : ""}</Label>
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un invité…" aria-label="Rechercher un invité" />
             <ul className="max-h-48 space-y-1 overflow-y-auto rounded-lg border p-2">
-              {filteredGuests.length === 0 && <li className="p-2 text-sm text-muted-foreground">Aucun invité — ajoutez-les d'abord dans la liste des invités.</li>}
+              {filteredGuests.length === 0 && <li className="p-2 text-sm text-muted-foreground">Aucun invité trouvé. Ajoutez-les d'abord dans la liste des invités.</li>}
               {filteredGuests.map((g) => (
                 <li key={g.id}>
                   <label className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
@@ -165,7 +164,7 @@ export function InvitationForm({
                   <input type="radio" name="template" value={t} disabled={locked} checked={templateKey === t} onChange={() => setTemplateKey(t)} className="mt-1 accent-primary" />
                   <span>
                     <span className="flex items-center gap-1 font-medium">
-                      {meta.label} {locked && <Lock className="size-3" aria-label="Offre Plus" />}
+                      {meta.label} {locked && <span className="text-xs font-normal text-muted-foreground">(offre Plus)</span>}
                     </span>
                     <span className="block text-xs text-muted-foreground">{meta.description}</span>
                   </span>
@@ -204,13 +203,13 @@ export function InvitationForm({
           <Button type="submit" disabled={pending}>
             {pending ? "Enregistrement…" : isEdit ? "Enregistrer" : "Créer l'invitation"}
           </Button>
-          <Button asChild type="button" variant="ghost">
+          <Button asChild type="button" variant="outline">
             <Link href={`/app/evenements/${eventId}/invitations`}>Annuler</Link>
           </Button>
         </div>
       </form>
       <aside aria-label="Aperçu de l'invitation" className="lg:sticky lg:top-20 lg:self-start">
-        <p className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Aperçu</p>
+        <p className="mb-2 text-xs font-semibold text-muted-foreground">Aperçu</p>
         <InvitationCard data={preview} />
       </aside>
     </div>

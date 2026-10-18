@@ -17,7 +17,7 @@ const NAV = [
 export async function SiteHeader() {
   const actor = await getActor();
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+    <header className="sticky top-0 z-40 border-b bg-background">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Logo />
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Navigation principale">
@@ -35,7 +35,7 @@ export async function SiteHeader() {
             </Button>
           ) : (
             <>
-              <Button asChild variant="ghost" size="lg" className="hidden rounded-full sm:inline-flex">
+              <Button asChild variant="outline" size="lg" className="hidden rounded-full sm:inline-flex">
                 <Link href="/connexion">Connexion</Link>
               </Button>
               <Button asChild size="lg" className="rounded-full">

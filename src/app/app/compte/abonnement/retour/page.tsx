@@ -17,7 +17,7 @@ export default async function CheckoutReturnPage({ searchParams }: { searchParam
   if (sp.mock === "failure") {
     return (
       <div className="mx-auto max-w-xl space-y-6">
-        <PageHeader eyebrow="Abonnement" title="Paiement refusé (simulation)" />
+        <PageHeader title="Paiement refusé (simulation)" />
         <Card className="p-6 text-center">
           <p className="text-muted-foreground">Le paiement simulé a échoué : aucun abonnement n'a été créé et vos droits sont inchangés.</p>
           <a href={manageHref} className="mt-4 inline-block underline">
@@ -29,7 +29,7 @@ export default async function CheckoutReturnPage({ searchParams }: { searchParam
   }
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <PageHeader eyebrow="Abonnement" title="Retour du paiement" />
+      <PageHeader title="Retour du paiement" />
       <Card className="p-8">
         <CheckoutReturnPoller check={check} manageHref={manageHref} targetHref={manageHref} targetLabel="Voir mon offre" />
       </Card>

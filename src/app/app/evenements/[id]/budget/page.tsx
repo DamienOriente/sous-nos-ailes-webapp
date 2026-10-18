@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download, Lock } from "lucide-react";
+import { Download } from "lucide-react";
 import { BudgetBoard } from "@/components/events/budget-board";
 import { Paywall } from "@/components/billing/paywall";
 import { PageHeader, StatCard } from "@/components/shared";
@@ -9,6 +9,7 @@ import { formatEuros } from "@/lib/utils";
 import { hasFeature } from "@/modules/billing/application/entitlements";
 import { getBudget, previewBudgetTemplate } from "@/modules/events/application/budget-service";
 import { getEventForMember } from "@/modules/events/application/event-service";
+import { PROVIDER_STATUS_LABELS } from "@/modules/events/domain/providers";
 import { budgetTemplateLabel } from "@/modules/events/domain/suggestions";
 import { guardPage } from "../_guards";
 import { applyBudgetTemplateAction, createBudgetLineAction, createExpenseAction, deleteBudgetLineAction, deleteExpenseAction, updateBudgetLineAction, updateExpenseAction } from "./actions";
@@ -36,8 +37,8 @@ export default async function BudgetPage({ params, searchParams }: { params: Pro
         backHref={base}
         preview={
           <div className="grid grid-cols-3 gap-2 p-4 text-xs text-muted-foreground">
-            {["Traiteur A — 4 200 €", "Traiteur B — 3 950 €", "Traiteur C — 4 600 €"].map((x) => (
-              <div key={x} className="rounded-lg border bg-background p-3 blur-[1px]">
+            {["Traiteur A : 4 200 €", "Traiteur B : 3 950 €", "Traiteur C : 4 600 €"].map((x) => (
+              <div key={x} className="rounded-lg border bg-background p-3">
                 {x}
               </div>
             ))}
@@ -51,12 +52,11 @@ export default async function BudgetPage({ params, searchParams }: { params: Pro
     <div className="space-y-6">
       <PageHeader
         title="Budget"
-        description={event.budgetCents ? `Enveloppe indicative : ${formatEuros(event.budgetCents)}.` : "Prévu par poste, engagé et payé — avec les écarts."}
+        description={event.budgetCents ? `Enveloppe indicative : ${formatEuros(event.budgetCents)}.` : "Prévu par poste, engagé et payé, avec les écarts."}
         actions={
           <>
             <Button asChild variant="outline">
               <Link href={`${base}?vue=comparaison`}>
-                {!advanced && <Lock className="size-4" aria-hidden="true" />}
                 Comparer les devis
               </Link>
             </Button>
@@ -70,19 +70,18 @@ export default async function BudgetPage({ params, searchParams }: { params: Pro
             ) : (
               <Button asChild variant="outline">
                 <Link href={`${base}?vue=comparaison`}>
-                  <Lock className="size-4" aria-hidden="true" />
-                  Export CSV
+                  Export CSV (Premium)
                 </Link>
               </Button>
             )}
           </>
         }
       />
-      <section aria-label="Totaux" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label="Totaux" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Prévu" value={formatEuros(s.plannedCents)} hint={`${s.lines.length} poste${s.lines.length > 1 ? "s" : ""}`} />
-        <StatCard label="Engagé" value={formatEuros(s.committedCents)} hint={s.plannedCents > 0 ? `${s.committedRatio}% du prévu` : undefined} tone={s.plannedCents > 0 && s.committedCents > s.plannedCents ? "warning" : "default"} />
+        <StatCard label="Engagé" value={formatEuros(s.committedCents)} hint={s.plannedCents > 0 ? `${s.committedRatio}% du prévu` : undefined} />
         <StatCard label="Payé" value={formatEuros(s.paidCents)} hint={`Reste à payer ${formatEuros(Math.max(0, s.committedCents - s.paidCents))}`} />
-        <StatCard label="Écart" value={`${s.remainingCents < 0 ? "−" : ""}${formatEuros(Math.abs(s.remainingCents))}`} hint={s.remainingCents < 0 ? "Dépassement" : "Marge restante"} tone={s.remainingCents < 0 ? "warning" : "success"} />
+        <StatCard label="Écart" value={`${s.remainingCents < 0 ? "−" : ""}${formatEuros(Math.abs(s.remainingCents))}`} hint={s.remainingCents < 0 ? "Dépassement" : "Marge restante"} />
       </section>
       {vue === "comparaison" ? (
         <QuoteComparison providers={budget.providers} backHref={base} />
@@ -106,7 +105,7 @@ function QuoteComparison({ providers, backHref }: { providers: Array<{ id: strin
   const quoted = providers.filter((p) => p.quoteCents !== null).sort((a, b) => (a.quoteCents ?? 0) - (b.quoteCents ?? 0));
   const max = Math.max(1, ...quoted.map((p) => p.quoteCents ?? 0));
   return (
-    <section className="space-y-4 rounded-2xl border bg-card p-5">
+    <section className="space-y-4 rounded-2xl border bg-card p-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Devis côte à côte</h2>
         <Link href={backHref} className="text-sm text-primary hover:underline">
@@ -126,7 +125,7 @@ function QuoteComparison({ providers, backHref }: { providers: Array<{ id: strin
               <div className="h-3 overflow-hidden rounded-full bg-muted" aria-hidden="true">
                 <div className="h-full rounded-full bg-primary" style={{ width: `${Math.round(((p.quoteCents ?? 0) / max) * 100)}%` }} />
               </div>
-              <p className="text-xs text-muted-foreground">{p.status}</p>
+              <p className="text-xs text-muted-foreground">{PROVIDER_STATUS_LABELS[p.status as keyof typeof PROVIDER_STATUS_LABELS] ?? p.status}</p>
             </li>
           ))}
         </ul>

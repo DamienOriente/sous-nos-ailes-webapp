@@ -9,7 +9,8 @@ export default async function NewToolPage() {
   await requireAdminPage("admin.tools.manage", "/admin/outils/nouveau");
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow={<Link href="/admin/outils" className="hover:underline">← Outils</Link>} title="Nouvel outil" />
+      <Link href="/admin/outils" className="text-sm text-muted-foreground hover:underline">Retour aux outils</Link>
+      <PageHeader  title="Nouvel outil" />
       <Card className="p-6">
         <ToolForm action={createToolAction} isNew submitLabel="Créer" values={{ key: "", name: "", description: "", audience: "both", requiredFeature: null, categorySlugs: [], isActive: true, sortOrder: 100 }} />
       </Card>

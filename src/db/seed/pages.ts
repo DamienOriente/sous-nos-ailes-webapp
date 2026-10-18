@@ -5,6 +5,7 @@ import { defaultBlockFor, generateDefaultContent } from "@/modules/pages/domain/
 import { bindMediaToContent, type MediaLibrary } from "@/modules/pages/domain/media-binding";
 import { plainToRichText, SCHEMA_VERSION, type Block, type BlockType, type PageContent } from "@/modules/pages/domain/page-schema";
 import { getTemplateOrDefault } from "@/modules/pages/templates/registry";
+import { generateTitle } from "@/modules/seo/domain/meta";
 import { PRICE_UNITS, labelFor } from "@/modules/professionals/domain/listing-schema";
 import type { SeedContext } from "./context";
 
@@ -179,18 +180,18 @@ const GALLERY_HEADING: Record<string, string> = {
 };
 
 const CTA_BY_CATEGORY: Record<string, { title: string; text: string; button: string }> = {
-  "garde-enfants-evenementielle": { title: "Parlons de vos petits invités", text: "Dites-nous la date, le lieu et le nombre d'enfants : devis gratuit sous 48 h.", button: "Demander un devis" },
-  "baby-sitting": { title: "Une soirée sereine pour les parents", text: "Décrivez votre évènement et les âges des enfants ; nous vous répondons sous 48 h.", button: "Demander un devis" },
-  "animation-enfants": { title: "Et si les enfants avaient leur fête à eux ?", text: "Un programme sur mesure selon les âges et le lieu, devis sous 48 h.", button: "Demander un devis" },
-  "wedding-planner": { title: "Commençons par une rencontre", text: "Un premier rendez-vous sans engagement pour comprendre votre mariage.", button: "Prendre rendez-vous" },
-  traiteur: { title: "Composons votre menu", text: "Nombre de convives, style de réception, régimes particuliers : nous revenons vers vous avec une proposition chiffrée.", button: "Demander un devis" },
+  "garde-enfants-evenementielle": { title: "Une garde pour vos petits invités", text: "Dites-nous la date, le lieu et le nombre d'enfants : devis gratuit sous 48 h.", button: "Demander un devis" },
+  "baby-sitting": { title: "Une garde pour toute la soirée", text: "Décrivez votre évènement et les âges des enfants ; nous vous répondons sous 48 h.", button: "Demander un devis" },
+  "animation-enfants": { title: "Une animation pour les enfants invités", text: "Dites-nous leurs âges et le lieu : le programme est adapté, devis sous 48 h.", button: "Demander un devis" },
+  "wedding-planner": { title: "Un premier rendez-vous sans engagement", text: "Nous faisons le point sur votre date, votre budget et vos priorités.", button: "Prendre rendez-vous" },
+  traiteur: { title: "Demandez un menu chiffré", text: "Nombre de convives, style de réception, régimes particuliers : nous revenons vers vous avec une proposition chiffrée.", button: "Demander un devis" },
   "domaine-reception": { title: "Venez visiter le domaine", text: "Indiquez votre date et le nombre d'invités, nous vous proposons une visite.", button: "Vérifier une date" },
   dj: { title: "Vérifions la date", text: "Les samedis de mai à septembre partent vite : réservez votre créneau.", button: "Demander un devis" },
   photographe: { title: "Votre date est-elle libre ?", text: "Une date, un lieu, et nous vous répondons sous 48 h avec une proposition.", button: "Demander un devis" },
 };
 
 function ctaProps(categorySlug: string): { title: string; text: string; buttonLabel: string } {
-  const c = CTA_BY_CATEGORY[categorySlug] ?? { title: "Parlons de votre évènement", text: "Un devis gratuit, une réponse rapide, aucune obligation.", button: "Demander un devis" };
+  const c = CTA_BY_CATEGORY[categorySlug] ?? { title: "Demandez un devis", text: "Décrivez votre évènement : le devis est gratuit et sans obligation.", button: "Demander un devis" };
   return { title: c.title, text: c.text, buttonLabel: c.button };
 }
 
@@ -285,7 +286,7 @@ export async function seed(ctx: SeedContext): Promise<void> {
     const [profile] = await db.select().from(publicProfiles).where(eq(publicProfiles.id, publicProfileId)).limit(1);
     if (!profile) continue;
     const seo = {
-      seoTitle: `${pro.displayName} – ${cat.name}${pro.city ? ` à ${pro.city}` : ""}`.slice(0, 65),
+      seoTitle: generateTitle({ displayName: pro.displayName, categoryName: cat.name, city: pro.city, department: pro.department, tagline: pro.tagline }),
       seoDescription: (pro.tagline ?? pro.description ?? "").slice(0, 160) || null,
     };
 

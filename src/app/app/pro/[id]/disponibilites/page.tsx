@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
@@ -33,10 +32,7 @@ export default async function AvailabilityPage({ params }: { params: Promise<{ i
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarOff className="size-4" aria-hidden="true" />
-            Indisponibilités ponctuelles
-          </CardTitle>
+          <CardTitle>Indisponibilités ponctuelles</CardTitle>
           <CardDescription>Congés, dates déjà réservées : ajoutez-les dans votre calendrier (type « indisponibilité »). Elles vous retirent des résultats pour ces dates.</CardDescription>
         </CardHeader>
         <CardContent>

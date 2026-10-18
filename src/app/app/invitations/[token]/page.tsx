@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, MapPin, ShieldCheck } from "lucide-react";
 import { AcceptInvitationButton } from "@/components/events/accept-invitation-button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { formatDateFr } from "@/lib/utils";
 import { previewInvitation } from "@/modules/events/application/provider-service";
 import { acceptInvitationAction } from "./actions";
 
-export const metadata: Metadata = { title: "Invitation — Sous Nos Ailes", robots: { index: false } };
+export const metadata: Metadata = { title: "Invitation", robots: { index: false } };
 
 /** Secure link landing: requires sign-in (redirect with `next`), then shows what is being accepted. */
 export default async function InvitationPage({ params }: { params: Promise<{ token: string }> }) {
@@ -30,7 +29,6 @@ export default async function InvitationPage({ params }: { params: Promise<{ tok
     <div className="mx-auto max-w-xl space-y-6">
       <Card>
         <CardHeader>
-          <p className="text-xs font-semibold tracking-[0.12em] text-primary uppercase">Invitation</p>
           <CardTitle className="text-2xl">{inv.eventName}</CardTitle>
           <CardDescription>
             {inv.inviterName ?? "L'organisateur"} vous invite à rejoindre l'espace de coordination de cet évènement en tant que <strong>{inv.roleLabel.toLowerCase()}</strong>.
@@ -39,18 +37,15 @@ export default async function InvitationPage({ params }: { params: Promise<{ tok
         <CardContent className="space-y-4">
           <ul className="space-y-1 text-sm text-muted-foreground">
             <li className="inline-flex items-center gap-2">
-              <CalendarDays className="size-4" aria-hidden="true" />
               {inv.eventDate ? formatDateFr(inv.eventDate, { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Date à définir"}
             </li>
             {inv.city && (
               <li className="flex items-center gap-2">
-                <MapPin className="size-4" aria-hidden="true" />
                 {inv.city}
               </li>
             )}
           </ul>
           <div className="flex items-start gap-2 rounded-xl bg-muted/60 p-3 text-sm">
-            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
             <p>
               Vous accepterez avec le compte <strong>{actor.email}</strong>. Vous accéderez au planning, aux messages et aux documents partagés avec vous ; les organisateurs peuvent lire tous les échanges de l'espace.
             </p>
@@ -58,7 +53,7 @@ export default async function InvitationPage({ params }: { params: Promise<{ tok
           {emailMismatch && <p className="text-sm text-warning-foreground">Cette invitation a été envoyée à {inv.recipientEmail}. Vous pouvez tout de même l'accepter avec ce compte : elle sera liée à votre identité actuelle.</p>}
           <div className="flex flex-wrap gap-2">
             <AcceptInvitationButton token={token} action={acceptInvitationAction} />
-            <Button asChild variant="ghost">
+            <Button asChild variant="outline">
               <Link href="/app">Plus tard</Link>
             </Button>
           </div>

@@ -23,7 +23,6 @@ export default async function SeoAssistantPage({ params }: { params: Promise<{ i
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Visibilité"
         title="Assistant SEO"
         description="Des règles simples, expliquées : ce que la plateforme a vérifié, ce que nous vous conseillons. Aucune promesse de classement."
         actions={

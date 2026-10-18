@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ShieldAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
@@ -7,7 +6,6 @@ import { Button } from "@/components/ui/button";
 export function TwoFactorRequiredAlert({ compact = false }: { compact?: boolean }) {
   return (
     <Alert variant="destructive" className="border-destructive/40 bg-destructive/5">
-      <ShieldAlert aria-hidden="true" />
       <AlertTitle>Double authentification requise pour les rôles privilégiés</AlertTitle>
       <AlertDescription className="gap-3">
         <p>

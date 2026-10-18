@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
 import { AdminTable, dateTime } from "@/components/admin/admin-table";
 import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
 import { PageHeader } from "@/components/shared/page-header";
@@ -17,7 +16,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const rows = await searchUsers(actor, sp.q ?? "", { role: sp.role || undefined, banned: sp.suspendus === "1" ? true : undefined });
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Administration" title="Utilisateurs" description="Recherche par e-mail ou nom. La fiche détaille rôle, sécurité, fiches pro, évènements (noms uniquement) et historique." />
+      <PageHeader title="Utilisateurs" description="Recherche par e-mail ou nom. La fiche détaille rôle, sécurité, fiches pro, évènements (noms uniquement) et historique." />
       <TwoFactorBanner show={twoFactorWarning} />
       <form className="flex flex-wrap items-end gap-2" role="search">
         <div className="flex-1 min-w-56">
@@ -37,7 +36,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
           <input type="checkbox" name="suspendus" value="1" defaultChecked={sp.suspendus === "1"} /> Suspendus seulement
         </label>
         <Button type="submit" variant="outline">
-          <Search className="size-4" aria-hidden="true" /> Rechercher
+          Rechercher
         </Button>
       </form>
       <AdminTable
@@ -64,7 +63,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
             header: "Statut",
             cell: (r) => (
               <div className="flex flex-wrap gap-1">
-                {r.banned ? <StatusBadge tone="danger">Suspendu{r.banExpires ? ` → ${dateTime(r.banExpires)}` : ""}</StatusBadge> : <StatusBadge tone="success">Actif</StatusBadge>}
+                {r.banned ? <StatusBadge tone="danger">Suspendu{r.banExpires ? ` jusqu'au ${dateTime(r.banExpires)}` : ""}</StatusBadge> : <StatusBadge tone="success">Actif</StatusBadge>}
                 {!r.emailVerified && <StatusBadge tone="warning">e-mail non vérifié</StatusBadge>}
                 {r.twoFactorEnabled && <StatusBadge tone="info">2FA</StatusBadge>}
                 {r.isDemo && <StatusBadge tone="neutral">démo</StatusBadge>}

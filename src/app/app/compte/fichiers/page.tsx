@@ -18,7 +18,7 @@ export default async function MyFilesPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Mon compte" title="Mes fichiers" description={`Photo de profil et documents personnels. ${formatFileSize(used)} utilisés sur ${formatFileSize(quota)}.`} />
+      <PageHeader title="Mes fichiers" description={`Photo de profil et documents personnels. ${formatFileSize(used)} utilisés sur ${formatFileSize(quota)}.`} />
 
       <section className="grid gap-6 md:grid-cols-2" aria-label="Envoyer un fichier">
         <div className="space-y-2">

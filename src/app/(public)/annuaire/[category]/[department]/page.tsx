@@ -13,7 +13,6 @@ import { resolveGeoSegment } from "@/modules/directory/application/directory-pat
 import { parseSearchParams } from "@/modules/directory/domain/search-params";
 import { categoryPhoto } from "@/modules/media/demo-photos";
 import { listActiveCategories } from "@/modules/professionals/application/professional-service";
-import { findDepartmentByCode } from "@/modules/professionals/domain/geo";
 
 type Props = { params: Promise<{ category: string; department: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -35,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = geoTitle(r.cat.name, r.ctx);
   return {
     title,
-    description: `${title} : professionnels relus par notre équipe, prestations, tarifs indicatifs et vérifications détaillées. Contact gratuit et direct.`,
+    description: `${title} : prestations, tarifs indicatifs et vérifications de professionnels relus par notre équipe. Contact gratuit et direct.`,
     alternates: { canonical: new URL(`/annuaire/${r.cat.slug}/${department}`, env.APP_URL).toString() },
   };
 }
@@ -56,7 +55,6 @@ export default async function CategoryGeoPage({ params, searchParams }: Props) {
   const [result, suggestions] = await Promise.all([searchDirectory(filters, actor?.userId ?? null), emptyStateSuggestions()]);
   const title = geoTitle(cat.name, ctx);
   const path = `/annuaire/${cat.slug}/${department}`;
-  const deptName = geo.kind === "department" ? geo.name : result.items[0]?.department ? findDepartmentByCode(result.items[0].department)?.name : null;
   const breadcrumbs = [
     { name: "Accueil", path: "/" },
     { name: "Annuaire", path: "/annuaire" },
@@ -64,19 +62,19 @@ export default async function CategoryGeoPage({ params, searchParams }: Props) {
     { name: geo.name, path },
   ];
   return (
-    <Section className="py-8 sm:py-12">
+    <Section>
       <Container size="wide" className="space-y-8">
         <CategoryJsonLd title={title} path={path} items={result.items} breadcrumbs={breadcrumbs} />
         <Breadcrumbs items={breadcrumbs} />
-        <DirectoryHeader eyebrow={deptName && geo.kind === "city" ? `${cat.group} · ${deptName}` : cat.group} title={title} photos={[categoryPhoto(cat.slug, 0)]}>
+        <DirectoryHeader title={title} photos={[categoryPhoto(cat.slug, 0)]}>
           <CategoryIntro categoryName={cat.name} categoryDescription={cat.description} isChildcare={cat.isChildcare} geo={ctx} total={result.total} />
         </DirectoryHeader>
         <SearchFilters filters={filters} categories={categories.map((c) => ({ slug: c.slug, name: c.name, group: c.group }))} action={path} lockedCategory lockedGeo signedIn={Boolean(actor)} />
         <DirectoryResults result={result} filters={filters} basePath={path} signedIn={Boolean(actor)} suggestions={suggestions.categories} />
-        <div className="grid gap-8 border-t pt-8 lg:grid-cols-2 lg:gap-10">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
           <CategoryFaq categoryName={cat.name} isChildcare={cat.isChildcare} geo={ctx} />
           <section aria-labelledby="demande-title" className="space-y-3">
-            <h2 id="demande-title" className="font-heading text-xl font-semibold">
+            <h2 id="demande-title" className="font-heading text-2xl font-semibold">
               Exemple de demande de devis
             </h2>
             <InquiryExample categoryName={cat.name} />

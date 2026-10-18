@@ -24,8 +24,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="space-y-8">
+      <Link href="/admin/rgpd" className="text-sm text-muted-foreground hover:underline">Retour à RGPD et demandes</Link>
       <PageHeader
-        eyebrow={<Link href="/admin/rgpd">← RGPD et demandes</Link>}
         title="Analytique produit"
         description="Compteurs internes, minimisés : évènements nommés, aucune donnée de contenu. Les visiteurs anonymes ne sont comptés qu'avec leur consentement."
       />

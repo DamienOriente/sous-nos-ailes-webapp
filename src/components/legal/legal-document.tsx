@@ -84,21 +84,21 @@ export async function LegalDocument({ document }: { document: LegalDocumentData 
   const actor = await getActor();
   const isStaff = canGlobal(actor, "admin.content.manage");
   return (
-    <Container className="py-10 sm:py-14">
+    <Container className="py-14 sm:py-20">
       <header className="max-w-3xl space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${document.status === "published" ? "bg-sage-soft text-sage-deep dark:bg-sage-soft dark:text-sage-deep" : "bg-warning/25 text-foreground"}`}>{document.status === "published" ? "En vigueur" : "Brouillon"}</span>
-          {document.updatedAt && <span className="text-sm text-muted-foreground">Mis à jour le {formatDateFr(document.updatedAt)}</span>}
-        </div>
         <h1 className="text-3xl font-semibold text-balance sm:text-4xl">{document.title}</h1>
         {document.summary && <p className="text-base text-muted-foreground text-pretty sm:text-lg">{document.summary}</p>}
+        <p className="text-sm text-muted-foreground">
+          {document.status === "published" ? "En vigueur" : "Brouillon"}
+          {document.updatedAt && <>, mis à jour le {formatDateFr(document.updatedAt)}</>}
+        </p>
         {isStaff && document.incompleteVariables.length > 0 && (
           <p role="status" className="rounded-xl border border-info/40 bg-info/10 px-4 py-3 text-sm">
             Visible par l'équipe seulement : {document.incompleteVariables.length} variable(s) à renseigner dans{" "}
             <Link href="/admin/parametres" className="font-medium underline underline-offset-4">
               Paramètres
             </Link>{" "}
-            — {document.incompleteVariables.join(", ")}.
+            : {document.incompleteVariables.join(", ")}.
             {document.source === "default" && " Ce texte est le gabarit par défaut : créez la page dans Contenus éditoriaux pour le remplacer."}
           </p>
         )}

@@ -8,7 +8,7 @@ const ITEMS: Array<{ q: string; a: React.ReactNode }> = [
   },
   {
     q: "Comment annuler ?",
-    a: "En ligne, en deux clics, depuis Mon compte → Abonnement → « Résilier à l'échéance ». Aucun appel, aucun courrier. L'abonnement reste actif jusqu'à la fin de la période déjà payée, puis s'arrête sans frais.",
+    a: "En ligne, depuis Mon compte, onglet Abonnement, bouton « Résilier à l'échéance ». Aucun appel, aucun courrier. L'abonnement reste actif jusqu'à la fin de la période déjà payée, puis s'arrête sans frais.",
   },
   {
     q: "Puis-je changer d'avis après avoir souscrit ?",

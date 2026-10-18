@@ -8,6 +8,7 @@ import { createUpload } from "@/modules/files/application/upload-service";
 import { categoryPhoto, CATEGORY_PHOTO_THEMES, photosByTheme, RESERVED_PHOTO_IDS, unsplashUrl, type DemoPhoto } from "@/modules/media/demo-photos";
 import { bindMediaToContent, type MediaLibrary } from "@/modules/pages/domain/media-binding";
 import { parseContent } from "@/modules/pages/domain/page-schema";
+import { legacyDocumentTitle } from "./_legacy";
 import type { SeedContext } from "./context";
 
 /**
@@ -75,7 +76,7 @@ async function renderJpeg(svg: string): Promise<Buffer> {
 
 function initialsOf(name: string): string {
   return name
-    .split(/[\s—–-]+/)
+    .split(/[\s\u2014\u2013-]+/)
     .filter((p) => p && !/^(de|du|des|la|le|les|et|&)$/i.test(p))
     .slice(0, 2)
     .map((p) => p[0]?.toUpperCase() ?? "")
@@ -87,7 +88,7 @@ async function buildPdf(title: string, lines: string[]): Promise<Buffer> {
   // Deterministic metadata so the same document hashes identically on re-runs.
   const fixed = new Date("2026-01-15T09:00:00.000Z");
   doc.setTitle(title);
-  doc.setProducer("Sous Nos Ailes — données de démonstration");
+  doc.setProducer("Sous Nos Ailes, données de démonstration");
   doc.setCreator("Sous Nos Ailes");
   doc.setCreationDate(fixed);
   doc.setModificationDate(fixed);
@@ -95,7 +96,7 @@ async function buildPdf(title: string, lines: string[]): Promise<Buffer> {
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const page = doc.addPage([595.28, 841.89]); // A4
   page.drawRectangle({ x: 0, y: 780, width: 595.28, height: 61.89, color: rgb(0.42, 0.56, 0.44) });
-  page.drawText("SOUS NOS AILES — DOCUMENT DE DÉMONSTRATION", { x: 40, y: 805, size: 11, font: bold, color: rgb(1, 1, 1) });
+  page.drawText("Sous Nos Ailes : document de démonstration", { x: 40, y: 805, size: 11, font: bold, color: rgb(1, 1, 1) });
   page.drawText(title, { x: 40, y: 730, size: 20, font: bold, color: rgb(0.18, 0.2, 0.22) });
   let y = 690;
   for (const line of lines) {
@@ -194,8 +195,8 @@ type PlannedPicture = { kind: "cover" | "gallery"; photo: DemoPhoto; name: strin
 
 function picturesFor(key: string, displayName: string, plan: { cover: DemoPhoto | null; gallery: DemoPhoto[] }): PlannedPicture[] {
   const out: PlannedPicture[] = [];
-  if (plan.cover) out.push({ kind: "cover", photo: plan.cover, name: `${key}-cover-${plan.cover.id}.jpg`, alt: `${displayName} — ${plan.cover.alt} (photo de démonstration)`, caption: plan.cover.alt, sortOrder: 0 });
-  plan.gallery.forEach((photo, i) => out.push({ kind: "gallery", photo, name: `${key}-galerie-${photo.id}.jpg`, alt: `${displayName} — ${photo.alt} (photo de démonstration)`, caption: photo.alt, sortOrder: i }));
+  if (plan.cover) out.push({ kind: "cover", photo: plan.cover, name: `${key}-cover-${plan.cover.id}.jpg`, alt: `${displayName}, ${plan.cover.alt} (photo de démonstration)`, caption: plan.cover.alt, sortOrder: 0 });
+  plan.gallery.forEach((photo, i) => out.push({ kind: "gallery", photo, name: `${key}-galerie-${photo.id}.jpg`, alt: `${displayName}, ${photo.alt} (photo de démonstration)`, caption: photo.alt, sortOrder: i }));
   return out;
 }
 
@@ -270,7 +271,7 @@ async function seedProfessionalMedia(ctx: SeedContext): Promise<{ created: numbe
       logoId = await uploadInline(actor, { scope: "professional", scopeId: pro.id, purpose: "logo", originalName: logoName, bytes: await renderPng(monogramSvg(512, palette, initialsOf(pro.displayName))) });
       if (logoId) stats.generated += 1;
     }
-    if (logoId && (await ensureMediaAsset(ctx, pro.id, logoId, "logo", `${pro.displayName} — monogramme`, null, 0))) stats.created += 1;
+    if (logoId && (await ensureMediaAsset(ctx, pro.id, logoId, "logo", `${pro.displayName}, monogramme`, null, 0))) stats.created += 1;
 
     // Fallback (offline): generated gradients, only for the kinds without a single photograph.
     const fallback: Array<{ kind: "cover" | "gallery"; name: string; bytes: () => Promise<Buffer>; sortOrder: number; alt: string }> = [];
@@ -337,21 +338,21 @@ async function seedEventDocuments(ctx: SeedContext): Promise<number> {
 
   const docs: Array<{ title: string; kind: "quote" | "contract"; purpose: "quote" | "contract"; visibility: string; lines: string[] }> = [
     {
-      title: "Devis garde d'enfants — Marie Delcourt",
+      title: "Devis garde d'enfants, Marie Delcourt",
       kind: "quote",
       purpose: "quote",
       visibility: "organizers",
-      lines: ["Évènement : Mariage de Louis et Lisa — 12 juin 2027", "Prestation : garde d'enfants évènementielle, 2 intervenantes, 14h-01h", "Enfants attendus : 12 (3 à 10 ans)", "Montant : 1 180,00 € TTC", "Acompte 30 % à la signature, solde J-7."],
+      lines: ["Évènement : mariage de Louis et Lisa, 12 juin 2027", "Prestation : garde d'enfants évènementielle, 2 intervenantes, 14h-01h", "Enfants attendus : 12 (3 à 10 ans)", "Montant : 1 180,00 € TTC", "Acompte 30 % à la signature, solde J-7."],
     },
     {
-      title: "Contrat traiteur — Julien Rossi",
+      title: "Contrat traiteur, Julien Rossi",
       kind: "contract",
       purpose: "contract",
       visibility: "organizers",
-      lines: ["Évènement : Mariage de Louis et Lisa — 12 juin 2027", "Cocktail 18h30 puis dîner assis 120 couverts, menu enfants ×12", "Montant : 9 600,00 € TTC", "Conditions : annulation sans frais jusqu'à J-60.", "Signé électroniquement le 15 janvier 2026 (démonstration)."],
+      lines: ["Évènement : mariage de Louis et Lisa, 12 juin 2027", "Cocktail 18h30 puis dîner assis 120 couverts, menu enfants ×12", "Montant : 9 600,00 € TTC", "Conditions : annulation sans frais jusqu'à J-60.", "Signé électroniquement le 15 janvier 2026 (démonstration)."],
     },
     {
-      title: "Devis domaine — Hélène Vasseur",
+      title: "Devis domaine, Hélène Vasseur",
       kind: "quote",
       purpose: "quote",
       visibility: "team",
@@ -365,6 +366,12 @@ async function seedEventDocuments(ctx: SeedContext): Promise<number> {
     const bytes = await buildPdf(d.title, d.lines);
     const fileId = await uploadInline(actor, { scope: "event", scopeId: ev.id, purpose: d.purpose, originalName: `${d.title.toLowerCase().replace(/[^a-z0-9]+/gi, "-")}.pdf`, bytes });
     if (!fileId) continue;
+    // A document generated under its pre-2026-10-18 title: re-point the same row to the regenerated PDF.
+    const legacyTitle = legacyDocumentTitle(d.title);
+    if (legacyTitle && titles.has(legacyTitle)) {
+      await ctx.db.update(eventDocuments).set({ title: d.title, fileId }).where(and(eq(eventDocuments.eventId, ev.id), eq(eventDocuments.title, legacyTitle)));
+      continue;
+    }
     await ctx.db.insert(eventDocuments).values({ eventId: ev.id, fileId, title: d.title, kind: d.kind, visibility: d.visibility, uploadedByUserId: actor.userId });
     created += 1;
   }

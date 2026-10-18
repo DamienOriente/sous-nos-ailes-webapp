@@ -23,10 +23,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
   const isOwner = event.ownerUserId === actor.userId;
   const base = `/app/evenements/${id}/parametres`;
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader title="Paramètres" description="Informations de l'évènement, statut et cycle de vie." />
       {event.status === "completed" && (
-        <Card className="border-success/40">
+        <Card>
           <CardHeader>
             <CardTitle>Évènement terminé</CardTitle>
             <CardDescription>Exportez vos données, conservez l'espace en lecture ou fermez-le. Les données des enfants sont anonymisées automatiquement après le délai prévu.</CardDescription>
@@ -40,9 +40,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
                 </a>
               </Button>
             ))}
-            <Button asChild variant="ghost" size="sm">
-              <Link href={`/app/evenements/${id}`}>Conserver l'espace</Link>
-            </Button>
+            <Link href={`/app/evenements/${id}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">Conserver l'espace</Link>
           </CardContent>
         </Card>
       )}
@@ -88,14 +86,14 @@ export default async function SettingsPage({ params }: { params: Promise<{ id: s
       <Card>
         <CardHeader>
           <CardTitle>Statut</CardTitle>
-          <CardDescription>En préparation → confirmé → en cours → terminé. Annulation et archivage possibles à tout moment.</CardDescription>
+          <CardDescription>En préparation, confirmé, en cours, terminé. Annulation et archivage possibles à tout moment.</CardDescription>
         </CardHeader>
         <CardContent>
           <EventStatusPanel eventId={id} status={event.status} canArchive={isOwner || event.access.permissions.has("event.delete")} action={changeStatusAction} />
         </CardContent>
       </Card>
       {isOwner && (
-        <Card className="border-destructive/30">
+        <Card>
           <CardHeader>
             <CardTitle>Supprimer l'évènement</CardTitle>
             <CardDescription>Suppression logique immédiate : plus personne n'y accède. Réservé au propriétaire ; l'action est journalisée.</CardDescription>

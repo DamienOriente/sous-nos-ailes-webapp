@@ -28,8 +28,8 @@ export default async function RegistryPage() {
 
   return (
     <div className="space-y-10">
+      <Link href="/admin/rgpd" className="text-sm text-muted-foreground hover:underline">Retour à RGPD et demandes</Link>
       <PageHeader
-        eyebrow={<Link href="/admin/rgpd">← RGPD et demandes</Link>}
         title="Registre des traitements"
         description="Article 30 du RGPD. Les points « À COMPLÉTER » sont des décisions à prendre par la direction, avec l'appui d'un conseil juridique. Source : src/modules/privacy/domain/processing-registry.ts."
       />
@@ -45,7 +45,7 @@ export default async function RegistryPage() {
           </div>
           <div>
             <dt className="text-muted-foreground">Comptes inactifs</dt>
-            <dd className="font-medium">{settings.inactiveAccountMonths} mois → demande d'effacement</dd>
+            <dd className="font-medium">{settings.inactiveAccountMonths} mois : demande d'effacement</dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Journaux d'audit</dt>

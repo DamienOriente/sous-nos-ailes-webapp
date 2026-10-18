@@ -50,7 +50,7 @@ export function deriveNextActions(input: NextActionInput, limit = 4): NextAction
     const days = daysUntil(e.eventDate, input.today);
     if (days < 0) continue;
     if (days <= 7) out.push({ key: `event-week-${e.id}`, title: `${e.name} : partager le planning du jour J`, detail: days === 0 ? "C'est aujourd'hui." : `Dans ${days} jour${days > 1 ? "s" : ""} : chaque prestataire doit avoir le déroulé.`, href: `/app/evenements/${e.id}/planning`, tone: "warning" });
-    else if (organiser && (e.expectedChildren ?? 0) > 0 && days <= 120) out.push({ key: `event-childcare-${e.id}`, title: `Réserver la garde d'enfants pour ${e.name}`, detail: `${e.expectedChildren} enfant${(e.expectedChildren ?? 0) > 1 ? "s" : ""} annoncé${(e.expectedChildren ?? 0) > 1 ? "s" : ""}, dans ${days} jours : les professionnels se réservent 3 mois à l'avance.`, href: `/app/evenements/${e.id}/prestataires`, tone: "primary" });
+    else if (organiser && (e.expectedChildren ?? 0) > 0 && days <= 120) out.push({ key: `event-childcare-${e.id}`, title: `Réserver la garde d'enfants pour ${e.name}`, detail: `${e.expectedChildren} enfant${(e.expectedChildren ?? 0) > 1 ? "s" : ""} annoncé${(e.expectedChildren ?? 0) > 1 ? "s" : ""}, dans ${days} jours : les professionnels se réservent souvent plusieurs mois à l'avance.`, href: `/app/evenements/${e.id}/prestataires`, tone: "primary" });
     else if (organiser && days <= 45) out.push({ key: `event-guests-${e.id}`, title: `Relancer les invités sans réponse pour ${e.name}`, detail: `Dans ${days} jours : le traiteur attend le nombre de convives.`, href: `/app/evenements/${e.id}/invites`, tone: "neutral" });
   }
 

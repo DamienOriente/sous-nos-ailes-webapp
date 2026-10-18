@@ -21,10 +21,23 @@ function truncateAtWord(text: string, max: number): string {
   return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[\s,;:.–-]+$/, "")}…`;
 }
 
-/** "Marie Delcourt – Garde d'enfants évènementielle à Toulouse" trimmed to fit. */
+/** "garde d'enfants" after a comma, but "DJ" stays as written. */
+function lowerFirst(text: string): string {
+  return /^\p{Lu}\p{Ll}/u.test(text) ? text.charAt(0).toLowerCase() + text.slice(1) : text;
+}
+
+/** True when the display name already says the trade ("Marie Delcourt, garde d'enfants évènementielle"). */
+function nameMentionsTrade(pro: TitleInput): boolean {
+  return pro.displayName.toLowerCase().includes(pro.categoryName.toLowerCase());
+}
+
+/** "Marie Delcourt, garde d'enfants évènementielle à Toulouse" trimmed to fit. */
 export function generateTitle(pro: TitleInput): string {
   const where = pro.city ? ` à ${pro.city}` : "";
-  const candidates = [`${pro.displayName} – ${pro.categoryName}${where}`, `${pro.displayName} – ${pro.categoryName}`, `${pro.displayName}${where}`, pro.displayName];
+  const trade = lowerFirst(pro.categoryName);
+  const candidates = nameMentionsTrade(pro)
+    ? [`${pro.displayName}${where}`, pro.displayName]
+    : [`${pro.displayName}, ${trade}${where}`, `${pro.displayName}, ${trade}`, `${pro.displayName}${where}`, pro.displayName];
   return candidates.find((c) => c.length <= TITLE_MAX) ?? truncateAtWord(pro.displayName, TITLE_MAX);
 }
 
@@ -32,13 +45,12 @@ export function generateTitle(pro: TitleInput): string {
 export function suggestTitles(pro: TitleInput): string[] {
   const where = pro.city ? ` à ${pro.city}` : "";
   const dept = pro.department ? ` (${pro.department})` : "";
-  const list = [
-    `${pro.displayName} – ${pro.categoryName}${where}`,
-    `${pro.categoryName}${where} – ${pro.displayName}`,
-    `${pro.displayName} | ${pro.categoryName}${where}${dept}`,
-    pro.tagline ? `${pro.displayName} – ${pro.tagline}` : null,
-  ].filter((t): t is string => Boolean(t));
-  return Array.from(new Set(list.map((t) => (t.length <= TITLE_MAX ? t : truncateAtWord(t, TITLE_MAX)))));
+  const trade = lowerFirst(pro.categoryName);
+  const list = nameMentionsTrade(pro)
+    ? [`${pro.displayName}${where}`, `${pro.displayName} | ${pro.categoryName}${where}${dept}`, pro.tagline ? `${pro.displayName} : ${pro.tagline}` : null]
+    : [`${pro.displayName}, ${trade}${where}`, `${pro.categoryName}${where} | ${pro.displayName}`, `${pro.displayName} | ${pro.categoryName}${where}${dept}`, pro.tagline ? `${pro.displayName} : ${pro.tagline}` : null];
+  const filtered = list.filter((t): t is string => Boolean(t));
+  return Array.from(new Set(filtered.map((t) => (t.length <= TITLE_MAX ? t : truncateAtWord(t, TITLE_MAX)))));
 }
 
 export function generateDescription(pro: TitleInput & Pick<ProfessionalSnapshot, "description" | "eventTypes" | "yearsExperience">, content?: PageContent): string {

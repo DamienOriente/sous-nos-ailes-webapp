@@ -27,7 +27,8 @@ export default async function EditEditorialPage({ params }: { params: Promise<{ 
   }
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow={<Link href="/admin/contenus" className="hover:underline">← Pages éditoriales</Link>} title={isNew ? "Nouvelle page" : initial.title || slug} description={isNew ? undefined : `URL publique : /${slug}`} />
+      <Link href="/admin/contenus" className="text-sm text-muted-foreground hover:underline">Retour aux pages éditoriales</Link>
+      <PageHeader  title={isNew ? "Nouvelle page" : initial.title || slug} description={isNew ? undefined : `URL publique : /${slug}`} />
       <EditorialEditor save={saveEditorialAction} preview={previewEditorialAction} initial={initial} isNew={isNew || !initial.title} />
     </div>
   );

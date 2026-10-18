@@ -9,7 +9,7 @@ import { can, requireEventPermission } from "@/modules/authorization";
 import { assertSeatingEntitlement, getSeatingPlan } from "@/modules/seating/application/seating-service";
 import { assignGuestAction, createTableAction, deleteTableAction, moveTableAction, unassignGuestAction, updateTableAction } from "./actions";
 
-export const metadata = { title: "Plan de table — Sous Nos Ailes" };
+export const metadata = { title: "Plan de table" };
 
 export default async function SeatingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -27,7 +27,7 @@ export default async function SeatingPage({ params }: { params: Promise<{ id: st
     if (e instanceof PaymentRequiredError) {
       return (
         <div className="space-y-6">
-          <PageHeader eyebrow="Évènement" title="Plan de table" />
+          <PageHeader title="Plan de table" />
           <Paywall feature="seating_plan" audience="organizer" description="Placez vos tables sur un plan interactif (souris, tactile ou clavier), affectez les invités par glisser-déposer ou par sélecteur, suivez les places libres, imprimez le plan et la liste par table ou exportez-les en PDF." backHref={`/app/evenements/${id}`} backLabel="Retour à l'évènement" preview={<SeatingStaticPreview />} />
         </div>
       );
@@ -37,7 +37,7 @@ export default async function SeatingPage({ params }: { params: Promise<{ id: st
   const plan = await getSeatingPlan(actor, id);
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Évènement" title="Plan de table" description="Déplacez les tables sur le plan (souris, tactile, flèches du clavier) ou saisissez leurs coordonnées. Affectez les invités par glisser-déposer ou via « Placer à… »." />
+      <PageHeader title="Plan de table" description="Déplacez les tables sur le plan (souris, tactile, flèches du clavier) ou saisissez leurs coordonnées. Affectez les invités par glisser-déposer ou via « Placer à… »." />
       <SeatingEditor eventId={id} plan={plan} canManage={can(access, "event.seating.manage")} actions={{ createTable: createTableAction, updateTable: updateTableAction, deleteTable: deleteTableAction, moveTable: moveTableAction, assignGuest: assignGuestAction, unassignGuest: unassignGuestAction }} />
     </div>
   );

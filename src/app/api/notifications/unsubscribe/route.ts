@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const query = z.object({ u: z.string().min(1).max(64), t: z.string().length(64) });
 
 function page(title: string, body: string, status: number): NextResponse {
-  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${title} — Sous Nos Ailes</title></head><body style="margin:0;background:#f7f4ee;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#2f3437"><main style="max-width:520px;margin:64px auto;padding:32px;background:#fff;border-radius:16px"><p style="margin:0 0 16px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#6b8f71;font-weight:700">Sous Nos Ailes</p><h1 style="font-size:22px;margin:0 0 12px">${title}</h1><p style="line-height:1.6">${body}</p></main></body></html>`;
+  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${title} · Sous Nos Ailes</title></head><body style="margin:0;background:#f7f4ee;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#2f3437"><main style="max-width:520px;margin:64px auto;padding:32px;background:#fff;border-radius:16px"><p style="margin:0 0 16px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#6b8f71;font-weight:700">Sous Nos Ailes</p><h1 style="font-size:22px;margin:0 0 12px">${title}</h1><p style="line-height:1.6">${body}</p></main></body></html>`;
   return new NextResponse(html, { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store" } });
 }
 

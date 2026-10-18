@@ -20,7 +20,7 @@ export default async function SettingsPage() {
   const value = (key: string) => rows.find((r) => r.key === key)?.value;
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Administration" title="Paramètres" description="Variables résolues dans les pages éditoriales, délais de rétention appliqués par le worker, et interrupteurs produit. Chaque modification est journalisée." />
+      <PageHeader title="Paramètres" description="Variables résolues dans les pages éditoriales, délais de rétention appliqués par le worker, et interrupteurs produit. Chaque modification est journalisée." />
       <TwoFactorBanner show={twoFactorWarning} />
       <Card className="gap-2 p-6 text-sm">
         <h2 className="font-semibold">Environnement (lecture seule)</h2>

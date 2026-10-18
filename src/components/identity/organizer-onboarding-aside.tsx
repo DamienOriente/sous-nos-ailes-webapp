@@ -1,10 +1,8 @@
 "use client";
 import { useCallback, useState } from "react";
-import { Baby, CalendarDays, Lightbulb, MapPin, Users, Wallet, Wand2 } from "lucide-react";
 import { EventForm, type EventFormProps, type EventFormValues } from "@/components/events/event-form";
 import { DemoPhoto } from "@/components/shared/demo-photo";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { eventPhoto } from "@/modules/media/demo-photos";
 import { EVENT_TYPE_LABELS, type EventType } from "@/modules/events/domain/event-types";
 
@@ -35,7 +33,7 @@ export function OrganizerOnboardingAside({ firstName, form }: { firstName: strin
 
   const photo = eventPhoto(summary.type, 0);
   const title = summary.name || `${EVENT_TYPE_LABELS[summary.type]} de ${firstName}`;
-  const dateLabel = summary.eventDate ? new Date(`${summary.eventDate}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "Date à fixer";
+  const dateLabel = summary.eventDate ? new Date(`${summary.eventDate}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "À fixer";
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
@@ -47,24 +45,23 @@ export function OrganizerOnboardingAside({ firstName, form }: { firstName: strin
         <article className="overflow-hidden rounded-2xl border bg-card shadow-soft" data-testid="event-summary">
           <div className="relative aspect-[16/9]">
             <DemoPhoto key={photo.id} photo={photo} width={640} height={360} sizes="(max-width: 1024px) 100vw, 352px" className="absolute inset-0" alt={`Photo d'ambiance de démonstration : ${EVENT_TYPE_LABELS[summary.type].toLowerCase()}`} />
-            <span className="absolute bottom-2 left-2 rounded-full bg-card/90 px-2 py-0.5 text-[10px] text-muted-foreground">Photo d'ambiance de démonstration</span>
-            <span className="absolute left-3 top-3 rounded-full bg-card/90 px-2.5 py-1 text-xs font-medium text-primary shadow-soft">{EVENT_TYPE_LABELS[summary.type]}</span>
           </div>
+          <p className="border-b px-4 py-1.5 text-xs text-muted-foreground">Photo d'ambiance de démonstration</p>
           <div className="space-y-3 p-4">
-            <h2 className="font-heading text-lg leading-snug font-semibold">{title}</h2>
-            <ul className="grid gap-2 text-sm">
-              <Row icon={CalendarDays} value={dateLabel} muted={!summary.eventDate} />
-              <Row icon={MapPin} value={[summary.venueName, summary.city].filter(Boolean).join(" · ") || "Lieu à préciser"} muted={!summary.city && !summary.venueName} />
-              <Row icon={Users} value={summary.guests ? `${summary.guests} invités` : "Nombre d'invités à estimer"} muted={!summary.guests} />
-              <Row icon={Baby} value={summary.children ? `${summary.children} enfants · garde à prévoir` : "Enfants : à estimer"} muted={!summary.children} />
-              <Row icon={Wallet} value={summary.budget ? `${Number(summary.budget).toLocaleString("fr-FR")} € de budget indicatif` : "Budget indicatif facultatif"} muted={!summary.budget} />
-            </ul>
+            <div>
+              <h2 className="font-heading text-lg leading-snug font-semibold">{title}</h2>
+              <p className="text-sm text-muted-foreground">{EVENT_TYPE_LABELS[summary.type]}</p>
+            </div>
+            <dl className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+              <Row label="Date" value={dateLabel} muted={!summary.eventDate} />
+              <Row label="Lieu" value={[summary.venueName, summary.city].filter(Boolean).join(", ") || "À préciser"} muted={!summary.city && !summary.venueName} />
+              <Row label="Invités" value={summary.guests || "À estimer"} muted={!summary.guests} />
+              <Row label="Enfants" value={summary.children ? `${summary.children}, garde à prévoir` : "À estimer"} muted={!summary.children} />
+              <Row label="Budget" value={summary.budget ? `${Number(summary.budget).toLocaleString("fr-FR")} €, indicatif` : "Facultatif"} muted={!summary.budget} />
+            </dl>
           </div>
         </article>
-        <div className="flex gap-3 rounded-2xl border bg-accent/40 p-4 text-sm">
-          <Lightbulb className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
-          <p className="text-pretty">{TIPS[summary.type]}</p>
-        </div>
+        <p className="rounded-2xl border bg-accent/40 p-4 text-sm text-pretty">{TIPS[summary.type]}</p>
         <div className="space-y-3 rounded-2xl border border-dashed p-4 text-sm" data-testid="onboarding-example">
           <p className="font-medium">Exemple : Mariage de Louis et Lisa</p>
           <p className="text-muted-foreground">12 juin 2027 au domaine d'Hélène à Lavaur, 90 invités dont 12 enfants, budget 15 000 €.</p>
@@ -72,7 +69,6 @@ export function OrganizerOnboardingAside({ firstName, form }: { firstName: strin
             <p className="text-xs text-muted-foreground">L'exemple est appliqué à toutes les étapes ; modifiez librement chaque champ.</p>
           ) : (
             <Button type="button" variant="outline" size="sm" onClick={() => setExampleMode(true)}>
-              <Wand2 className="size-4" aria-hidden="true" />
               Utiliser cet exemple
             </Button>
           )}
@@ -82,11 +78,11 @@ export function OrganizerOnboardingAside({ firstName, form }: { firstName: strin
   );
 }
 
-function Row({ icon: Icon, value, muted }: { icon: typeof CalendarDays; value: string; muted: boolean }) {
+function Row({ label, value, muted }: { label: string; value: string; muted: boolean }) {
   return (
-    <li className={cn("flex items-center gap-2", muted && "text-muted-foreground")}>
-      <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
-      <span className="truncate">{value}</span>
-    </li>
+    <>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={muted ? "text-muted-foreground" : "font-medium"}>{value}</dd>
+    </>
   );
 }

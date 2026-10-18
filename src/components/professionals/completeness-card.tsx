@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { CompletenessResult } from "@/modules/professionals/domain/completeness";
@@ -21,20 +20,14 @@ export function CompletenessCard({ result, baseHref, limit = 5 }: { result: Comp
       <CardContent className="space-y-4">
         <Progress value={result.score} aria-label={`Complétude ${result.score} %`} />
         {recs.length === 0 ? (
-          <p className="flex items-center gap-2 text-sm text-success">
-            <CheckCircle2 className="size-4" aria-hidden="true" />
-            Tout est renseigné. Bravo !
-          </p>
+          <p className="text-sm text-muted-foreground">Tout est renseigné.</p>
         ) : (
           <ul className="space-y-2">
             {recs.map((r) => (
               <li key={r.key}>
-                <Link href={`${baseHref}/${r.href ?? "fiche"}`} className="group flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-sm hover:bg-muted">
+                <Link href={`${baseHref}/${r.href ?? "fiche"}`} className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors duration-150 hover:bg-muted">
                   <span>{r.label}</span>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    +{Math.round((r.weight / 100) * 100)} pts
-                    <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                  </span>
+                  <span className="text-xs text-muted-foreground tabular-nums">+{Math.round((r.weight / 100) * 100)} pts</span>
                 </Link>
               </li>
             ))}

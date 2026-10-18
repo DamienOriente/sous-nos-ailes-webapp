@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
 import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { ExternalProviderDialog } from "@/components/events/provider-forms";
 import { HandshakeScene } from "@/components/illustrations/event-scenes";
@@ -40,7 +39,6 @@ export default async function ProvidersPage({ params }: { params: Promise<{ id: 
             <>
               <Button asChild variant="outline">
                 <Link href={`/annuaire?event=${id}&department=${encodeURIComponent(event.department ?? "")}`}>
-                  <Search className="size-4" aria-hidden="true" />
                   Rechercher dans l'annuaire
                 </Link>
               </Button>
@@ -53,22 +51,22 @@ export default async function ProvidersPage({ params }: { params: Promise<{ id: 
         <IllustratedEmpty
           scene={HandshakeScene}
           title="Aucun prestataire pour l'instant"
-          description={canManage ? "Un prestataire suit un parcours : présélectionné → demande envoyée → devis reçu → confirmé. Depuis l'annuaire, un professionnel vérifié rejoint votre présélection en un clic ; vous pouvez aussi noter un prestataire que vous connaissez déjà." : "Les professionnels confirmés par l'organisateur apparaîtront ici."}
-          example="Domaine des Tilleuls — lieu de réception, devis reçu : 8 500 €"
-          action={canManage ? <><Button asChild variant="outline"><Link href={`/annuaire?event=${id}&department=${encodeURIComponent(event.department ?? "")}`}><Search className="size-4" aria-hidden="true" />Rechercher dans l'annuaire</Link></Button><ExternalProviderDialog eventId={id} categories={categories} action={createExternalProviderAction} /></> : undefined}
+          description={canManage ? "Un prestataire suit un parcours : présélectionné, demande envoyée, devis reçu, confirmé. Depuis l'annuaire, un professionnel vérifié rejoint votre présélection en un clic ; vous pouvez aussi noter un prestataire que vous connaissez déjà." : "Les professionnels confirmés par l'organisateur apparaîtront ici."}
+          example="Domaine des Tilleuls, lieu de réception, devis reçu : 8 500 €"
+          action={canManage ? <><Button asChild variant="outline"><Link href={`/annuaire?event=${id}&department=${encodeURIComponent(event.department ?? "")}`}>Rechercher dans l'annuaire</Link></Button><ExternalProviderDialog eventId={id} categories={categories} action={createExternalProviderAction} /></> : undefined}
           testId="providers-empty"
         />
       ) : (
         <div className="space-y-6">
           {[...groups.entries()].map(([category, list]) => (
-            <section key={category} aria-labelledby={`cat-${category}`} className="space-y-2">
-              <h2 id={`cat-${category}`} className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+            <section key={category} aria-labelledby={`cat-${category}`} className="space-y-3">
+              <h2 id={`cat-${category}`} className="text-sm font-semibold text-muted-foreground">
                 {category}
               </h2>
-              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {list.map((p) => (
                   <li key={p.id}>
-                    <Link href={`${base}/${p.id}`} className="flex h-full flex-col gap-2 rounded-2xl border bg-card p-4 transition-shadow hover:shadow-md">
+                    <Link href={`${base}/${p.id}`} className="flex h-full flex-col gap-2 rounded-2xl border bg-card p-4 transition-colors hover:bg-muted/40">
                       <div className="flex items-start justify-between gap-2">
                         <span className="min-w-0 truncate font-medium">{p.displayName}</span>
                         <StatusBadge tone={PROVIDER_STATUS_TONES[p.status]}>{PROVIDER_STATUS_LABELS[p.status]}</StatusBadge>

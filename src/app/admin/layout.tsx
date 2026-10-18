@@ -6,18 +6,18 @@ import { canGlobal } from "@/modules/authorization";
 import { countUnreadNotifications } from "@/modules/notifications/application/notification-service";
 
 const ADMIN_NAV: NavItem[] = [
-  { href: "/admin", label: "Tableau de bord", icon: "dashboard", exact: true },
-  { href: "/admin/moderation", label: "Modération", icon: "verification" },
-  { href: "/admin/signalements", label: "Signalements", icon: "reports" },
-  { href: "/admin/utilisateurs", label: "Utilisateurs", icon: "guests" },
-  { href: "/admin/professionnels", label: "Professionnels", icon: "store" },
-  { href: "/admin/categories", label: "Catégories et métiers", icon: "tags" },
-  { href: "/admin/outils", label: "Catalogue d'outils", icon: "tools" },
-  { href: "/admin/offres", label: "Offres et abonnements", icon: "billing" },
-  { href: "/admin/contenus", label: "Contenus éditoriaux", icon: "content" },
-  { href: "/admin/rgpd", label: "RGPD et demandes", icon: "shield" },
-  { href: "/admin/securite", label: "Sécurité et audit", icon: "security" },
-  { href: "/admin/parametres", label: "Paramètres", icon: "settings" },
+  { href: "/admin", label: "Tableau de bord", exact: true },
+  { href: "/admin/moderation", label: "Modération" },
+  { href: "/admin/signalements", label: "Signalements" },
+  { href: "/admin/utilisateurs", label: "Utilisateurs" },
+  { href: "/admin/professionnels", label: "Professionnels" },
+  { href: "/admin/categories", label: "Catégories et métiers" },
+  { href: "/admin/outils", label: "Catalogue d'outils" },
+  { href: "/admin/offres", label: "Offres et abonnements" },
+  { href: "/admin/contenus", label: "Contenus éditoriaux" },
+  { href: "/admin/rgpd", label: "RGPD et demandes" },
+  { href: "/admin/securite", label: "Sécurité et audit" },
+  { href: "/admin/parametres", label: "Paramètres" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

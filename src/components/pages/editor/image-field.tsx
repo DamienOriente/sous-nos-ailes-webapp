@@ -41,7 +41,7 @@ export function ImageField({
               <Label htmlFor={`${id}-alt`}>Description de l'image</Label>
               <Input id={`${id}-alt`} value={alt ?? ""} maxLength={160} placeholder="Ce que montre la photo, en une phrase" onChange={(e) => onChange({ fileId, alt: e.target.value })} />
             </div>
-            <Button type="button" variant="ghost" size="sm" onClick={() => onChange({ fileId: undefined, alt: undefined })}>
+            <Button type="button" variant="outline" size="sm" onClick={() => onChange({ fileId: undefined, alt: undefined })}>
               Retirer l'image
             </Button>
           </div>

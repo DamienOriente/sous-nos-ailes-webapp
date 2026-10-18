@@ -16,7 +16,7 @@ export function EventCover({ event, className, sizes = "(max-width: 768px) 100vw
     return (
       <div className={cn("relative overflow-hidden bg-muted", className)}>
         {/* eslint-disable-next-line @next/next/no-img-element -- authenticated route redirecting to a short-lived signed URL */}
-        <img src={privateFileHref(cover.fileId)} alt={`Photo de couverture — ${event.name}`} className="absolute inset-0 size-full object-cover" />
+        <img src={privateFileHref(cover.fileId)} alt={`Photo de couverture de ${event.name}`} className="absolute inset-0 size-full object-cover" />
       </div>
     );
   }
@@ -52,13 +52,12 @@ export function MemberAvatars({ names, max = 5, size = "sm", className }: { name
   );
 }
 
-/** Thin progress bar with its label. */
-export function ProgressBar({ value, max, label, className, tone = "primary" }: { value: number; max: number; label: string; className?: string; tone?: "primary" | "gold" | "sky" | "blush" }) {
+/** Thin progress bar with its label. One colour: the figures next to it carry the information. */
+export function ProgressBar({ value, max, label, className }: { value: number; max: number; label: string; className?: string }) {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
-  const fill = tone === "gold" ? "bg-gold" : tone === "sky" ? "bg-sky-deep" : tone === "blush" ? "bg-blush-deep" : "bg-primary";
   return (
     <div className={cn("h-1.5 w-full overflow-hidden rounded-full bg-muted", className)} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={label}>
-      <div className={cn("h-full rounded-full transition-[width]", fill)} style={{ width: `${pct}%` }} />
+      <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
     </div>
   );
 }

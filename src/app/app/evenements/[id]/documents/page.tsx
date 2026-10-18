@@ -1,4 +1,4 @@
-import { Download, FileText, Trash2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { AddDocumentDialog, DeleteDocumentButton } from "@/components/events/document-forms";
 import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { DocumentsScene } from "@/components/illustrations/event-scenes";
@@ -36,8 +36,8 @@ export default async function DocumentsPage({ params }: { params: Promise<{ id: 
         <IllustratedEmpty
           scene={DocumentsScene}
           title="Aucun document"
-          description={canManage ? "Contrats, devis, briefs, plans de salle : chaque fichier est analysé (antivirus) avant d'être téléchargeable, et vous choisissez qui le voit — organisateurs, toute l'équipe ou un prestataire précis." : "Rien n'a encore été partagé avec vous. Les documents que l'organisateur vous destine apparaîtront ici."}
-          example="Contrat traiteur — Julien Rossi (PDF, visible des organisateurs)"
+          description={canManage ? "Contrats, devis, briefs, plans de salle : chaque fichier est analysé (antivirus) avant d'être téléchargeable, et vous choisissez qui le voit : les organisateurs, toute l'équipe ou un prestataire précis." : "Rien n'a encore été partagé avec vous. Les documents que l'organisateur vous destine apparaîtront ici."}
+          example="Contrat traiteur de Julien Rossi (PDF, visible des organisateurs)"
           action={canManage ? <AddDocumentDialog eventId={id} providers={providers} action={addDocumentAction} /> : undefined}
           testId="documents-empty"
         />
@@ -45,11 +45,10 @@ export default async function DocumentsPage({ params }: { params: Promise<{ id: 
         <ul className="divide-y rounded-2xl border bg-card">
           {documents.map((d) => (
             <li key={d.id} className="flex items-center gap-3 px-4 py-3 text-sm">
-              <FileText className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{d.title}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {DOCUMENT_KIND_LABELS[d.kind as keyof typeof DOCUMENT_KIND_LABELS] ?? d.kind} · {d.fileName ?? "fichier"} {formatSize(d.sizeBytes)} · {d.uploadedByName ?? "—"} · {formatDateFr(d.createdAt, { day: "numeric", month: "short", year: "numeric" })}
+                  {DOCUMENT_KIND_LABELS[d.kind as keyof typeof DOCUMENT_KIND_LABELS] ?? d.kind} · {d.fileName ?? "fichier"} {formatSize(d.sizeBytes)} · {d.uploadedByName ?? "auteur inconnu"} · {formatDateFr(d.createdAt, { day: "numeric", month: "short", year: "numeric" })}
                 </p>
               </div>
               {canManage && <StatusBadge tone={d.visibility === "organizers" ? "neutral" : d.visibility === "team" ? "primary" : "info"} dot={false}>{d.visibility === "organizers" ? "Organisateurs" : d.visibility === "team" ? "Équipe" : `Partagé : ${d.providerLabel ?? "prestataire"}`}</StatusBadge>}
@@ -59,7 +58,7 @@ export default async function DocumentsPage({ params }: { params: Promise<{ id: 
                   <Download className="size-4" aria-hidden="true" />
                 </a>
               </Button>
-              {canManage && <DeleteDocumentButton eventId={id} documentId={d.id} title={d.title} action={deleteDocumentAction} icon={<Trash2 className="size-4" aria-hidden="true" />} />}
+              {canManage && <DeleteDocumentButton eventId={id} documentId={d.id} title={d.title} action={deleteDocumentAction} />}
             </li>
           ))}
         </ul>

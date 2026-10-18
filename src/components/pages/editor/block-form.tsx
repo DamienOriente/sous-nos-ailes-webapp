@@ -96,7 +96,7 @@ function HeroForm({ block, onChange, professionalId }: Props<"hero">) {
       <Field id={`${block.id}-title`} label="Titre">
         <Input id={`${block.id}-title`} value={block.props.title} maxLength={90} required onChange={(e) => set({ title: e.target.value })} data-testid="hero-title-input" />
       </Field>
-      <Field id={`${block.id}-kicker`} label="Ligne au-dessus du titre" hint="Par défaut : métier et ville.">
+      <Field id={`${block.id}-kicker`} label="Ligne sous le titre" hint="Par défaut : métier et ville.">
         <Input id={`${block.id}-kicker`} value={block.props.kicker ?? ""} maxLength={80} onChange={(e) => set({ kicker: e.target.value || undefined })} />
       </Field>
       <Field id={`${block.id}-subtitle`} label="Accroche">
@@ -179,7 +179,7 @@ function PricingForm({ block, onChange }: Props<"pricing">) {
         {items.map((it, i) => (
           <div key={i} className="grid gap-2 rounded-lg border p-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground">Tarif {i + 1} — affiché « à partir de »</p>
+              <p className="text-xs font-medium text-muted-foreground">Tarif {i + 1}, affiché « à partir de »</p>
               <Button type="button" variant="ghost" size="icon-xs" aria-label={`Supprimer le tarif ${i + 1}`} onClick={() => set({ items: items.filter((_, j) => j !== i) })}>
                 <Trash2 aria-hidden="true" />
               </Button>

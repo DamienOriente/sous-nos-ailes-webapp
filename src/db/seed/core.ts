@@ -81,7 +81,7 @@ export async function seedReferenceData(ctx: SeedContext): Promise<void> {
     { key: "legal.vat_number", value: "[TVA INTRACOMMUNAUTAIRE À COMPLÉTER]", description: "Numéro de TVA" },
     { key: "legal.publication_director", value: "[RESPONSABLE DE PUBLICATION À COMPLÉTER]", description: "Responsable de la publication" },
     { key: "legal.dpo_email", value: "[E-MAIL DPO À COMPLÉTER]", description: "Contact délégué à la protection des données" },
-    { key: "legal.host", value: "[HÉBERGEUR À COMPLÉTER — infrastructure européenne]", description: "Hébergeur" },
+    { key: "legal.host", value: "[HÉBERGEUR À COMPLÉTER : infrastructure européenne]", description: "Hébergeur" },
     { key: "legal.mediator", value: "[MÉDIATEUR DE LA CONSOMMATION À COMPLÉTER]", description: "Médiateur de la consommation (obligatoire avant vente)" },
     { key: "retention.children_days_after_event", value: 30, description: "Jours après l'évènement avant anonymisation des données des enfants" },
     { key: "retention.inactive_account_months", value: 36, description: "Mois d'inactivité avant suppression d'un compte" },

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Link2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { isProviderConfigured, PROVIDER_LABELS } from "@/modules/calendar/infras
 import type { CalendarProvider } from "@/modules/calendar/infrastructure/provider-adapter";
 import { disconnectAction, syncNowAction, updateConnectionOptionsAction } from "../actions";
 
-export const metadata = { title: "Connexions calendrier — Sous Nos Ailes" };
+export const metadata = { title: "Connexions calendrier" };
 
 const PROVIDERS: CalendarProvider[] = ["google", "microsoft"];
 
@@ -55,15 +55,10 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
 
   return (
     <div className="space-y-6">
-      <Button asChild variant="ghost" size="sm">
-        <Link href="/app/calendrier">
-          <ArrowLeft className="size-4" aria-hidden="true" /> Calendrier
-        </Link>
-      </Button>
-      <PageHeader eyebrow="Agenda" title="Connexions Google / Outlook" description="OAuth 2.0 avec PKCE, permissions minimales (évènements du calendrier choisi), jetons chiffrés au repos. Par défaut, seules vos entrées internes sont exportées." />
+      <Link href="/app/calendrier" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Calendrier</Link>
+      <PageHeader title="Connexions Google / Outlook" description="OAuth 2.0 avec PKCE, permissions minimales (évènements du calendrier choisi), jetons chiffrés au repos. Par défaut, seules vos entrées internes sont exportées." />
       {sp.connected && (
         <Alert>
-          <Link2 className="size-4" aria-hidden="true" />
           <AlertTitle>Calendrier connecté</AlertTitle>
           <AlertDescription>Choisissez le calendrier cible et la direction, puis lancez une première synchronisation.</AlertDescription>
         </Alert>
@@ -91,7 +86,7 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
             );
           }
           return (
-            <Card key={provider} className="gap-4 p-5" data-testid={`connection-${provider}`}>
+            <Card key={provider} className="gap-4 p-6" data-testid={`connection-${provider}`}>
               <div>
                 <h3 className="font-semibold">{PROVIDER_LABELS[provider]}</h3>
                 <p className="text-sm text-muted-foreground">{provider === "google" ? "Portée demandée : évènements du calendrier + liste des calendriers (lecture)." : "Portée demandée : Calendars.ReadWrite + offline_access."}</p>

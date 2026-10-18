@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { expect, test, type APIRequestContext, type Browser, type BrowserContext, type Page } from "@playwright/test";
 
 /**
- * Scenario A — organiser journey (steps 1 → 10):
+ * Scenario A: organiser journey (steps 1 → 10):
  * sign-up → organiser onboarding → workspace created (checklist, channels) →
  * directory search → listing → inquiry → secure provider invitation → acceptance
  * in a second browser context (marie.garde@sousnosailes.test) → explicit

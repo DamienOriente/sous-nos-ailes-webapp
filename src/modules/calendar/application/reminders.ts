@@ -43,7 +43,7 @@ export async function dispatchDueReminders(executor: DbExecutor = db, now = new 
           userId: entry.ownerUserId,
           type: "deadline",
           title: `Rappel : ${entry.title}`,
-          body: `${when}${entry.location ? ` — ${entry.location}` : ""}`,
+          body: `${when}${entry.location ? ` (${entry.location})` : ""}`,
           href: `/app/calendrier?date=${occ.start.toISOString().slice(0, 10)}&view=day`,
           eventId: entry.eventId ?? undefined,
           dedupeKey: `calendar-reminder:${entry.id}:${occ.start.toISOString()}`,

@@ -9,7 +9,7 @@ export type Column<T> = { key: string; header: React.ReactNode; cell: (row: T) =
 export function AdminTable<T>({ columns, rows, rowKey, emptyTitle, emptyDescription, emptyIllustration, className }: { columns: Column<T>[]; rows: T[]; rowKey: (row: T) => string; emptyTitle: string; emptyDescription?: string; emptyIllustration?: React.ReactNode; className?: string }) {
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-card/60 px-6 py-10 text-center" role="status">
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-card px-6 py-10 text-center" role="status">
         <div className="mb-2 w-40">{emptyIllustration ?? <EmptyNestScene />}</div>
         <h3 className="text-base font-semibold">{emptyTitle}</h3>
         {emptyDescription && <p className="mt-1 max-w-sm text-sm text-muted-foreground text-pretty">{emptyDescription}</p>}
@@ -47,6 +47,6 @@ export function AdminTable<T>({ columns, rows, rowKey, emptyTitle, emptyDescript
 export { EmptyState };
 
 export function dateTime(d: Date | string | null | undefined): string {
-  if (!d) return "—";
+  if (!d) return "n/d";
   return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" }).format(typeof d === "string" ? new Date(d) : d);
 }

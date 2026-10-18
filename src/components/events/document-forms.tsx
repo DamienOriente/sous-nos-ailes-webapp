@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { FileUpload } from "@/components/files/file-upload";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -45,7 +45,6 @@ export function AddDocumentDialog({ eventId, providers, action }: { eventId: str
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="size-4" aria-hidden="true" />
           Ajouter un document
         </Button>
       </DialogTrigger>
@@ -111,7 +110,7 @@ export function AddDocumentDialog({ eventId, providers, action }: { eventId: str
             {fileId ? (
               <div className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
                 <span className="truncate">{fileName || "Fichier prêt"}</span>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setFileId(null)}>
+                <Button type="button" variant="outline" size="sm" onClick={() => setFileId(null)}>
                   Changer
                 </Button>
               </div>
@@ -130,7 +129,7 @@ export function AddDocumentDialog({ eventId, providers, action }: { eventId: str
           </div>
           <FormMessage error={error} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending || !fileId}>
@@ -143,13 +142,13 @@ export function AddDocumentDialog({ eventId, providers, action }: { eventId: str
   );
 }
 
-export function DeleteDocumentButton({ eventId, documentId, title, action, icon }: { eventId: string; documentId: string; title: string; action: (eventId: string, documentId: string) => Promise<ActionResult>; icon: React.ReactNode }) {
+export function DeleteDocumentButton({ eventId, documentId, title, action }: { eventId: string; documentId: string; title: string; action: (eventId: string, documentId: string) => Promise<ActionResult> }) {
   const router = useRouter();
   return (
     <ConfirmDialog
       trigger={
         <Button variant="ghost" size="icon-sm" aria-label={`Supprimer ${title}`}>
-          {icon}
+          <Trash2 className="size-4" aria-hidden="true" />
         </Button>
       }
       title={`Supprimer « ${title} » ?`}

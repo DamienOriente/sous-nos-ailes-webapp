@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { Activity, AlertTriangle, CalendarCheck, CreditCard, Flag, Inbox, Mail, ShieldAlert, Store, Users, type LucideIcon } from "lucide-react";
 import { Bars } from "@/components/admin/bars";
 import { Sparkline } from "@/components/admin/sparkline";
 import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
 import { dateTime } from "@/components/admin/admin-table";
-import { ChartScene, ShieldScene, StorefrontScene } from "@/components/illustrations/app-scenes";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -18,13 +16,10 @@ import { getDashboardSeries, type DailySeries } from "./_lib/series";
 export const dynamic = "force-dynamic";
 
 /** Stat card with its 30-day sparkline underneath. */
-function TrendCard({ label, value, series, icon: Icon, tone = "primary", warning = false, hint }: { label: string; value: React.ReactNode; series: DailySeries; icon: LucideIcon; tone?: "primary" | "warning" | "sky" | "blush"; warning?: boolean; hint?: React.ReactNode }) {
+function TrendCard({ label, value, series, tone = "primary", warning = false, hint }: { label: string; value: React.ReactNode; series: DailySeries; tone?: "primary" | "warning" | "sky" | "blush"; warning?: boolean; hint?: React.ReactNode }) {
   return (
     <Card className={cn("gap-2 px-5 py-4", warning && "border-warning/50")}>
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <Icon className={cn("size-4", warning ? "text-warning-foreground" : "text-muted-foreground")} aria-hidden="true" />
-      </div>
+      <p className="text-sm text-muted-foreground">{label}</p>
       <p className="font-heading text-2xl font-semibold tabular-nums">{value}</p>
       <Sparkline data={series} label={label} tone={warning ? "warning" : tone} />
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
@@ -39,33 +34,30 @@ export default async function AdminHome() {
   const proTotal = Object.values(d.professionals).reduce((s, n) => s + n, 0);
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Administration" title="Tableau de bord" description="Chiffres issus de la base de données, tendances sur 30 jours. Les séries de démonstration sont étiquetées." />
+      <PageHeader title="Tableau de bord" description="Chiffres issus de la base de données, tendances sur 30 jours. Les séries de démonstration sont étiquetées." />
       <TwoFactorBanner show={twoFactorWarning} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <TrendCard label="Utilisateurs" value={d.users.total} series={series.signups} icon={Users} hint={`${Object.entries(d.users.byRole).map(([r, n]) => `${n} ${r}`).join(" · ")}${demoLabel}`} />
-        <TrendCard label="En attente de modération" value={d.pendingModeration} series={series.moderationCases} icon={Inbox} warning={d.pendingModeration > 0} hint={<Link href="/admin/moderation" className="underline">Ouvrir la file</Link>} />
-        <TrendCard label="Évènements actifs" value={d.activeEvents} series={series.eventsCreated} icon={CalendarCheck} tone="sky" hint="planification, confirmés, en cours · courbe : créations" />
-        <TrendCard label="Demandes commerciales (30 j)" value={d.inquiries30d} series={series.inquiries} icon={Activity} tone="blush" />
-        <StatCard label="Signalements ouverts" value={d.openReports} hint={<Link href="/admin/signalements" className="underline">Traiter</Link>} icon={Flag} tone={d.openReports > 0 ? "warning" : "default"} />
-        {d.billingVisible && <StatCard label={d.mrr.isDemoOnly ? "MRR (démo)" : "MRR"} value={formatEuros(d.mrr.totalCents)} hint={d.mrr.demoCents > 0 && !d.mrr.isDemoOnly ? `dont ${formatEuros(d.mrr.demoCents)} de démo` : d.mrr.isDemoOnly ? "abonnements simulés uniquement" : "abonnements actifs × prix"} icon={CreditCard} />}
-        <StatCard label="E-mails en attente" value={d.outbox.pending} hint={`${d.outbox.failed} en échec · ${d.outbox.sent} envoyés`} icon={Mail} tone={d.outbox.failed > 0 ? "warning" : "default"} />
-        <StatCard label="Alertes sécurité (30 j)" value={d.securityAlerts.length} hint="sévérité ≥ moyenne" icon={ShieldAlert} tone={d.securityAlerts.length > 0 ? "warning" : "default"} />
+        <TrendCard label="Utilisateurs" value={d.users.total} series={series.signups} hint={`${Object.entries(d.users.byRole).map(([r, n]) => `${n} ${r}`).join(" · ")}${demoLabel}`} />
+        <TrendCard label="En attente de modération" value={d.pendingModeration} series={series.moderationCases} warning={d.pendingModeration > 0} hint={<Link href="/admin/moderation" className="underline">Ouvrir la file</Link>} />
+        <TrendCard label="Évènements actifs" value={d.activeEvents} series={series.eventsCreated} tone="sky" hint="planification, confirmés, en cours · courbe : créations" />
+        <TrendCard label="Demandes commerciales (30 j)" value={d.inquiries30d} series={series.inquiries} tone="blush" />
+        <StatCard label="Signalements ouverts" value={d.openReports} hint={<Link href="/admin/signalements" className="underline">Traiter</Link>} tone={d.openReports > 0 ? "warning" : "default"} />
+        {d.billingVisible && <StatCard label={d.mrr.isDemoOnly ? "MRR (démo)" : "MRR"} value={formatEuros(d.mrr.totalCents)} hint={d.mrr.demoCents > 0 && !d.mrr.isDemoOnly ? `dont ${formatEuros(d.mrr.demoCents)} de démo` : d.mrr.isDemoOnly ? "abonnements simulés uniquement" : "abonnements actifs × prix"} />}
+        <StatCard label="E-mails en attente" value={d.outbox.pending} hint={`${d.outbox.failed} en échec · ${d.outbox.sent} envoyés`} tone={d.outbox.failed > 0 ? "warning" : "default"} />
+        <StatCard label="Alertes sécurité (30 j)" value={d.securityAlerts.length} hint="sévérité ≥ moyenne" tone={d.securityAlerts.length > 0 ? "warning" : "default"} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="relative gap-4 overflow-hidden p-6">
+        <Card className="gap-4 p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">Inscriptions par jour (30 j)</h2>
-            {d.users.demo > 0 && <StatusBadge tone="warning">contient des comptes démo</StatusBadge>}
+            {d.users.demo > 0 && <StatusBadge tone="warning">Contient des comptes démo</StatusBadge>}
           </div>
           <Bars label="Inscriptions par jour" data={d.signupsPerDay.map((s) => ({ label: s.day.slice(5), value: s.count }))} />
-          <ChartScene className="pointer-events-none absolute -bottom-4 -right-6 w-32 opacity-30" />
         </Card>
-        <Card className="relative gap-4 overflow-hidden p-6">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Store className="size-4" aria-hidden="true" /> Professionnels par statut
-          </h2>
+        <Card className="gap-4 p-6">
+          <h2 className="font-semibold">Professionnels par statut</h2>
           {proTotal > 0 && (
             <div className="flex h-2 overflow-hidden rounded-full bg-muted" role="img" aria-label={`Répartition des ${proTotal} fiches par statut`}>
               {Object.entries(d.professionals).map(([status, n]) => (
@@ -81,9 +73,7 @@ export default async function AdminHome() {
               </li>
             ))}
             {Object.keys(d.professionals).length === 0 && (
-              <li className="col-span-2 flex items-center gap-3 text-muted-foreground">
-                <StorefrontScene className="w-20" /> Aucune fiche pour l'instant.
-              </li>
+              <li className="col-span-2 text-muted-foreground">Aucune fiche pour l'instant.</li>
             )}
           </ul>
           <h2 className="pt-2 font-semibold">Abonnements actifs par offre</h2>
@@ -104,14 +94,9 @@ export default async function AdminHome() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="gap-3 p-6">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <AlertTriangle className="size-4" aria-hidden="true" /> Alertes de sécurité récentes
-          </h2>
+          <h2 className="font-semibold">Alertes de sécurité récentes</h2>
           {d.securityAlerts.length === 0 ? (
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <ShieldScene className="w-24 shrink-0" />
-              <p>Aucune alerte de sévérité moyenne ou plus sur 30 jours.</p>
-            </div>
+            <p className="text-sm text-muted-foreground">Aucune alerte de sévérité moyenne ou plus sur 30 jours.</p>
           ) : (
             <ul className="divide-y text-sm">
               {d.securityAlerts.map((a) => (
@@ -146,7 +131,7 @@ export default async function AdminHome() {
               ))}
             </ul>
           )}
-          <p className="text-xs text-muted-foreground">Worker : {d.worker ? (d.worker.alive ? `actif (dernier signal ${d.worker.at ? dateTime(d.worker.at) : "—"})` : "aucun signal récent") : "état inconnu"}</p>
+          <p className="text-xs text-muted-foreground">Worker : {d.worker ? (d.worker.alive ? `actif (dernier signal ${d.worker.at ? dateTime(d.worker.at) : "n/d"})` : "aucun signal récent") : "état inconnu"}</p>
         </Card>
       </div>
     </div>

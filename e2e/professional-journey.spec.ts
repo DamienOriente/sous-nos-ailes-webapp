@@ -37,14 +37,14 @@ test("professional signs up and completes the five-step onboarding", async ({ pa
   await page.goto("/onboarding/professionnel");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Créer ma fiche");
 
-  await test.step("step 1 — trade", async () => {
+  await test.step("step 1: trade", async () => {
     await page.getByText("Garde d'enfants évènementielle", { exact: true }).first().click();
     await page.getByRole("checkbox", { name: "Baby-sitting" }).check({ force: true }).catch(() => undefined);
     await page.getByRole("button", { name: "Continuer" }).click();
     await expect(page).toHaveURL(/step=2/);
   });
 
-  await test.step("step 2 — identity", async () => {
+  await test.step("step 2: identity", async () => {
     await page.getByLabel("Nom commercial").fill(DISPLAY_NAME);
     await page.getByLabel("Statut / type de structure").selectOption("sole_trader");
     await page.getByLabel(/^Ville\b/).fill("Toulouse");
@@ -53,7 +53,7 @@ test("professional signs up and completes the five-step onboarding", async ({ pa
     await expect(page).toHaveURL(/step=3/);
   });
 
-  await test.step("step 3 — childcare form (conditional)", async () => {
+  await test.step("step 3: childcare form (conditional)", async () => {
     await expect(page.getByRole("heading", { name: "Votre activité de garde d'enfants" })).toBeVisible();
     await page.getByLabel("Années d'expérience auprès d'enfants").fill("4");
     await page.getByText("Maternelle (3–6 ans)").click();
@@ -64,7 +64,7 @@ test("professional signs up and completes the five-step onboarding", async ({ pa
     await expect(page).toHaveURL(/step=4/);
   });
 
-  await test.step("step 4 — presentation", async () => {
+  await test.step("step 4: presentation", async () => {
     await page.getByLabel("Accroche (140 caractères max)").fill("Garde d'enfants douce et créative pour vos réceptions à Toulouse");
     await page.getByLabel("Description", { exact: true }).fill("Nous accompagnons les enfants pendant vos mariages et réceptions : espace de jeux sécurisé, ateliers calmes, sieste pour les plus petits et remise aux parents avec traçabilité. Équipe formée aux premiers secours, ratio d'encadrement annoncé à l'avance.");
     await page.getByLabel("À partir de (€)").fill("32");
@@ -76,7 +76,7 @@ test("professional signs up and completes the five-step onboarding", async ({ pa
     await expect(page).toHaveURL(/step=5/);
   });
 
-  await test.step("step 5 — recap, template, submission", async () => {
+  await test.step("step 5: recap, template, submission", async () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText(DISPLAY_NAME);
     const score = Number((await page.getByTestId("completeness-score").textContent())?.replace(/\D/g, ""));
     expect(score).toBeGreaterThanOrEqual(40);

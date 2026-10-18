@@ -1,6 +1,6 @@
 "use client";
 import { useId, useState } from "react";
-import { Loader2, Send } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { describeAuthFailure } from "@/components/auth/auth-client-error";
 import { RateLimitNotice } from "@/components/auth/rate-limit-notice";
 import { FormMessage } from "@/components/shared/form-message";
@@ -61,7 +61,7 @@ export function ResendVerification({ email: knownEmail, variant = "card" }: { em
         </div>
       )}
       <Button type="button" variant={variant === "inline" ? "outline" : "default"} size={variant === "inline" ? "sm" : "default"} onClick={send} disabled={pending || retryUntil !== null} aria-busy={pending} className={variant === "card" ? "w-full" : undefined}>
-        {pending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Send aria-hidden="true" />}
+        {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
         Renvoyer l'e-mail de confirmation
       </Button>
     </div>

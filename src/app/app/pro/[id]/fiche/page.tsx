@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
-import { Trash2 } from "lucide-react";
 import { db } from "@/db/client";
 import { organizations } from "@/db/schema";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -68,7 +67,6 @@ export default async function ListingEditPage({ params, searchParams }: { params
             <ConfirmDialog
               trigger={
                 <Button variant="destructive" size="sm">
-                  <Trash2 className="size-4" aria-hidden="true" />
                   Archiver
                 </Button>
               }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Inbox, Send } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +38,6 @@ export default async function ProDashboardPage({ params, searchParams }: { param
       <WelcomeCard firstName={firstName} listingName={listing.displayName || "Fiche sans nom"} status={listing.status} slug={listing.slug} baseHref={base} preview={preview} />
       {sp.submitted === "1" && (
         <Alert>
-          <Send className="size-4" aria-hidden="true" />
           <AlertTitle>Fiche envoyée à la validation</AlertTitle>
           <AlertDescription>Merci ! Notre équipe relit votre fiche. En attendant, complétez vos prestations et disponibilités.</AlertDescription>
         </Alert>
@@ -48,7 +46,7 @@ export default async function ProDashboardPage({ params, searchParams }: { param
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Statut : {status.explanation}</CardTitle>
-            <CardDescription>Prochaine étape — {status.nextStep}</CardDescription>
+            <CardDescription>Prochaine étape : {status.nextStep}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             {canSubmit && (
@@ -65,7 +63,7 @@ export default async function ProDashboardPage({ params, searchParams }: { param
             <Button asChild variant="outline">
               <Link href={`${base}/fiche`}>Modifier ma fiche</Link>
             </Button>
-            <Button asChild variant="ghost">
+            <Button asChild variant="outline">
               <Link href={`${base}/page`}>Ma page publique</Link>
             </Button>
           </CardContent>
@@ -74,9 +72,9 @@ export default async function ProDashboardPage({ params, searchParams }: { param
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Demandes reçues" value={recent.length >= 5 ? "5+" : recent.length} icon={Inbox} hint="Dernières demandes" />
+        <StatCard label="Demandes reçues" value={recent.length >= 5 ? "5+" : recent.length} hint="Dernières demandes" />
         <StatCard label="Niveau de vérification" value={`${listing.verificationLevel}/5`} hint="Voir l'onglet Vérification" />
-        <StatCard label="Évènements à venir" value={data.upcoming.length} icon={CalendarDays} hint="Où vous intervenez" />
+        <StatCard label="Évènements à venir" value={data.upcoming.length} hint="Où vous intervenez" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -91,7 +89,7 @@ export default async function ProDashboardPage({ params, searchParams }: { param
               <ul className="divide-y">
                 {recent.map((i) => (
                   <li key={i.id}>
-                    <Link href={`${base}/demandes/${i.id}`} className="flex items-center justify-between gap-3 py-3 hover:bg-muted/50">
+                    <Link href={`${base}/demandes/${i.id}`} className="flex items-center justify-between gap-3 py-3 hover:bg-muted">
                       <div className="min-w-0">
                         <p className="truncate font-medium">{i.requesterName}</p>
                         <p className="truncate text-xs text-muted-foreground">
@@ -104,10 +102,8 @@ export default async function ProDashboardPage({ params, searchParams }: { param
                 ))}
               </ul>
             )}
-            <Button asChild variant="ghost" size="sm" className="mt-3">
-              <Link href={`${base}/demandes`}>
-                Toutes les demandes <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
+            <Button asChild variant="link" size="sm" className="mt-3 px-0">
+              <Link href={`${base}/demandes`}>Toutes les demandes</Link>
             </Button>
           </CardContent>
         </Card>
@@ -123,7 +119,7 @@ export default async function ProDashboardPage({ params, searchParams }: { param
               <ul className="divide-y">
                 {data.upcoming.map((e) => (
                   <li key={e.id}>
-                    <Link href={`/app/evenements/${e.id}`} className="flex items-center justify-between gap-3 py-3 hover:bg-muted/50">
+                    <Link href={`/app/evenements/${e.id}`} className="flex items-center justify-between gap-3 py-3 hover:bg-muted">
                       <div className="min-w-0">
                         <p className="truncate font-medium">{e.name}</p>
                         <p className="text-xs text-muted-foreground">

@@ -1,4 +1,3 @@
-import { Music, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +12,7 @@ import { formatDateTime } from "@/modules/calendar/domain/datetime";
 import { getMusicOverview } from "@/modules/trade-tools/application/music-service";
 import { addMomentAction, deleteMomentAction, saveBriefAction } from "./actions";
 
-export const metadata = { title: "Brief musical — Sous Nos Ailes" };
+export const metadata = { title: "Brief musical" };
 
 export default async function MusicPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = await params;
@@ -25,7 +24,7 @@ export default async function MusicPage({ params }: { params: Promise<{ id: stri
   const { brief, moments } = data;
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Outil métier" title="Musique" description="Brief musical partagé entre les organisateurs et le DJ / les musiciens : envies, interdits, moments clés, besoins techniques." />
+      <PageHeader title="Musique" description="Brief musical partagé entre les organisateurs et le DJ / les musiciens : envies, interdits, moments clés, besoins techniques." />
       <div className="grid gap-6 lg:grid-cols-2">
         <ToolSection title="Brief">
           <ActionForm action={saveBriefAction.bind(null, eventId)} successMessage="Brief enregistré.">
@@ -55,7 +54,7 @@ export default async function MusicPage({ params }: { params: Promise<{ id: stri
           title="Moments importants"
           description="Entrée des mariés, ouverture de bal, gâteau… avec le titre souhaité."
           action={
-            <ActionDialog trigger={<Button size="sm"><Plus className="size-4" aria-hidden="true" /> Ajouter</Button>} title="Moment important" action={addMomentAction.bind(null, eventId)} successMessage="Moment ajouté.">
+            <ActionDialog trigger={<Button size="sm">Ajouter</Button>} title="Moment important" action={addMomentAction.bind(null, eventId)} successMessage="Moment ajouté.">
               <div className="space-y-1.5">
                 <Label htmlFor="km-title">Moment *</Label>
                 <Input id="km-title" name="title" required placeholder="Ouverture de bal" />
@@ -88,11 +87,10 @@ export default async function MusicPage({ params }: { params: Promise<{ id: stri
               {moments.map((m) => (
                 <li key={m.id} className="flex items-start justify-between gap-3 py-2">
                   <div className="flex items-start gap-3">
-                    <Music className="mt-1 size-4 text-primary" aria-hidden="true" />
                     <div>
                       <div className="font-medium">{m.title}</div>
                       <div className="text-sm text-muted-foreground">
-                        {[m.songTitle, m.artist].filter(Boolean).join(" — ") || "Titre à définir"}
+                        {[m.songTitle, m.artist].filter(Boolean).join(" · ") || "Titre à définir"}
                         {m.startsAt ? ` · ${formatDateTime(m.startsAt, timezone)}` : ""}
                       </div>
                       {m.notes && <div className="text-sm text-muted-foreground">{m.notes}</div>}

@@ -18,7 +18,7 @@ test.describe("Calendrier", () => {
     await page.goto("/app/calendrier?view=month&date=2027-06-12");
     await expect(page.getByRole("heading", { name: "Calendrier" })).toBeVisible();
     await expect(page.getByText(/conflit/)).toBeVisible();
-    await expect(page.getByTestId("calendar-occurrence").filter({ hasText: "DJ — Mariage Louis & Lisa" }).first()).toBeVisible();
+    await expect(page.getByTestId("calendar-occurrence").filter({ hasText: /DJ.*mariage Louis & Lisa/i }).first()).toBeVisible();
 
     // Create an entry through the dialog.
     await page.getByRole("button", { name: "Nouvelle entrée" }).click();
@@ -48,7 +48,7 @@ test.describe("Calendrier", () => {
     expect(ics.headers()["content-type"]).toContain("text/calendar");
     const body = await ics.text();
     expect(body).toContain("BEGIN:VCALENDAR");
-    expect(body).toContain("DJ — Mariage Louis & Lisa");
+    expect(body).toMatch(/DJ.*mariage Louis & Lisa/i);
   });
 
   test("Connexions : paywall pour un pro gratuit (Théo), état « non activée » et connexion expirée pour un organisateur", async ({ page }) => {

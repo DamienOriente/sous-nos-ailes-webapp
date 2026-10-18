@@ -1,4 +1,3 @@
-import { FlaskConical } from "lucide-react";
 import { ActionForm, ActionSubmit, type FormAction } from "@/components/admin/action-form";
 import { Card } from "@/components/ui/card";
 import { formatEuros } from "@/lib/utils";
@@ -7,13 +6,10 @@ import { formatEuros } from "@/lib/utils";
 export function MockCheckoutForm({ action, planName, priceCents, discountedCents, promo, hidden }: { action: FormAction; planName: string; priceCents: number; discountedCents: number | null; promo: string | null; hidden: Record<string, string> }) {
   return (
     <Card className="gap-6 border-dashed border-warning/60 bg-warning/5 p-6 sm:p-8" data-testid="mock-checkout">
-      <div className="flex items-start gap-3">
-        <FlaskConical className="mt-1 size-5 text-warning-foreground" aria-hidden="true" />
-        <div>
-          <p className="text-xs font-semibold tracking-[0.12em] text-warning-foreground uppercase">Paiement simulé — environnement de démonstration</p>
-          <h1 className="text-xl font-semibold">Souscrire à {planName}</h1>
-          <p className="text-sm text-muted-foreground text-pretty">Aucune carte n'est demandée et aucun débit n'a lieu. Ce simulateur produit exactement les évènements que Stripe enverrait, pour tester le parcours de bout en bout.</p>
-        </div>
+      <div className="space-y-1">
+        <h1 className="text-xl font-semibold">Souscrire à {planName}</h1>
+        <p className="text-sm font-medium text-warning-foreground">Paiement simulé : environnement de démonstration</p>
+        <p className="text-sm text-muted-foreground text-pretty">Aucune carte n'est demandée et aucun débit n'a lieu. Ce simulateur produit les mêmes évènements que Stripe, pour tester le parcours de bout en bout.</p>
       </div>
       <dl className="rounded-xl bg-background p-4 text-sm">
         <div className="flex justify-between">

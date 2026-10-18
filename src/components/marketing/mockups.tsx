@@ -1,4 +1,3 @@
-import { Baby, CalendarDays, CheckCircle2, Clock3, MapPin, Users } from "lucide-react";
 import { cn, formatDateFr } from "@/lib/utils";
 import type { EventShowcase } from "@/modules/directory/application/public-showcase";
 import { DemoLabel } from "./photo-frame";
@@ -36,13 +35,10 @@ export function daysUntil(isoDate: string, now = new Date()): number {
   return Math.round((target - today) / 86_400_000);
 }
 
-function Panel({ title, icon: Icon, children, className, footer }: { title: string; icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; className?: string; footer?: React.ReactNode }) {
+function Panel({ title, children, className, footer }: { title: string; children: React.ReactNode; className?: string; footer?: React.ReactNode }) {
   return (
-    <div className={cn("min-w-0 overflow-hidden rounded-3xl border bg-card shadow-soft", className)}>
-      <div className="flex items-center gap-2 border-b bg-muted/60 px-4 py-2.5 text-sm font-semibold">
-        <Icon className="size-4 text-primary" aria-hidden="true" />
-        {title}
-      </div>
+    <div className={cn("min-w-0 overflow-hidden rounded-3xl border bg-card", className)}>
+      <div className="border-b bg-muted/60 px-4 py-2.5 text-sm font-semibold">{title}</div>
       <div className="p-4">{children}</div>
       {footer && <div className="border-t px-4 py-2.5 text-xs text-muted-foreground">{footer}</div>}
     </div>
@@ -64,7 +60,7 @@ export function ControlTowerMockup({ event, className }: { event: EventShowcase;
   const days = event.eventDate ? daysUntil(event.eventDate) : null;
   const pct = event.tasks.total ? Math.round((event.tasks.done / event.tasks.total) * 100) : 0;
   return (
-    <Panel title="Tour de contrôle" icon={CalendarDays} className={className} footer={event.isDemo ? <DemoLabel>Données de démonstration — évènement fictif</DemoLabel> : undefined}>
+    <Panel title="Tour de contrôle" className={className} footer={event.isDemo ? <DemoLabel>Données de démonstration, évènement fictif</DemoLabel> : undefined}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div>
           <p className="font-heading text-lg font-semibold leading-tight">{event.name}</p>
@@ -125,7 +121,7 @@ export function ControlTowerMockup({ event, className }: { event: EventShowcase;
 /** The providers list as the organiser sees it (status per provider slot). */
 export function ProvidersMockup({ event, className }: { event: EventShowcase; className?: string }) {
   return (
-    <Panel title="Prestataires" icon={Users} className={className} footer={event.isDemo ? <DemoLabel>Données de démonstration</DemoLabel> : undefined}>
+    <Panel title="Prestataires" className={className} footer={event.isDemo ? <DemoLabel>Données de démonstration</DemoLabel> : undefined}>
       <ul className="divide-y text-sm">
         {event.providers.list.slice(0, 7).map((p) => {
           const st = PROVIDER_STATUS[p.status] ?? { label: p.status, tone: "bg-muted" };
@@ -150,7 +146,7 @@ export function SeatingPlanMockup({ event, className }: { event: EventShowcase; 
   if (tables.length === 0) return null;
   const total = tables.reduce((n, t) => n + t.capacity, 0);
   return (
-    <Panel title="Plan de table" icon={MapPin} className={className} footer={<span>{event.seating.seated} invités placés sur {total} places{event.isDemo ? " — données de démonstration" : ""}</span>}>
+    <Panel title="Plan de table" className={className} footer={<span>{event.seating.seated} invités placés sur {total} places{event.isDemo ? ". Données de démonstration." : ""}</span>}>
       <svg viewBox="0 0 1000 640" className="mx-auto h-auto w-full max-w-3xl" role="img" aria-label={`Plan de table avec ${tables.length} tables`}>
         <rect x="0" y="0" width="1000" height="640" rx="28" fill="var(--sna-sand)" opacity="0.35" />
         <rect x="380" y="20" width="240" height="40" rx="10" fill="var(--sna-sage-soft)" />
@@ -185,7 +181,7 @@ export function SeatingPlanMockup({ event, className }: { event: EventShowcase; 
 export function KidsSpaceMockup({ event, className }: { event: EventShowcase; className?: string }) {
   const kidsMoments = event.milestones.filter((m) => /enfant|goûter|sieste|petits/i.test(m.title)).slice(0, 3);
   return (
-    <Panel title="Espace enfants" icon={Baby} className={className} footer={<span>Réservé à l'équipe de garde. Allergies et consignes médicales chiffrées, jamais affichées ici.{event.isDemo ? " Données de démonstration." : ""}</span>}>
+    <Panel title="Espace enfants" className={className} footer={<span>Réservé à l'équipe de garde. Allergies et consignes médicales chiffrées, jamais affichées ici.{event.isDemo ? " Données de démonstration." : ""}</span>}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
         <span className="font-medium">{event.children.total} enfant{event.children.total > 1 ? "s" : ""} inscrit{event.children.total > 1 ? "s" : ""}</span>
         {event.careTeam > 0 && (
@@ -207,20 +203,16 @@ export function KidsSpaceMockup({ event, className }: { event: EventShowcase; cl
       {kidsMoments.length > 0 && (
         <ol className="mt-4 space-y-1.5 text-sm">
           {kidsMoments.map((m) => (
-            <li key={m.title} className="flex items-center gap-2">
-              <Clock3 className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <li key={m.title} className="flex items-center gap-3">
               <span className="w-11 shrink-0 text-xs text-muted-foreground tabular-nums">{formatDateFr(m.startsAt, { hour: "2-digit", minute: "2-digit" })}</span>
               <span className="truncate">{m.title}</span>
             </li>
           ))}
         </ol>
       )}
-      <ul className="mt-4 grid gap-1.5 text-xs text-muted-foreground sm:grid-cols-2">
+      <ul className="mt-4 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
         {["Présences : arrivée et départ horodatés", "Remise uniquement aux personnes autorisées", "Consignes des parents, accès journalisé", "Anonymisation automatique après l'évènement"].map((t) => (
-          <li key={t} className="flex items-start gap-1.5">
-            <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
-            {t}
-          </li>
+          <li key={t}>{t}</li>
         ))}
       </ul>
     </Panel>
@@ -236,11 +228,11 @@ export function InquiryExample({ professionalName, categoryName, className }: { 
     ["Type d'évènement", "Mariage"],
     ["Date envisagée", "samedi 12 juin 2027"],
     ["Lieu", "Lavaur (81)"],
-    ["Invités", "120, dont 14 enfants de 2 à 11 ans"],
+    ["Invités", "120, dont 9 enfants de 2 à 11 ans"],
     ["Besoin", "Garde et animation de 12 h 30 à 23 h, espace sieste pour les plus petits"],
   ];
   return (
-    <div className={cn("min-w-0 overflow-hidden rounded-3xl border bg-card shadow-soft", className)}>
+    <div data-testid="inquiry-example" className={cn("min-w-0 overflow-hidden rounded-3xl border bg-card", className)}>
       <div className="flex items-center justify-between gap-3 border-b bg-muted/60 px-4 py-2.5">
         <p className="text-sm font-semibold">Demande de devis{professionalName ? ` à ${professionalName}` : ""}</p>
         <DemoLabel>Exemple</DemoLabel>

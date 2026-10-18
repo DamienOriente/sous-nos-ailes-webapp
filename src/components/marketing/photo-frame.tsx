@@ -41,5 +41,5 @@ export function PhotoFrame({
 
 /** Small, consistent "this is demo data" marker. */
 export function DemoLabel({ children = "Démonstration", className }: { children?: React.ReactNode; className?: string }) {
-  return <span className={cn("inline-flex items-center rounded-full border border-warning/50 bg-warning/15 px-2 py-0.5 text-xs font-medium text-foreground", className)}>{children}</span>;
+  return <span className={cn("inline-flex items-center rounded-full bg-warning/20 px-2 py-0.5 text-xs font-medium text-foreground", className)}>{children}</span>;
 }

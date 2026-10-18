@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, MessageSquare, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { ChecklistScene } from "@/components/illustrations/event-scenes";
@@ -105,13 +105,12 @@ export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, tod
   }
   const suggestChip = canManage && actions.addSuggested && suggestionCount > 0 && (
     <Button variant="outline" size="sm" onClick={addSuggested} disabled={pending} data-testid="add-suggested-tasks">
-      <Sparkles className="size-3.5" aria-hidden="true" />
       Ajouter {suggestionCount} tâche{suggestionCount > 1 ? "s" : ""} souvent oubliée{suggestionCount > 1 ? "s" : ""}
     </Button>
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between text-sm">
@@ -127,10 +126,7 @@ export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, tod
         {canManage && tasks.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {suggestChip}
-            <Button onClick={() => setEditing("new")}>
-              <Plus className="size-4" aria-hidden="true" />
-              Nouvelle tâche
-            </Button>
+            <Button onClick={() => setEditing("new")}>Nouvelle tâche</Button>
           </div>
         )}
       </div>
@@ -199,8 +195,8 @@ export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, tod
           scene={ChecklistScene}
           title="Votre liste de préparation est vide"
           description="Les tâches se rangent par section (Lieu, Prestataires, Enfants, Invités…), avec une échéance, un responsable et des commentaires. Les tâches « Équipe » sont visibles des prestataires."
-          example="Réserver le traiteur — avant le 12 mars"
-          action={canManage ? <>{suggestChip}<Button onClick={() => setEditing("new")}><Plus className="size-4" aria-hidden="true" />Nouvelle tâche</Button></> : undefined}
+          example="Réserver le traiteur avant le 12 mars"
+          action={canManage ? <>{suggestChip}<Button onClick={() => setEditing("new")}>Nouvelle tâche</Button></> : undefined}
           testId="tasks-empty"
         />
       ) : filtered.length === 0 ? (
@@ -209,8 +205,8 @@ export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, tod
         <div className="space-y-6">
           {sections.map(([section, list]) => (
             <section key={section} aria-labelledby={`sec-${section}`}>
-              <h2 id={`sec-${section}`} className="mb-2 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-                {section} <span className="font-normal tabular-nums">({list.length})</span>
+              <h2 id={`sec-${section}`} className="mb-2 text-base font-semibold">
+                {section} <span className="font-normal text-muted-foreground tabular-nums">({list.length})</span>
               </h2>
               <ul className="divide-y rounded-2xl border bg-card">
                 {list.map((t) => {
@@ -230,14 +226,13 @@ export function TaskBoard({ eventId, tasks, members, canManage, isOrganizer, tod
                         {t.description && <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{t.description}</p>}
                         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                           {t.dueDate && (
-                            <span className={cn("inline-flex items-center gap-1 tabular-nums", overdue && "font-medium text-destructive")}>
-                              {overdue && <AlertTriangle className="size-3" aria-hidden="true" />}
+                            <span className={cn("tabular-nums", overdue && "font-medium text-destructive")}>
                               {formatDateFr(t.dueDate, { day: "numeric", month: "short", year: "numeric" })}
+                              {overdue ? " (en retard)" : ""}
                             </span>
                           )}
                           {t.assigneeName && <span>{t.assigneeName}</span>}
-                          <button type="button" onClick={() => setCommentsFor(t)} className="inline-flex items-center gap-1 hover:text-foreground">
-                            <MessageSquare className="size-3" aria-hidden="true" />
+                          <button type="button" onClick={() => setCommentsFor(t)} className="underline-offset-2 hover:text-foreground hover:underline">
                             {t.commentCount} commentaire{t.commentCount > 1 ? "s" : ""}
                           </button>
                         </div>
@@ -331,11 +326,11 @@ function TaskDialog({ eventId, task, members, isOrganizer, onClose, actions }: {
         <form key={t?.id ?? "new"} onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="t-title">Titre</Label>
-            <Input id="t-title" name="title" value={title} onChange={(e) => setTitle(e.target.value)} required minLength={2} maxLength={200} autoFocus placeholder={examples[0] ?? "Réserver le traiteur — avant le 12 mars"} />
+            <Input id="t-title" name="title" value={title} onChange={(e) => setTitle(e.target.value)} required minLength={2} maxLength={200} autoFocus placeholder={examples[0] ?? "Réserver le traiteur avant le 12 mars"} />
             {!t && (
               <div className="flex flex-wrap gap-1.5 pt-1" aria-label="Exemples de tâches">
                 {examples.map((ex) => (
-                  <button key={ex} type="button" onClick={() => setTitle(ex)} className="rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground">
+                  <button key={ex} type="button" onClick={() => setTitle(ex)} className="rounded-md border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
                     {ex}
                   </button>
                 ))}
@@ -424,7 +419,7 @@ function TaskDialog({ eventId, task, members, isOrganizer, onClose, actions }: {
           </div>
           <FormMessage error={error} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={onClose} disabled={pending}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={pending}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending} aria-busy={pending}>

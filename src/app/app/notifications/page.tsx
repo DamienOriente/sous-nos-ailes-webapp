@@ -35,7 +35,6 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Centre de notifications"
         title="Notifications"
         description={page.unread > 0 ? `${page.unread} non lue${page.unread > 1 ? "s" : ""}` : "Vous êtes à jour."}
         actions={
@@ -46,7 +45,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
               </Link>
             </Button>
             <MarkAllReadButton action={markAll} disabled={page.unread === 0} />
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="outline" size="sm">
               <Link href="/app/compte/notifications">Préférences</Link>
             </Button>
           </>

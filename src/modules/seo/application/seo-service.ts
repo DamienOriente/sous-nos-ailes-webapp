@@ -43,7 +43,7 @@ export async function buildSeoReport(actor: Actor, professionalId: string): Prom
   const effectiveTitle = draft.draft.seoTitle?.trim() || generateTitle(pro);
   const effectiveDescription = draft.draft.seoDescription?.trim() || generateDescription(pro, content);
 
-  // Images: hero, about, gallery — alt text and weight from the files table.
+  // Images: hero, about, gallery, alt text and weight from the files table.
   const metaById = new Map(draft.renderData.images.map((i) => [i.fileId, i]));
   const images: ImageReport[] = [];
   const push = (fileId: string, alt: string, where: string) => {

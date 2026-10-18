@@ -4,7 +4,6 @@ import { ArrowLeft } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { events } from "@/db/schema";
-import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { InvitationForm } from "@/components/invitations/invitation-form";
 import { isAppError } from "@/lib/errors";
@@ -13,7 +12,7 @@ import { requireEventPermission } from "@/modules/authorization";
 import { getInvitationEntitlement, listInvitationGuestsOptions } from "@/modules/invitations/application/invitation-service";
 import { createInvitationAction } from "../actions";
 
-export const metadata = { title: "Nouvelle invitation — Sous Nos Ailes" };
+export const metadata = { title: "Nouvelle invitation" };
 
 export default async function NewInvitationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,12 +29,8 @@ export default async function NewInvitationPage({ params }: { params: Promise<{ 
   const onSubmit = createInvitationAction.bind(null, id);
   return (
     <div className="space-y-6">
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link href={`/app/evenements/${id}/invitations`}>
-          <ArrowLeft className="size-4" aria-hidden="true" /> Invitations
-        </Link>
-      </Button>
-      <PageHeader eyebrow="Évènement" title="Nouvelle invitation" description="Un lien RSVP sécurisé est créé automatiquement : envoyez-le par e-mail ou copiez-le." />
+      <Link href={`/app/evenements/${id}/invitations`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Invitations</Link>
+      <PageHeader title="Nouvelle invitation" description="Un lien RSVP sécurisé est créé automatiquement : envoyez-le par e-mail ou copiez-le." />
       <InvitationForm eventId={id} event={{ eventName: event.name, eventType: event.type, eventDate: event.eventDate, startsAt: event.startsAt, timezone: event.timezone, venueName: event.venueName, city: event.city }} guests={guests} groups={groups} premium={entitlement.premium} onSubmit={onSubmit} />
     </div>
   );

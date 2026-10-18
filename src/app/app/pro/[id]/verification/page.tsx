@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FileCheck2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -84,7 +84,7 @@ export default async function VerificationPage({ params }: { params: Promise<{ i
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="decl-statement">Précisions</Label>
-                  <Textarea id="decl-statement" name="statement" rows={3} maxLength={500} placeholder="Ex. RC Pro souscrite auprès de … , valable jusqu'au … / CAP AEPE obtenu en 2019, PSC1 2024" required />
+                  <Textarea id="decl-statement" name="statement" rows={3} maxLength={500} placeholder="Ex. RC Pro souscrite auprès de (assureur), valable jusqu'au (date) / CAP AEPE obtenu en 2019, PSC1 2024" required />
                   <FieldErrorText name="statement" />
                 </div>
               </div>
@@ -105,14 +105,11 @@ export default async function VerificationPage({ params }: { params: Promise<{ i
               <ul className="divide-y rounded-xl border">
                 {documents.map((d) => (
                   <li key={d.id} className="flex items-center justify-between gap-3 p-3 text-sm">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <FileCheck2 className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                      <div className="min-w-0">
-                        <p className="truncate font-medium">{d.label ?? DOCUMENT_KIND_LABELS[d.kind]}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {DOCUMENT_KIND_LABELS[d.kind]} · transmis le {formatDateFr(d.createdAt)}
-                        </p>
-                      </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{d.label ?? DOCUMENT_KIND_LABELS[d.kind]}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {DOCUMENT_KIND_LABELS[d.kind]} · transmis le {formatDateFr(d.createdAt)}
+                      </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <StatusBadge tone={STATUS_LABEL[d.status].tone}>{STATUS_LABEL[d.status].label}</StatusBadge>

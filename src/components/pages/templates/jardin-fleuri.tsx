@@ -3,9 +3,9 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Jardin fleuri — florists, decorators. A herbarium: paper background,
- * pictures mounted as botanical plates with a caption, sections bordered by a
- * thin double frame, titles in Fraunces with soft serifs.
+ * Jardin fleuri: florists, decorators. A herbarium: pictures mounted as
+ * plates with a caption, sections bordered by a thin double frame, titles in
+ * Fraunces with soft serifs.
  */
 const VARIANTS: VariantMap = { hero: "stacked", about: "with-image", services: "columns", pricing: "table", gallery: "plates", testimonials: "cards", faq: "lines", contact: "panel", trust: "row", zone: "map", cta_quote: "boxed", availability: "compact" };
 

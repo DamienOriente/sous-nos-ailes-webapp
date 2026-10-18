@@ -2,7 +2,6 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Baby } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -111,10 +110,10 @@ export function GuestFormDialog({
           <div className="space-y-2 rounded-xl border p-3">
             <label className="flex items-center gap-2 text-sm font-medium">
               <Checkbox checked={isChild} onCheckedChange={(v) => setIsChild(v === true)} name="isChild" />
-              <Baby className="size-4 text-primary" aria-hidden="true" /> Cet invité est un enfant
+               Cet invité est un enfant
             </label>
             {isChild && (
-              <div className="grid gap-3 sm:grid-cols-[120px_1fr] sm:items-end">
+              <div className="grid gap-4 sm:grid-cols-[120px_1fr] sm:items-end">
                 <div className="space-y-1.5">
                   <Label htmlFor="gf-age">Âge (ans)</Label>
                   <Input id="gf-age" name="ageYears" type="number" min={0} max={17} defaultValue={initial?.ageYears ?? ""} />
@@ -157,7 +156,7 @@ export function GuestFormDialog({
           </div>
           <FormMessage error={error} />
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               Annuler
             </Button>
             <Button type="submit" disabled={pending}>

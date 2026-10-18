@@ -2,20 +2,16 @@ import { renderBlock, type VariantMap } from "@/components/pages/blocks/render-b
 import { heroOf, Sections, TemplateFooter, type TemplateProps } from "./_shared";
 
 /**
- * Confettis — parties. Poster hero, then full-width coloured bands that
- * alternate (surface / accent-tinted / plain) with a running marquee of the
- * trade keywords between them. Loud by design, but only three colours.
+ * Confettis: parties. Poster hero, then full-width coloured bands that
+ * alternate (surface / accent-tinted / plain), with a static line of the
+ * trade keywords between hero and body. Loud by design, but only three colours.
  */
 const VARIANTS: VariantMap = { hero: "poster", about: "two-column", services: "tiles", pricing: "cards", gallery: "mosaic", testimonials: "cards", faq: "cards", contact: "stacked", trust: "row", zone: "card", cta_quote: "band", availability: "grid" };
 
-function Marquee({ words }: { words: string[] }) {
-  const line = words.join("  ✦  ");
+function Keywords({ words }: { words: string[] }) {
   return (
-    <div className="overflow-hidden border-y-4 border-(--pg-text) py-3 text-xl font-bold uppercase tracking-tight" aria-hidden="true">
-      <div className="pg-marquee gap-8">
-        <span>{line}  ✦  </span>
-        <span>{line}  ✦  </span>
-      </div>
+    <div className="border-y-4 border-(--pg-text)">
+      <p className="mx-auto max-w-7xl px-5 py-3 text-xl font-bold sm:px-8 sm:text-2xl">{words.join(", ")}</p>
     </div>
   );
 }
@@ -27,7 +23,7 @@ export default function Confettis({ data, ctx, blocks }: TemplateProps) {
   return (
     <div className="[&_h1]:font-extrabold [&_h2]:text-4xl [&_h2]:font-extrabold [&_h2]:tracking-tight [&_h2]:sm:text-5xl">
       {hero && renderBlock(hero, ctx, VARIANTS)}
-      <Marquee words={words} />
+      <Keywords words={words} />
       <Sections
         ctx={ctx}
         blocks={blocks}
@@ -38,7 +34,6 @@ export default function Confettis({ data, ctx, blocks }: TemplateProps) {
           </div>
         )}
       />
-      <Marquee words={words} />
       <TemplateFooter data={data} className="border-0" />
     </div>
   );

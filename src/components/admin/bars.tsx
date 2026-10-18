@@ -8,7 +8,7 @@ export function Bars({ data, label, className }: { data: Array<{ label: string; 
       <div className="flex h-28 items-end gap-0.5" role="img" aria-label={`${label} : ${data.map((d) => `${d.label} ${d.value}`).join(", ")}`}>
         {data.map((d) => (
           <div key={d.label} className="flex flex-1 flex-col items-center justify-end" title={`${d.label} : ${d.value}`}>
-            <div className="w-full rounded-t bg-primary/70 transition-[height]" style={{ height: `${Math.max(2, Math.round((d.value / max) * 100))}%` }} />
+            <div className="w-full rounded-t bg-primary/70" style={{ height: `${Math.max(2, Math.round((d.value / max) * 100))}%` }} />
           </div>
         ))}
       </div>

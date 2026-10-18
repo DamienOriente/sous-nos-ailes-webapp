@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Baby, CheckSquare, Clock, CloudSun, Euro, Handshake, Info, Mail, MapPin, MessageSquare, Search, ShieldAlert, Sparkles, Sun } from "lucide-react";
 import { Monogram, ProgressBar } from "@/components/events/event-cover";
 import { IllustratedEmpty } from "@/components/events/illustrated-empty";
 import { CalendarScene, KidsCornerScene } from "@/components/illustrations";
@@ -16,7 +15,8 @@ import { PROVIDER_STATUS_LABELS, PROVIDER_STATUS_TONES } from "@/modules/events/
 import { publicImageHref } from "@/modules/files/application/file-urls";
 import { guardPage } from "./_guards";
 
-const SECTION_TONES = ["primary", "gold", "sky", "blush"] as const;
+const ALERT_LABELS = { danger: "Urgent", warning: "À surveiller", info: "Pour information" } as const;
+const ALERT_TEXT = { danger: "text-destructive", warning: "text-warning-foreground", info: "text-muted-foreground" } as const;
 
 function timeIn(d: Date, timeZone: string) {
   return new Intl.DateTimeFormat("fr-FR", { timeZone, hour: "2-digit", minute: "2-digit" }).format(d);
@@ -32,17 +32,13 @@ export default async function EventDashboardPage({ params, searchParams }: { par
   const missing = d.wanted.filter((w) => !w.filled);
   const showSuggestions = access.permissions.has("event.providers.manage") && (nouveau === "1" || missing.length > 0);
   const suggestions = showSuggestions ? await suggestProfessionals(missing.map((m) => m.slug), event.department) : [];
-  const weather = d.alerts.some((a) => a.severity === "danger") ? "orage" : d.alerts.length > 0 ? "nuageux" : "beau";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {nouveau === "1" && (
-        <Card className="border-primary/30 bg-accent/40">
+        <Card className="bg-accent/40">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="size-5 text-primary" aria-hidden="true" />
-              Votre espace est prêt
-            </CardTitle>
+            <CardTitle>Votre espace est prêt</CardTitle>
             <CardDescription>
               Nous avons préparé une liste de tâches adaptée à votre évènement, un canal de discussion pour l'équipe et un budget par poste. Commencez par trouver vos premiers professionnels.
             </CardDescription>
@@ -63,24 +59,21 @@ export default async function EventDashboardPage({ params, searchParams }: { par
           <div className="flex flex-wrap gap-2">
             {missing.map((m) => (
               <Button key={m.slug} asChild variant="outline" size="sm">
-                <Link href={`/annuaire/${m.slug}?department=${encodeURIComponent(event.department ?? "")}&event=${id}`}>
-                  <Search className="size-3.5" aria-hidden="true" />
-                  Trouver : {m.name}
-                </Link>
+                <Link href={`/annuaire/${m.slug}?department=${encodeURIComponent(event.department ?? "")}&event=${id}`}>Trouver : {m.name}</Link>
               </Button>
             ))}
           </div>
           {suggestions.length > 0 && (
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {suggestions.map((p) => (
                 <li key={p.id} className="rounded-xl border bg-card p-4">
-                  <p className="text-xs font-semibold tracking-wide text-primary uppercase">{p.categoryName}</p>
+                  <p className="text-xs text-muted-foreground">{p.categoryName}</p>
                   <p className="mt-1 font-medium">{p.displayName}</p>
                   {p.tagline && <p className="line-clamp-2 text-sm text-muted-foreground">{p.tagline}</p>}
                   <div className="mt-3 flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{p.city ?? "—"}</span>
-                    <Link href={`/pro/${p.slug}?event=${id}`} className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
-                      Voir la fiche <ArrowRight className="size-3.5" aria-hidden="true" />
+                    <span className="text-muted-foreground">{p.city ?? "Ville non renseignée"}</span>
+                    <Link href={`/pro/${p.slug}?event=${id}`} className="font-medium text-primary hover:underline">
+                      Voir la fiche
                     </Link>
                   </div>
                 </li>
@@ -90,26 +83,24 @@ export default async function EventDashboardPage({ params, searchParams }: { par
         </section>
       )}
 
-      <section aria-label="Indicateurs" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Compte à rebours" value={d.daysUntil === null ? "—" : countdownLabel(d.daysUntil).split(" · ")[0]} hint={event.eventDate ? formatDateFr(event.eventDate, undefined, event.timezone) : "Fixez une date dans les paramètres"} />
+      <section aria-label="Indicateurs" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Compte à rebours" value={d.daysUntil === null ? "n/d" : countdownLabel(d.daysUntil).split(" · ")[0]} hint={event.eventDate ? formatDateFr(event.eventDate, undefined, event.timezone) : "Fixez une date dans les paramètres"} />
         {access.permissions.has("event.providers.view") && (
-          <StatCard label="Prestataires" value={`${d.providers.confirmed} / ${d.providers.total}`} hint={`${d.providers.confirmed} confirmés · ${d.providers.pending} en attente`} icon={Handshake} tone={d.providers.pending > 0 ? "warning" : "success"} />
+          <StatCard label="Prestataires" value={`${d.providers.confirmed} / ${d.providers.total}`} hint={`${d.providers.confirmed} confirmés · ${d.providers.pending} en attente`} />
         )}
         {access.permissions.has("event.tasks.view") && (
-          <StatCard label="Tâches restantes" value={d.tasks.open} hint={d.tasks.overdue > 0 ? `${d.tasks.overdue} en retard` : `${d.tasks.done} terminées`} icon={CheckSquare} tone={d.tasks.overdue > 0 ? "warning" : "default"} />
+          <StatCard label="Tâches restantes" value={d.tasks.open} hint={d.tasks.overdue > 0 ? `${d.tasks.overdue} en retard` : `${d.tasks.done} terminées`} />
         )}
         {d.budget && (
           <StatCard
             label="Budget"
             value={formatEuros(d.budget.committedCents)}
             hint={`Prévu ${formatEuros(d.budget.plannedCents)} · payé ${formatEuros(d.budget.paidCents)}`}
-            icon={Euro}
-            tone={d.budget.plannedCents > 0 && d.budget.committedCents > d.budget.plannedCents ? "warning" : "default"}
           />
         )}
-        {d.invitations && <StatCard label="Invitations" value={`${d.invitations.answered} / ${d.invitations.sent}`} hint="réponses reçues / envoyées" icon={Mail} />}
-        {d.childrenCount !== null && <StatCard label="Enfants inscrits" value={d.childrenCount} hint={event.expectedChildren ? `${event.expectedChildren} attendus` : undefined} icon={Baby} />}
-        <StatCard label="Messages non lus" value={d.unreadMessages} icon={MessageSquare} tone={d.unreadMessages > 0 ? "warning" : "default"} />
+        {d.invitations && <StatCard label="Invitations" value={`${d.invitations.answered} / ${d.invitations.sent}`} hint="réponses reçues / envoyées" />}
+        {d.childrenCount !== null && <StatCard label="Enfants inscrits" value={d.childrenCount} hint={event.expectedChildren ? `${event.expectedChildren} attendus` : undefined} />}
+        <StatCard label="Messages non lus" value={d.unreadMessages} />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -130,26 +121,19 @@ export default async function EventDashboardPage({ params, searchParams }: { par
                   compact
                   title="Le déroulé du jour J n'est pas encore écrit"
                   description="Les moments clés sont partagés avec les prestataires concernés, qui sont prévenus à chaque changement."
-                  example="Cérémonie — 15:00 → 16:00, le parc"
+                  example="Cérémonie, de 15:00 à 16:00, dans le parc"
                   action={access.permissions.has("event.milestones.manage") ? <Button asChild size="sm"><Link href={`${base}/planning`}>Construire le planning</Link></Button> : undefined}
                 />
               ) : (
                 <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="dashboard-moments">
-                  {d.upcomingMilestones.map((m, i) => (
-                    <li key={m.id} className="relative overflow-hidden rounded-2xl border bg-card p-4">
-                      <span className="absolute inset-y-0 left-0 w-1 bg-primary/70" style={{ opacity: 1 - i * 0.12 }} aria-hidden="true" />
-                      <p className="inline-flex items-center gap-1.5 text-sm font-semibold tabular-nums text-primary">
-                        <Clock className="size-3.5" aria-hidden="true" />
+                  {d.upcomingMilestones.map((m) => (
+                    <li key={m.id} className="rounded-2xl border bg-card p-4">
+                      <p className="font-heading text-lg font-semibold tabular-nums">
                         {timeIn(m.startsAt, event.timezone)}
-                        {m.endsAt ? ` – ${timeIn(m.endsAt, event.timezone)}` : ""}
+                        {m.endsAt ? ` à ${timeIn(m.endsAt, event.timezone)}` : ""}
                       </p>
                       <p className="mt-1 font-medium leading-snug">{m.title}</p>
-                      {m.location && (
-                        <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          <MapPin className="size-3" aria-hidden="true" />
-                          {m.location}
-                        </p>
-                      )}
+                      {m.location && <p className="mt-1 text-sm text-muted-foreground">{m.location}</p>}
                     </li>
                   ))}
                 </ol>
@@ -158,7 +142,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
           )}
 
           {access.isOrganizer && d.sectionProgress.length > 0 && (
-            <section aria-labelledby="progress" className="space-y-3 rounded-2xl border bg-card p-5">
+            <section aria-labelledby="progress" className="space-y-3 rounded-2xl border bg-card p-6">
               <div className="flex items-center justify-between">
                 <h2 id="progress" className="text-lg font-semibold">
                   Progression par section
@@ -168,7 +152,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
                 </span>
               </div>
               <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2" data-testid="dashboard-sections">
-                {d.sectionProgress.map((s, i) => (
+                {d.sectionProgress.map((s) => (
                   <li key={s.section} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <Link href={`${base}/taches`} className="font-medium hover:underline">
@@ -178,7 +162,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
                         {s.done}/{s.total}
                       </span>
                     </div>
-                    <ProgressBar value={s.done} max={s.total} label={`${s.section} : ${s.done} sur ${s.total}`} tone={SECTION_TONES[i % SECTION_TONES.length]} />
+                    <ProgressBar value={s.done} max={s.total} label={`${s.section} : ${s.done} sur ${s.total}`} />
                   </li>
                 ))}
               </ul>
@@ -186,20 +170,19 @@ export default async function EventDashboardPage({ params, searchParams }: { par
           )}
 
           {access.isOrganizer && (
-            <section aria-labelledby="weather" className="space-y-2">
-              <h2 id="weather" className="flex items-center gap-2 text-lg font-semibold">
-                {weather === "beau" ? <Sun className="size-5 text-gold" aria-hidden="true" /> : <CloudSun className="size-5 text-warning-foreground" aria-hidden="true" />}
-                Météo de l'organisation
+            <section aria-labelledby="attention" className="space-y-3">
+              <h2 id="attention" className="text-lg font-semibold">
+                Points d'attention
               </h2>
               {d.alerts.length === 0 ? (
-                <p className="rounded-2xl border bg-card px-4 py-3 text-sm text-muted-foreground">Ciel dégagé : aucune tâche en retard, aucun budget dépassé, tous les prestataires recherchés sont trouvés.</p>
+                <p className="rounded-2xl border bg-card px-4 py-3 text-sm text-muted-foreground">Rien à signaler : aucune tâche en retard, aucun budget dépassé, tous les prestataires recherchés sont trouvés.</p>
               ) : (
                 <ul className="space-y-2">
                   {d.alerts.map((a) => (
                     <li key={a.key}>
-                      <Link href={a.href ?? base} className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3 transition-colors hover:bg-muted/50">
-                        {a.severity === "danger" ? <ShieldAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" /> : a.severity === "warning" ? <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground" aria-hidden="true" /> : <Info className="mt-0.5 size-4 shrink-0 text-info" aria-hidden="true" />}
+                      <Link href={a.href ?? base} className="block rounded-xl border bg-card px-4 py-3 transition-colors hover:bg-muted/50">
                         <span>
+                          <span className={`block text-xs font-medium ${ALERT_TEXT[a.severity]}`}>{ALERT_LABELS[a.severity]}</span>
                           <span className="block font-medium">{a.title}</span>
                           {a.description && <span className="block text-sm text-muted-foreground">{a.description}</span>}
                         </span>
@@ -222,12 +205,12 @@ export default async function EventDashboardPage({ params, searchParams }: { par
                 </Link>
               </div>
               {d.confirmedProviders.length === 0 ? (
-                <IllustratedEmpty scene={HandshakeScene} compact title="Aucun prestataire confirmé pour l'instant" description="Dès qu'un devis est accepté, le professionnel apparaît ici avec la photo de sa fiche." example="Domaine des Tilleuls — lieu de réception, confirmé" action={access.permissions.has("event.providers.manage") ? <Button asChild size="sm" variant="outline"><Link href={`${base}/prestataires`}>Voir la présélection</Link></Button> : undefined} />
+                <IllustratedEmpty scene={HandshakeScene} compact title="Aucun prestataire confirmé pour l'instant" description="Dès qu'un devis est accepté, le professionnel apparaît ici avec la photo de sa fiche." example="Domaine des Tilleuls, lieu de réception, confirmé" action={access.permissions.has("event.providers.manage") ? <Button asChild size="sm" variant="outline"><Link href={`${base}/prestataires`}>Voir la présélection</Link></Button> : undefined} />
               ) : (
-                <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="dashboard-providers">
+                <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="dashboard-providers">
                   {d.confirmedProviders.map((p) => (
                     <li key={p.id}>
-                      <Link href={`${base}/prestataires/${p.id}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-shadow hover:shadow-md">
+                      <Link href={`${base}/prestataires/${p.id}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:bg-muted/40">
                         <div className="relative aspect-[5/2] bg-muted">
                           {p.coverFileId ? (
                             // eslint-disable-next-line @next/next/no-img-element -- public rendition served by the files module
@@ -239,7 +222,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
                           )}
                         </div>
                         <div className="p-3">
-                          <p className="text-[11px] font-semibold tracking-wide text-primary uppercase">{p.categoryName ?? "Prestataire"}</p>
+                          <p className="text-xs text-muted-foreground">{p.categoryName ?? "Prestataire"}</p>
                           <p className="truncate font-medium group-hover:underline">{p.displayName}</p>
                         </div>
                       </Link>
@@ -251,7 +234,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
           )}
 
           {access.permissions.has("event.tasks.view") && (
-            <section aria-labelledby="deadlines" className="space-y-2">
+            <section aria-labelledby="deadlines" className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 id="deadlines" className="text-lg font-semibold">
                   Prochaines échéances
@@ -279,7 +262,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
           )}
 
           {d.pendingValidations.length > 0 && (
-            <section aria-labelledby="validations" className="space-y-2">
+            <section aria-labelledby="validations" className="space-y-3">
               <h2 id="validations" className="text-lg font-semibold">
                 Validations en attente
               </h2>
@@ -307,7 +290,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
               <div className="bg-sage-soft/60 px-5 pt-4">
                 <KidsCornerScene className="mx-auto max-w-[14rem]" />
               </div>
-              <div className="space-y-3 p-5">
+              <div className="space-y-3 p-6">
                 <div className="flex items-center justify-between">
                   <h2 id="kids-team" className="text-lg font-semibold">
                     Équipe enfants
@@ -331,7 +314,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
                           <span className="block truncate font-medium">{m.name}</span>
                           <span className="block truncate text-xs text-muted-foreground">{m.title ?? (m.role === "staff" ? "Renfort" : "Responsable")}</span>
                         </span>
-                        <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums">
+                        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                           {m.assigned} enfant{m.assigned > 1 ? "s" : ""}
                         </span>
                       </li>
@@ -342,7 +325,7 @@ export default async function EventDashboardPage({ params, searchParams }: { par
             </section>
           )}
 
-          <section className="space-y-2" aria-labelledby="recent-messages">
+          <section className="space-y-3" aria-labelledby="recent-messages">
             <div className="flex items-center justify-between">
               <h2 id="recent-messages" className="text-lg font-semibold">
                 Derniers messages

@@ -54,21 +54,21 @@ async function seedCalendar(ctx: SeedContext): Promise<void> {
   const seminaire = ctx.events.seminaireDiginumia;
   const entries: EntrySeed[] = [
     // Pros: confirmed services for the wedding (D-day 2027-06-12).
-    { key: "marie-louislisa", owner: "marie", professional: "marie", event: louisLisa, kind: "service", title: "Garde d'enfants — Mariage de Louis et Lisa", description: "9 enfants, équipe de 2 (Marie + Nora). Arrivée 15h pour installation.", location: "Domaine d'Hélène, Lavaur", startsAt: paris("2027-06-12T15:00"), endsAt: paris("2027-06-13T01:00"), reminder: 1440 },
+    { key: "marie-louislisa", owner: "marie", professional: "marie", event: louisLisa, kind: "service", title: "Garde d'enfants, mariage de Louis et Lisa", description: "9 enfants, équipe de 2 (Marie + Nora). Arrivée 15h pour installation.", location: "Domaine d'Hélène, Lavaur", startsAt: paris("2027-06-12T15:00"), endsAt: paris("2027-06-13T01:00"), reminder: 1440 },
     { key: "marie-prepa", owner: "marie", professional: "marie", event: louisLisa, kind: "other", title: "Préparation malle d'activités", startsAt: paris("2027-06-10T09:00"), endsAt: paris("2027-06-10T11:00"), reminder: 60 },
     { key: "marie-conges", owner: "marie", professional: "marie", kind: "unavailability", title: "Congés d'été", startsAt: paris("2027-08-02T00:00"), endsAt: paris("2027-08-23T00:00"), allDay: true },
     { key: "marie-dispo", owner: "marie", professional: "marie", kind: "availability", title: "Disponible week-ends de septembre", startsAt: paris("2027-09-04T08:00"), endsAt: paris("2027-09-04T22:00"), rrule: "FREQ=WEEKLY;BYDAY=SA,SU;UNTIL=20270930T215959Z" },
-    { key: "nora-louislisa", owner: "nora", event: louisLisa, kind: "service", title: "Renfort garde d'enfants — Mariage Louis & Lisa", location: "Domaine d'Hélène, Lavaur", startsAt: paris("2027-06-12T15:00"), endsAt: paris("2027-06-13T01:00"), reminder: 1440 },
-    { key: "julien-louislisa", owner: "julien", professional: "julien", event: louisLisa, kind: "service", title: "Traiteur — Mariage Louis & Lisa (120 couverts)", location: "Domaine d'Hélène, Lavaur", startsAt: paris("2027-06-12T10:00"), endsAt: paris("2027-06-13T02:00"), reminder: 2880 },
-    { key: "julien-autre", owner: "julien", professional: "julien", kind: "service", title: "Cocktail d'entreprise — 80 personnes", location: "Albi", startsAt: paris("2027-06-18T17:00"), endsAt: paris("2027-06-18T22:00") },
+    { key: "nora-louislisa", owner: "nora", event: louisLisa, kind: "service", title: "Renfort garde d'enfants, mariage Louis & Lisa", location: "Domaine d'Hélène, Lavaur", startsAt: paris("2027-06-12T15:00"), endsAt: paris("2027-06-13T01:00"), reminder: 1440 },
+    { key: "julien-louislisa", owner: "julien", professional: "julien", event: louisLisa, kind: "service", title: "Traiteur, mariage Louis & Lisa (120 couverts)", location: "Domaine d'Hélène, Lavaur", startsAt: paris("2027-06-12T10:00"), endsAt: paris("2027-06-13T02:00"), reminder: 2880 },
+    { key: "julien-autre", owner: "julien", professional: "julien", kind: "service", title: "Cocktail d'entreprise, 80 personnes", location: "Albi", startsAt: paris("2027-06-18T17:00"), endsAt: paris("2027-06-18T22:00") },
     { key: "helene-ferme-lundi", owner: "helene", professional: "helene", kind: "unavailability", title: "Fermé le lundi", description: "Jour de fermeture hebdomadaire du domaine.", startsAt: paris("2027-01-04T00:00", "+01:00"), endsAt: paris("2027-01-05T00:00", "+01:00"), allDay: true, rrule: "FREQ=WEEKLY;BYDAY=MO" },
-    { key: "helene-louislisa", owner: "helene", professional: "helene", event: louisLisa, kind: "event", title: "Mariage de Louis et Lisa — domaine réservé", startsAt: paris("2027-06-11T14:00"), endsAt: paris("2027-06-13T12:00"), reminder: 10080 },
-    { key: "helene-visite", owner: "helene", professional: "helene", kind: "other", title: "Visite du domaine — futurs mariés", startsAt: paris("2027-06-19T10:30"), endsAt: paris("2027-06-19T12:00"), rrule: "FREQ=WEEKLY;BYDAY=SA;COUNT=6" },
-    { key: "theo-louislisa", owner: "theo", professional: "theo", event: louisLisa, kind: "service", title: "DJ — Mariage Louis & Lisa", description: "Installation 16h, cocktail 18h, soirée jusqu'à 4h.", location: "Domaine d'Hélène, Lavaur", startsAt: paris("2027-06-12T16:00"), endsAt: paris("2027-06-13T04:00"), reminder: 1440 },
-    { key: "theo-conflit", owner: "theo", professional: "theo", kind: "service", title: "Anniversaire 40 ans — Montauban (à confirmer)", description: "Demande reçue : chevauche le mariage, à décliner.", location: "Montauban", startsAt: paris("2027-06-12T20:00"), endsAt: paris("2027-06-13T02:00") },
-    { key: "ines-louislisa", owner: "ines", professional: "ines", event: louisLisa, kind: "service", title: "Reportage photo — Mariage Louis & Lisa", startsAt: paris("2027-06-12T11:00"), endsAt: paris("2027-06-13T00:00"), reminder: 1440 },
+    { key: "helene-louislisa", owner: "helene", professional: "helene", event: louisLisa, kind: "event", title: "Mariage de Louis et Lisa, domaine réservé", startsAt: paris("2027-06-11T14:00"), endsAt: paris("2027-06-13T12:00"), reminder: 10080 },
+    { key: "helene-visite", owner: "helene", professional: "helene", kind: "other", title: "Visite du domaine pour de futurs mariés", startsAt: paris("2027-06-19T10:30"), endsAt: paris("2027-06-19T12:00"), rrule: "FREQ=WEEKLY;BYDAY=SA;COUNT=6" },
+    { key: "theo-louislisa", owner: "theo", professional: "theo", event: louisLisa, kind: "service", title: "DJ, mariage Louis & Lisa", description: "Installation 16h, cocktail 18h, soirée jusqu'à 4h.", location: "Domaine d'Hélène, Lavaur", startsAt: paris("2027-06-12T16:00"), endsAt: paris("2027-06-13T04:00"), reminder: 1440 },
+    { key: "theo-conflit", owner: "theo", professional: "theo", kind: "service", title: "Anniversaire 40 ans à Montauban (à confirmer)", description: "Demande reçue : chevauche le mariage, à décliner.", location: "Montauban", startsAt: paris("2027-06-12T20:00"), endsAt: paris("2027-06-13T02:00") },
+    { key: "ines-louislisa", owner: "ines", professional: "ines", event: louisLisa, kind: "service", title: "Reportage photo, mariage Louis & Lisa", startsAt: paris("2027-06-12T11:00"), endsAt: paris("2027-06-13T00:00"), reminder: 1440 },
     { key: "ines-reperage", owner: "ines", professional: "ines", kind: "other", title: "Repérage lumière au domaine", location: "Lavaur", startsAt: paris("2027-05-29T17:00"), endsAt: paris("2027-05-29T19:30") },
-    { key: "sofia-bapteme", owner: "sofia", professional: "sofia", event: bapteme, kind: "service", title: "Animation enfants — Baptême de Chloé", location: "Bordeaux", startsAt: paris("2027-09-19T11:00"), endsAt: paris("2027-09-19T18:00"), reminder: 1440 },
+    { key: "sofia-bapteme", owner: "sofia", professional: "sofia", event: bapteme, kind: "service", title: "Animation enfants, baptême de Chloé", location: "Bordeaux", startsAt: paris("2027-09-19T11:00"), endsAt: paris("2027-09-19T18:00"), reminder: 1440 },
     // Organisers: the D-day itself.
     { key: "louis-jourj", owner: "louis", event: louisLisa, kind: "event", title: "Notre mariage", description: "Cérémonie 15h, vin d'honneur 17h, dîner 20h.", location: "Domaine d'Hélène, Lavaur", startsAt: paris("2027-06-12T14:00"), endsAt: paris("2027-06-13T04:00"), reminder: 1440 },
     { key: "louis-essayage", owner: "louis", kind: "reminder", title: "Dernier essayage costume", startsAt: paris("2027-06-05T10:00"), endsAt: paris("2027-06-05T11:00"), reminder: 1440 },
@@ -87,12 +87,12 @@ async function seedCalendar(ctx: SeedContext): Promise<void> {
     { key: "lisa-relances", owner: "lisa", event: louisLisa, kind: "reminder", title: "Relancer les invités sans réponse", startsAt: paris("2027-04-28T19:00"), endsAt: paris("2027-04-28T19:30"), reminder: 1440 },
     { key: "camille-visite-tech", owner: "camille", professional: "camille", event: louisLisa, kind: "other", title: "Visite technique du domaine (traiteur, DJ)", location: "Lavaur", startsAt: paris("2026-09-08T10:00"), endsAt: paris("2026-09-08T12:30") },
     { key: "camille-point-hebdo", owner: "camille", professional: "camille", event: louisLisa, kind: "other", title: "Point hebdo Louis & Lisa", description: "Visio de 30 min : avancement, prestataires, budget.", startsAt: paris("2027-03-01T18:30", "+01:00"), endsAt: paris("2027-03-01T19:00", "+01:00"), rrule: "FREQ=WEEKLY;BYDAY=MO;UNTIL=20270607T215959Z" },
-    { key: "camille-jourj", owner: "camille", professional: "camille", event: louisLisa, kind: "service", title: "Coordination jour J — Mariage Louis & Lisa", location: "Domaine des Tilleuls, Lavaur", startsAt: paris("2027-06-12T09:00"), endsAt: paris("2027-06-13T02:00"), reminder: 2880 },
-    { key: "camille-autre-mariage", owner: "camille", professional: "camille", kind: "service", title: "Coordination — Mariage A. & S. (Albi)", location: "Albi", startsAt: paris("2027-06-26T10:00"), endsAt: paris("2027-06-27T02:00") },
-    { key: "helene-brunch", owner: "helene", professional: "helene", event: louisLisa, kind: "service", title: "Brunch du lendemain — Louis & Lisa", startsAt: paris("2027-06-13T11:00"), endsAt: paris("2027-06-13T14:00") },
-    { key: "ines-livraison", owner: "ines", professional: "ines", event: louisLisa, kind: "reminder", title: "Livrer la galerie photo — Louis & Lisa", description: "6 semaines après le mariage.", startsAt: paris("2027-07-24T09:00"), endsAt: paris("2027-07-24T09:30"), reminder: 2880 },
-    { key: "theo-brief", owner: "theo", professional: "theo", event: louisLisa, kind: "other", title: "Rendez-vous brief musical — Louis & Lisa", description: "Visio : moments clés, playlist, interdits.", startsAt: paris("2027-04-20T19:00"), endsAt: paris("2027-04-20T20:00"), reminder: 1440 },
-    { key: "julien-brunch", owner: "julien", professional: "julien", event: louisLisa, kind: "service", title: "Brunch du dimanche (option) — Louis & Lisa", startsAt: paris("2027-06-13T10:00"), endsAt: paris("2027-06-13T15:00") },
+    { key: "camille-jourj", owner: "camille", professional: "camille", event: louisLisa, kind: "service", title: "Coordination jour J, mariage Louis & Lisa", location: "Domaine des Tilleuls, Lavaur", startsAt: paris("2027-06-12T09:00"), endsAt: paris("2027-06-13T02:00"), reminder: 2880 },
+    { key: "camille-autre-mariage", owner: "camille", professional: "camille", kind: "service", title: "Coordination du mariage A. & S. (Albi)", location: "Albi", startsAt: paris("2027-06-26T10:00"), endsAt: paris("2027-06-27T02:00") },
+    { key: "helene-brunch", owner: "helene", professional: "helene", event: louisLisa, kind: "service", title: "Brunch du lendemain, Louis & Lisa", startsAt: paris("2027-06-13T11:00"), endsAt: paris("2027-06-13T14:00") },
+    { key: "ines-livraison", owner: "ines", professional: "ines", event: louisLisa, kind: "reminder", title: "Livrer la galerie photo à Louis & Lisa", description: "6 semaines après le mariage.", startsAt: paris("2027-07-24T09:00"), endsAt: paris("2027-07-24T09:30"), reminder: 2880 },
+    { key: "theo-brief", owner: "theo", professional: "theo", event: louisLisa, kind: "other", title: "Rendez-vous brief musical avec Louis & Lisa", description: "Visio : moments clés, playlist, interdits.", startsAt: paris("2027-04-20T19:00"), endsAt: paris("2027-04-20T20:00"), reminder: 1440 },
+    { key: "julien-brunch", owner: "julien", professional: "julien", event: louisLisa, kind: "service", title: "Brunch du dimanche (option), Louis & Lisa", startsAt: paris("2027-06-13T10:00"), endsAt: paris("2027-06-13T15:00") },
   ];
 
   for (const e of entries) {
@@ -209,7 +209,7 @@ async function seedTradeTools(ctx: SeedContext): Promise<void> {
       eventId,
       preferences: "Cocktail : jazz manouche et soul. Dîner : acoustique discret. Soirée : généraliste dansant, funk/disco, années 80-2000, un peu de latino.",
       forbidden: "Pas de Macarena ni de chenille. Pas de hard rock. Rien à paroles explicites avant le départ des enfants (vers 1h).",
-      playlistText: "Perfect — Ed Sheeran (ouverture de bal)\nSeptember — Earth, Wind & Fire\nLes Champs-Élysées — Joe Dassin\nDon't Stop Me Now — Queen\nDanza Kuduro — Don Omar",
+      playlistText: "Perfect (Ed Sheeran, ouverture de bal)\nSeptember (Earth, Wind & Fire)\nLes Champs-Élysées (Joe Dassin)\nDon't Stop Me Now (Queen)\nDanza Kuduro (Don Omar)",
       technicalNeeds: "2 micros HF pour les discours (cocktail + dîner), lumière d'ambiance chaude pour le dîner, machine à brouillard légère pour l'ouverture de bal.",
       installationNotes: "Installation à partir de 16h dans l'Orangerie, régie à droite de la piste, 2 × 16A dédiés.",
       updatedByUserId: louis,
@@ -244,7 +244,7 @@ async function seedTradeTools(ctx: SeedContext): Promise<void> {
     .values({
       eventId,
       brief: "Reportage naturel, peu de poses. Noir et blanc bienvenu pour la cérémonie. Photos de couple au coucher du soleil (vers 21h15) dans l'allée de platanes. Livraison : galerie privée sous 6 semaines.",
-      usefulContacts: "Témoin référent : Maxime — 06 00 00 00 10\nWedding planner : Camille Ferrand (via messages)",
+      usefulContacts: "Témoin référent : Maxime, 06 00 00 00 10\nWedding planner : Camille Ferrand (via messages)",
       updatedByUserId: louis,
     })
     .onConflictDoNothing();
@@ -254,7 +254,7 @@ async function seedTradeTools(ctx: SeedContext): Promise<void> {
       { eventId, kind: "moment", title: "Échange des alliances", startsAt: paris("2027-06-12T15:30"), location: "Chapelle", releaseConsentCollected: true, sortOrder: 2 },
       { eventId, kind: "moment", title: "Sortie de cérémonie (pétales)", startsAt: paris("2027-06-12T16:00"), location: "Parvis de la chapelle", releaseConsentCollected: false, sortOrder: 3 },
       { eventId, kind: "moment", title: "Photos de groupe par famille", startsAt: paris("2027-06-12T16:30"), location: "Escalier de l'Orangerie", notes: "Liste des groupes fournie par Camille.", releaseConsentCollected: false, sortOrder: 4 },
-      { eventId, kind: "moment", title: "Photos de couple — golden hour", startsAt: paris("2027-06-12T21:15"), location: "Allée de platanes", releaseConsentCollected: true, sortOrder: 5 },
+      { eventId, kind: "moment", title: "Photos de couple au coucher du soleil", startsAt: paris("2027-06-12T21:15"), location: "Allée de platanes", releaseConsentCollected: true, sortOrder: 5 },
       { eventId, kind: "moment", title: "Ouverture de bal", startsAt: paris("2027-06-13T00:00"), location: "Orangerie", releaseConsentCollected: true, sortOrder: 6 },
       { eventId, kind: "location", title: "Allée de platanes", notes: "Lumière rasante ouest à partir de 20h45.", sortOrder: 10 },
       { eventId, kind: "location", title: "Escalier de l'Orangerie", notes: "Idéal pour les groupes jusqu'à 40 personnes.", sortOrder: 11 },

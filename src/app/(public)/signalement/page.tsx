@@ -21,19 +21,10 @@ export default async function ReportPage() {
           <div>
             <h1 className="text-4xl font-semibold text-balance">Signaler un contenu</h1>
             <p className="mt-4 leading-7 text-muted-foreground text-pretty">Une fiche trompeuse, un avis suspect, un message déplacé, un comportement dangereux : dites-le nous. Aucun compte n'est nécessaire.</p>
-            <ol className="mt-8 space-y-3 text-sm text-muted-foreground">
-              <li className="flex gap-3">
-                <span className="font-semibold text-foreground">1.</span>
-                <span>Votre signalement ouvre un dossier de modération horodaté.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-semibold text-foreground">2.</span>
-                <span>L'équipe examine le contenu et peut le masquer pendant l'analyse.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-semibold text-foreground">3.</span>
-                <span>Une décision motivée est prise ; l'auteur peut la contester.</span>
-              </li>
+            <ol className="mt-8 list-decimal space-y-3 pl-5 text-sm text-muted-foreground marker:font-semibold marker:text-foreground">
+              <li className="pl-1">Votre signalement ouvre un dossier de modération horodaté.</li>
+              <li className="pl-1">L'équipe examine le contenu et peut le masquer pendant l'analyse.</li>
+              <li className="pl-1">Une décision motivée est prise ; l'auteur peut la contester.</li>
             </ol>
             <p className="mt-6 text-sm text-muted-foreground">
               Détails dans la{" "}

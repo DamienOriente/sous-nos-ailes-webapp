@@ -1,7 +1,7 @@
 "use client";
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound, Loader2, Smartphone } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { consumeNextPath, describeAuthFailure } from "@/components/auth/auth-client-error";
 import { RateLimitNotice } from "@/components/auth/rate-limit-notice";
 import { FormMessage } from "@/components/shared/form-message";
@@ -92,8 +92,7 @@ export function TwoFactorVerifyForm() {
         {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
         Vérifier
       </Button>
-      <Button type="button" variant="ghost" className="w-full" onClick={() => switchMode(mode === "totp" ? "backup" : "totp")}>
-        {mode === "totp" ? <KeyRound aria-hidden="true" /> : <Smartphone aria-hidden="true" />}
+      <Button type="button" variant="outline" className="w-full" onClick={() => switchMode(mode === "totp" ? "backup" : "totp")}>
         {mode === "totp" ? "Utiliser un code de secours" : "Utiliser l'application d'authentification"}
       </Button>
     </form>

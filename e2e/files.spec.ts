@@ -14,7 +14,7 @@ async function signIn(page: Page, email: string) {
   expect(res.ok(), `sign-in ${email}`).toBeTruthy();
 }
 
-test.describe("Mes fichiers — upload sécurisé", () => {
+test.describe("Mes fichiers : upload sécurisé", () => {
   test("uploads an avatar, rejects dangerous files, deletes a file", async ({ page }) => {
     await signIn(page, "louis@sousnosailes.test");
     await page.goto("/app/compte/fichiers");

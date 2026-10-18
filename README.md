@@ -70,6 +70,8 @@ Secrets locaux : sans `BETTER_AUTH_SECRET` / `DATA_ENCRYPTION_KEY`, des clés al
 
 Mot de passe commun : **`Demo-SousNosAiles-2026!`** (défini dans `src/db/seed/context.ts`). Tous les e-mails sont en `@sousnosailes.test` et marqués `is_demo`.
 
+En mode démo (`DEMO_MODE=true`, jamais en production), la page `/connexion` propose un bouton par compte : un clic ouvre la session sans saisie. Le bandeau de démonstration contient un lien « Changer de compte » pour passer d'un rôle à l'autre.
+
 | Compte | E-mail | Rôle / usage |
 |---|---|---|
 | Louis Marchand | louis@sousnosailes.test | organisateur, propriétaire du mariage de démo |

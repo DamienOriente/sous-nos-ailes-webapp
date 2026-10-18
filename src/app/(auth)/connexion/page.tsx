@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthCard, AuthLink, AuthPanel, AuthSplit } from "@/components/auth/auth-card";
+import { DemoAccountPicker } from "@/components/auth/demo-account-picker";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { WingsScene } from "@/components/illustrations";
+import { isDemo } from "@/lib/env";
 import { getActor } from "@/lib/session";
 import { showcasePhoto } from "@/modules/media/demo-photos";
 import { safeNextPath } from "@/modules/identity/domain/auth";
@@ -13,13 +15,16 @@ const NOTICES: Record<string, string> = {
   "mot-de-passe-reinitialise": "Votre mot de passe a été réinitialisé. Connectez-vous avec le nouveau.",
   deconnecte: "Vous êtes déconnecté.",
   "session-expiree": "Votre session a expiré. Reconnectez-vous pour continuer.",
+  "compte-demo-indisponible": "Ce compte de démonstration n'est pas disponible. Relancez le jeu de données (pnpm db:seed) ou connectez-vous avec un e-mail.",
 };
 
-export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string; message?: string }> }) {
+export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string; message?: string; changer?: string }> }) {
   const params = await searchParams;
   const next = safeNextPath(params.next);
   const actor = await getActor();
-  if (actor) redirect(next);
+  // Demo mode: "Changer de compte" from the banner reopens this page while signed in.
+  const switching = isDemo && params.changer === "1";
+  if (actor && !switching) redirect(next);
   const notice = params.message ? NOTICES[params.message] ?? null : null;
   const celebrate = params.message === "mot-de-passe-reinitialise";
 
@@ -46,6 +51,8 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         }
       >
         {celebrate && <WingsScene className="mx-auto -mt-2 mb-2 w-40" />}
+        {isDemo && <DemoAccountPicker next={params.next ? next : undefined} />}
+        {isDemo && <p className="my-5 text-center text-sm text-muted-foreground">ou avec votre e-mail</p>}
         <SignInForm next={next} notice={notice} />
       </AuthCard>
     </AuthSplit>

@@ -76,7 +76,7 @@ async function waitForRateLimitToClear(page: Page) {
 async function submitSignIn(page: Page, email: string, password: string) {
   await page.getByLabel("Adresse e-mail").fill(email);
   await page.getByLabel("Mot de passe", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Se connecter" }).click();
+  await page.getByRole("button", { name: "Se connecter", exact: true }).click();
 }
 
 async function signIn(page: Page, email: string, password: string, next = "/app") {
@@ -278,7 +278,7 @@ test("6 mauvais mots de passe → limite 429 visible avec compte à rebours", as
   for (let attempt = 1; attempt <= 8 && !limited; attempt++) {
     await page.getByLabel("Adresse e-mail").fill(EMAIL);
     await page.getByLabel("Mot de passe", { exact: true }).fill(`wrong-password-${attempt}`);
-    const [response] = await Promise.all([page.waitForResponse((r) => r.url().includes("/api/auth/sign-in/email")), page.getByRole("button", { name: "Se connecter" }).click()]);
+    const [response] = await Promise.all([page.waitForResponse((r) => r.url().includes("/api/auth/sign-in/email")), page.getByRole("button", { name: "Se connecter", exact: true }).click()]);
     expect([401, 429]).toContain(response.status());
     if (response.status() === 429) {
       limited = true;
@@ -290,5 +290,5 @@ test("6 mauvais mots de passe → limite 429 visible avec compte à rebours", as
   expect(limited).toBe(true);
   await expect(notice).toBeVisible();
   await expect(notice).toContainText(/\d+ s/);
-  await expect(page.getByRole("button", { name: "Se connecter" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Se connecter", exact: true })).toBeDisabled();
 });

@@ -55,6 +55,8 @@ Règles :
 
 - 2026-10-17 — Chantier « vitalité » : photos de démonstration Unsplash (catalogue vérifié `modules/media/demo-photos.ts`, réservé aux profils fictifs et pages marketing, à remplacer avant commercialisation, cf. docs/assets.md) + illustrations SVG originales (`components/illustrations/*`) ; états vides illustrés (`IllustratedEmpty`), exemples intégrés réels (`modules/events/domain/suggestions.ts`, `modules/tools/domain/tool-examples.ts`, `components/professionals/listing-examples.ts`, `modules/identity/domain/next-actions.ts`) ; couverture d'évènement (`events.cover_photo_id` / `cover_file_id`, migration 0001).
 
+- 2026-10-18 : connexion en un clic aux comptes de démo (`modules/identity/application/demo-sign-in.ts`), active seulement si `isDemo` et pour un utilisateur `is_demo` de la liste du seed ; la session courante est fermée avant d'ouvrir la suivante.
+
 ## Pièges rencontrés
 - Un chargeur `images.loader: "custom"` global supprime la route `/_next/image` (404 pour tout le reste) : garder le chargeur par composant (`FilesImage`, composant client car une fonction ne passe pas d'un Server Component).
 - Une photo Unsplash chargée directement par le navigateur coûte une connexion DNS/TLS supplémentaire (environ 600 ms en 4G simulée) : la servir via l'optimiseur Next, même origine.

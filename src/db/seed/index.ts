@@ -35,6 +35,7 @@ async function loadModuleSeeds(): Promise<ModuleSeed[]> {
   const seeds: ModuleSeed[] = [];
   const candidates: Array<{ name: string; path: string }> = [
     { name: "professionals", path: "./professionals" },
+    { name: "agencies", path: "./agencies" },
     { name: "pages", path: "./pages" },
     { name: "events", path: "./events" },
     { name: "guests", path: "./guests" },

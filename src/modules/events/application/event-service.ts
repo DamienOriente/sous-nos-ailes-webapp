@@ -26,6 +26,7 @@ import { defaultCoverPhotoId, isCatalogPhotoId } from "@/modules/events/domain/c
 import { canTransitionEventStatus, type EventStatus } from "@/modules/events/domain/event-status";
 import { EVENT_TYPES, type EventType } from "@/modules/events/domain/event-types";
 import { departmentFromPostalCode } from "@/modules/events/domain/event-naming";
+import { isPublicListing } from "@/modules/directory/application/public-listing";
 
 export { departmentFromPostalCode, suggestedEventName } from "@/modules/events/domain/event-naming";
 
@@ -373,7 +374,7 @@ export async function suggestProfessionals(categorySlugs: readonly string[], dep
     })
     .from(professionals)
     .innerJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
-    .where(and(eq(professionals.status, "published"), isNull(professionals.deletedAt), inArray(professionalCategories.slug, [...categorySlugs])))
+    .where(and(isPublicListing(), isNull(professionals.deletedAt), inArray(professionalCategories.slug, [...categorySlugs])))
     .orderBy(desc(professionals.verificationLevel), desc(professionals.averageRating))
     .limit(60);
   const perCategory = new Map<string, SuggestedProfessional[]>();

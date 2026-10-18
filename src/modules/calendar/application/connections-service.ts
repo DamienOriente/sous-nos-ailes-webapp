@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db, type DbExecutor } from "@/db/client";
 import { auditLogs, calendarConnections, calendarSyncJobs, professionals } from "@/db/schema";
@@ -7,7 +7,7 @@ import { decryptText, encryptText, hashToken, randomToken, safeEqual } from "@/l
 import { env } from "@/lib/env";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
-import { requireFeature } from "@/modules/billing/application/entitlements";
+import { hasFeature, requireFeature } from "@/modules/billing/application/entitlements";
 import { getProviderAdapter } from "@/modules/calendar/infrastructure/adapters";
 import type { CalendarProvider, CalendarProviderAdapter, TokenSet } from "@/modules/calendar/infrastructure/provider-adapter";
 import { SYNC_DIRECTIONS, type SyncDirection } from "@/modules/calendar/domain/constants";
@@ -23,9 +23,12 @@ export const providerSchema = z.enum(["google", "microsoft"]);
  * A professional on the free plan hits the paywall.
  */
 export async function requireCalendarSyncEntitlement(actor: Actor, executor: DbExecutor = db): Promise<void> {
-  const [listing] = await executor.select({ id: professionals.id }).from(professionals).where(eq(professionals.ownerUserId, actor.userId)).limit(1);
-  if (!listing) return;
-  await requireFeature(actor, "professional", "calendar.sync", listing.id);
+  const listings = await executor.select({ id: professionals.id }).from(professionals).where(and(eq(professionals.ownerUserId, actor.userId), isNull(professionals.deletedAt)));
+  const first = listings[0];
+  if (!first) return;
+  // An agency runs several listings: one Premium listing is enough to sync the account's calendar.
+  for (const l of listings) if (await hasFeature(actor.userId, "professional", "calendar.sync", l.id)) return;
+  await requireFeature(actor, "professional", "calendar.sync", first.id);
 }
 
 // ── OAuth 2.0 + PKCE ────────────────────────────────────────────────────────

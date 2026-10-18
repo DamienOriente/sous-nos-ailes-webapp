@@ -9,6 +9,7 @@ import { enqueueEmail } from "@/modules/notifications/application/email-outbox";
 import { notify } from "@/modules/notifications/application/notification-service";
 import { canTransitionInquiry, INQUIRY_STATUS_LABELS, type InquiryStatus } from "@/modules/inquiries/domain/inquiry-status";
 import type { PublicInquiryInput } from "@/modules/inquiries/domain/inquiry-schema";
+import { isPublicListing } from "@/modules/directory/application/public-listing";
 
 export type InquiryRow = typeof inquiries.$inferSelect;
 
@@ -22,7 +23,7 @@ export async function createPublicInquiry(input: PublicInquiryInput, actor: Acto
     const [pro] = await tx
       .select({ id: professionals.id, ownerUserId: professionals.ownerUserId, displayName: professionals.displayName, status: professionals.status, slug: professionals.slug, isDemo: professionals.isDemo })
       .from(professionals)
-      .where(and(eq(professionals.id, input.professionalId), eq(professionals.status, "published"), isNull(professionals.deletedAt)))
+      .where(and(eq(professionals.id, input.professionalId), isPublicListing(), isNull(professionals.deletedAt)))
       .limit(1);
     if (!pro) throw new NotFoundError("Ce professionnel n'est pas disponible.");
 

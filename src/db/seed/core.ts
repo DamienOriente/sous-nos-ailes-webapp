@@ -3,6 +3,7 @@ import {
   checklistTemplates,
   configurationSettings,
   planFeatures,
+  planPriceTiers,
   plans,
   professionalCategories,
   toolDefinitions,
@@ -50,6 +51,11 @@ export async function seedReferenceData(ctx: SeedContext): Promise<void> {
       .returning({ id: plans.id });
     if (!row) continue;
     ctx.plans[p.key] = row.id;
+    if (p.tiers?.length) {
+      // Tiers are commercial settings edited in the admin: only seeded when absent.
+      const existing = await db.select({ id: planPriceTiers.id }).from(planPriceTiers).where(eq(planPriceTiers.planId, row.id)).limit(1);
+      if (!existing.length) await db.insert(planPriceTiers).values(p.tiers.map((t) => ({ planId: row.id, upTo: t.upTo, unitAmountCents: t.unitAmountCents })));
+    }
     for (const [featureKey, f] of Object.entries(p.features)) {
       await db
         .insert(planFeatures)

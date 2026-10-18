@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 type Search = { statut?: string; kind?: string; assigne?: string };
 
-const KINDS = ["profile_review", "profile_update_review", "report", "review_moderation", "appeal"];
+const KINDS = ["profile_review", "profile_update_review", "agency_review", "report", "review_moderation", "appeal"];
 
 export default async function ModerationQueuePage({ searchParams }: { searchParams: Promise<Search> }) {
   const { actor, twoFactorWarning } = await requireAdminPage("moderation.queue", "/admin/moderation");
@@ -78,7 +78,7 @@ export default async function ModerationQueuePage({ searchParams }: { searchPara
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="min-w-0">
                     <Link href={`/admin/moderation/${r.id}`} className="font-medium underline-offset-2 hover:underline">
-                      {r.professionalName ?? `${r.resourceType} ${r.resourceId.slice(0, 8)}`}
+                      {r.professionalName ?? (r.kind === "agency_review" ? "Structure à valider comme agence" : `${r.resourceType} ${r.resourceId.slice(0, 8)}`)}
                     </Link>
                     {r.summary && <p className="max-w-md truncate text-xs text-muted-foreground">{r.summary}</p>}
                   </div>

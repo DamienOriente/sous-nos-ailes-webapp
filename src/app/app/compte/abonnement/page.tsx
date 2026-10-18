@@ -16,6 +16,7 @@ import { formatDateFr, formatEuros } from "@/lib/utils";
 import { FEATURES, type FeatureKey } from "@/modules/billing/domain/plans";
 import { SUBSCRIPTION_STATUS_LABELS, type SubscriptionStatus } from "@/modules/billing/domain/subscription-status";
 import { getSubscriptionOverview, listInvoices, listManageableProfessionals } from "@/modules/billing/application/subscription-service";
+import { getAccountStructure } from "@/modules/professionals/application/agency-service";
 import { cancelSubscriptionAction, openPortalAction, resumeSubscriptionAction, simulatePeriodEndAction, startCheckoutAction } from "./actions";
 
 type Search = { feature?: string; audience?: string; plan?: string; checkout?: string };
@@ -48,12 +49,25 @@ export default async function AccountSubscriptionPage({ searchParams }: { search
     );
   }
 
-  const [overview, invoices] = await Promise.all([getSubscriptionOverview(actor, "organizer"), listInvoices(actor)]);
+  const [overview, invoices, structure] = await Promise.all([getSubscriptionOverview(actor, "organizer"), listInvoices(actor), getAccountStructure(actor)]);
   const paidPlans = overview.plans.filter((p) => p.priceMonthlyCents > 0);
   return (
     <div className="space-y-8">
       <PageHeader title="Abonnement" description="Votre offre actuelle, le comparatif et l'historique de facturation." />
       <LiveBillingBanner show={!stripeConfigured || !overview.liveEnabled} />
+      {structure.isVerifiedAgency && (
+        <Card className="gap-2 p-5">
+          <h2 className="font-heading text-lg font-semibold">Abonnement agence</h2>
+          <p className="text-sm text-muted-foreground text-pretty">
+            {structure.state?.subscriptionGrantsAccess
+              ? `${structure.state.paidExtra} fiche(s) en plus de la première, ${formatEuros(structure.monthlyCents)} TTC par mois. Le nombre suit vos fiches en relecture ou en ligne.`
+              : "Aucun abonnement agence actif : seule la première fiche est incluse."}
+          </p>
+          <Link href="/app/pro/structure" className="text-sm text-primary underline-offset-4 hover:underline">
+            Voir la structure et le tarif des fiches
+          </Link>
+        </Card>
+      )}
       {sp.checkout === "cancelled" && (
         <p role="status" className="rounded-lg bg-muted px-4 py-3 text-sm">
           Paiement annulé : aucun changement n'a été effectué sur votre compte.

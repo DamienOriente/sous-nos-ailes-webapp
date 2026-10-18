@@ -3,6 +3,7 @@ import { db, type DbExecutor } from "@/db/client";
 import { eventChildren, eventGuests, eventMembers, eventMilestones, eventProfessionals, eventTasks, events, professionalCategories, professionalReviews, professionals, seatingTables, users } from "@/db/schema";
 import { parseSearchParams } from "@/modules/directory/domain/search-params";
 import { searchDirectory, type DirectoryCard } from "./directory-search";
+import { isPublicListing } from "@/modules/directory/application/public-listing";
 
 /**
  * Read-only queries feeding the public marketing pages with REAL rows from the
@@ -62,7 +63,7 @@ export async function listPublishedReviews(limit = 3, executor: DbExecutor = db)
       categorySlug: professionalCategories.slug,
     })
     .from(professionalReviews)
-    .innerJoin(professionals, and(eq(professionals.id, professionalReviews.professionalId), eq(professionals.status, "published"), isNull(professionals.deletedAt)))
+    .innerJoin(professionals, and(eq(professionals.id, professionalReviews.professionalId), isPublicListing(), isNull(professionals.deletedAt)))
     .innerJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
     .innerJoin(users, eq(users.id, professionalReviews.authorUserId))
     .where(eq(professionalReviews.status, "published"))

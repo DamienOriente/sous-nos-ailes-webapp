@@ -8,7 +8,7 @@ Vocabulaire partagé (code en anglais, UI en français) et relations entre agré
 |---|---|
 | **Utilisateur** (`users`) | Un compte. Rôle global `user` / `moderator` / `admin` / `super_admin`. Les rôles métier (organisateur, professionnel) sont contextuels, jamais globaux : la même personne peut organiser son mariage et publier une fiche. |
 | **Profil** (`user_profiles`) | Données applicatives 1:1 : prénom, nom, téléphone, ville, intention d'inscription (`organizer` / `professional`), onboarding. |
-| **Organisation** (`organizations`, `organization_members`) | Structure juridique optionnelle derrière une ou plusieurs fiches (entreprise, association). Rôles `owner` / `admin` / `manager` / `collaborator` / `contributor`. |
+| **Organisation** (`organizations`, `organization_members`) | Structure juridique d'un compte (une seule par propriétaire, réutilisée par toutes ses fiches). Rôles `owner` / `admin` / `manager` / `collaborator` / `contributor`. `agency_status` (`none` / `pending` / `verified` / `rejected`) : seule une structure validée par la modération (société, association, organisme public, avec SIRET) peut avoir plusieurs fiches. |
 | **Actor** | Identité minimale passée à chaque service : `{ userId, email, name, globalRole, emailVerified, isDemo }`. |
 
 ## Annuaire et professionnels
@@ -135,3 +135,11 @@ Invariants : pas de date de naissance (âge seulement) ; données de santé chif
 - Toutes les dates en UTC (`timestamptz`) ; affichage dans `users.timezone` (défaut Europe/Paris) ; les dates « calendaires » d'évènement sont des `date` dans le fuseau de l'évènement.
 - Argent en centimes entiers (`*_cents`), devise EUR.
 - Identifiants : UUID v4 générés par Postgres ; identifiants better-auth en texte ; noms de stockage de fichiers = UUID, jamais le nom d'origine.
+
+## Fiches par compte et agences (2026-10-18)
+
+- **Indépendant** (tout compte sans agence validée) : une seule fiche, brouillon compris. `createDraft` le garantit sous verrou consultatif par utilisateur ; ses autres métiers sont des métiers secondaires.
+- **Agence** : `organizations.agency_status = verified` après un cas de modération `agency_review`. Plusieurs fiches, rattachées à l'organisation.
+- **Quota** (`modules/professionals/domain/listing-quota.ts`) : une fiche occupe un emplacement de `pending_review` à `published` (et `suspended`). La 1re est incluse ; les suivantes sont payées par l'abonnement agence.
+- **Retenue** : `professionals.billing_hold_at` masque une fiche du public (annuaire, page, sitemap, images, demandes) sans toucher à son statut ni à son contenu. Toute requête publique passe par `isPublicListing()` (`modules/directory/application/public-listing.ts`).
+

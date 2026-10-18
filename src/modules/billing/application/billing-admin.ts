@@ -1,11 +1,12 @@
 import { and, asc, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
-import { billingEvents, planFeatures, plans, professionals, subscriptions, users } from "@/db/schema";
+import { billingEvents, organizations, planFeatures, planPriceTiers, plans, professionals, subscriptions, users } from "@/db/schema";
 import { ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
 import { requireGlobalPermission } from "@/modules/authorization";
 import { FEATURES, type FeatureKey } from "@/modules/billing/domain/plans";
 import { grantsAccess } from "@/modules/billing/domain/subscription-status";
+import { amountForQuantity, sortTiers, validateTiers, type PriceTier, type TierProblem } from "@/modules/billing/domain/tiered-pricing";
 import { recordAudit } from "@/modules/admin/application/audit";
 
 /**
@@ -20,6 +21,7 @@ export async function listPlansAdmin(actor: Actor) {
   requireGlobalPermission(actor, "admin.plans.manage");
   const rows = await db.select().from(plans).orderBy(asc(plans.sortOrder));
   const feats = rows.length ? await db.select().from(planFeatures).where(inArray(planFeatures.planId, rows.map((p) => p.id))) : [];
+  const tiers = rows.length ? await db.select().from(planPriceTiers).where(inArray(planPriceTiers.planId, rows.map((p) => p.id))) : [];
   const counts = await db
     .select({ planId: subscriptions.planId, status: subscriptions.status, currentPeriodEnd: subscriptions.currentPeriodEnd, cancelAtPeriodEnd: subscriptions.cancelAtPeriodEnd })
     .from(subscriptions);
@@ -27,6 +29,7 @@ export async function listPlansAdmin(actor: Actor) {
     ...p,
     features: Object.fromEntries(feats.filter((f) => f.planId === p.id).map((f) => [f.featureKey, { enabled: f.enabled, limit: f.limitValue }])) as Record<string, { enabled: boolean; limit: number | null }>,
     activeSubscriptions: counts.filter((c) => c.planId === p.id && grantsAccess(c)).length,
+    tiers: sortTiers(tiers.filter((t) => t.planId === p.id).map((t) => ({ upTo: t.upTo, unitAmountCents: t.unitAmountCents }))),
   }));
 }
 
@@ -69,6 +72,38 @@ export async function updatePlan(actor: Actor, planId: string, patch: PlanUpdate
   return { affectedSubscriptions: affected };
 }
 
+const TIER_PROBLEMS: Record<TierProblem, string> = {
+  empty: "Ajoutez au moins un palier.",
+  unbounded_not_last: "Seul le dernier palier peut être sans limite.",
+  missing_unbounded: "Le dernier palier doit être sans limite (laissez « jusqu'à » vide).",
+  not_increasing: "Les limites des paliers doivent être croissantes.",
+  negative_price: "Prix invalide.",
+  invalid_bound: "Limite de palier invalide.",
+};
+
+/**
+ * Replaces the graduated tiers of a plan. Existing subscriptions keep their Stripe Price
+ * (the next checkout creates a new tiered Price), exactly like a flat price change.
+ */
+export async function setPlanTiers(actor: Actor, planId: string, input: PriceTier[], executor: DbExecutor = db): Promise<{ affectedSubscriptions: number }> {
+  requireGlobalPermission(actor, "admin.plans.manage");
+  const tiers = sortTiers(input);
+  const problem = validateTiers(tiers);
+  if (problem) throw new ValidationError(TIER_PROBLEMS[problem]);
+  if (tiers.some((t) => t.unitAmountCents > 100_000)) throw new ValidationError("Prix invalide.");
+  const [plan] = await executor.select().from(plans).where(eq(plans.id, planId)).limit(1);
+  if (!plan) throw new NotFoundError();
+  const before = await executor.select({ upTo: planPriceTiers.upTo, unitAmountCents: planPriceTiers.unitAmountCents }).from(planPriceTiers).where(eq(planPriceTiers.planId, planId));
+  const affectedRows = await executor.select({ n: count() }).from(subscriptions).where(and(eq(subscriptions.planId, planId), inArray(subscriptions.status, ["active", "trialing", "past_due"])));
+  await executor.transaction(async (tx) => {
+    await tx.delete(planPriceTiers).where(eq(planPriceTiers.planId, planId));
+    await tx.insert(planPriceTiers).values(tiers.map((t) => ({ planId, upTo: t.upTo, unitAmountCents: t.unitAmountCents })));
+    await tx.update(plans).set({ stripePriceId: null, priceMonthlyCents: tiers[0]?.unitAmountCents ?? plan.priceMonthlyCents }).where(eq(plans.id, planId));
+    await recordAudit(tx, { actorUserId: actor.userId, action: "billing.plan.tiers_updated", resourceType: "plan", resourceId: planId, metadata: { before: sortTiers(before), after: tiers } });
+  });
+  return { affectedSubscriptions: affectedRows[0]?.n ?? 0 };
+}
+
 export async function setPlanFeature(actor: Actor, planId: string, featureKey: FeatureKey, enabled: boolean, limit: number | null, executor: DbExecutor = db): Promise<void> {
   requireGlobalPermission(actor, "admin.plans.manage");
   if (!(featureKey in FEATURES)) throw new ValidationError("Fonctionnalité inconnue.");
@@ -105,6 +140,10 @@ export type SubscriptionRow = {
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
   createdAt: Date;
+  organizationName: string | null;
+  quantity: number;
+  /** Monthly amount: flat price, or tiered amount for the quantity (agency listings). */
+  monthlyCents: number;
 };
 
 export async function listSubscriptionsAdmin(actor: Actor, opts: { status?: string; limit?: number } = {}): Promise<SubscriptionRow[]> {
@@ -123,15 +162,23 @@ export async function listSubscriptionsAdmin(actor: Actor, opts: { status?: stri
       currentPeriodEnd: subscriptions.currentPeriodEnd,
       cancelAtPeriodEnd: subscriptions.cancelAtPeriodEnd,
       createdAt: subscriptions.createdAt,
+      organizationName: organizations.name,
+      quantity: subscriptions.quantity,
+      planId: plans.id,
     })
     .from(subscriptions)
     .innerJoin(plans, eq(plans.id, subscriptions.planId))
     .innerJoin(users, eq(users.id, subscriptions.userId))
     .leftJoin(professionals, eq(professionals.id, subscriptions.professionalId))
+    .leftJoin(organizations, eq(organizations.id, subscriptions.organizationId))
     .where(opts.status ? sql`${subscriptions.status} = ${opts.status}` : undefined)
     .orderBy(desc(subscriptions.createdAt))
     .limit(opts.limit ?? 200);
-  return rows;
+  const tierRows = rows.length ? await db.select().from(planPriceTiers).where(inArray(planPriceTiers.planId, [...new Set(rows.map((r) => r.planId))])) : [];
+  return rows.map(({ planId, ...r }) => {
+    const tiers = tierRows.filter((t) => t.planId === planId);
+    return { ...r, monthlyCents: tiers.length ? amountForQuantity(tiers, r.quantity) : r.priceMonthlyCents };
+  });
 }
 
 export type MrrSummary = { totalCents: number; demoCents: number; realCents: number; byPlan: Array<{ planKey: string; planName: string; count: number; cents: number }>; isDemoOnly: boolean };
@@ -139,21 +186,27 @@ export type MrrSummary = { totalCents: number; demoCents: number; realCents: num
 /** MRR = sum of monthly prices of subscriptions that currently grant access. Demo (mock provider / demo user) is separated. */
 export async function computeMrr(executor: DbExecutor = db): Promise<MrrSummary> {
   const rows = await executor
-    .select({ status: subscriptions.status, currentPeriodEnd: subscriptions.currentPeriodEnd, cancelAtPeriodEnd: subscriptions.cancelAtPeriodEnd, provider: subscriptions.provider, isDemo: users.isDemo, planKey: plans.key, planName: plans.name, price: plans.priceMonthlyCents })
+    .select({ status: subscriptions.status, currentPeriodEnd: subscriptions.currentPeriodEnd, cancelAtPeriodEnd: subscriptions.cancelAtPeriodEnd, provider: subscriptions.provider, isDemo: users.isDemo, planId: plans.id, planKey: plans.key, planName: plans.name, flat: plans.priceMonthlyCents, quantity: subscriptions.quantity })
     .from(subscriptions)
     .innerJoin(plans, eq(plans.id, subscriptions.planId))
     .innerJoin(users, eq(users.id, subscriptions.userId));
+  const tierRows = await executor.select().from(planPriceTiers);
+  const tiersByPlan = new Map<string, PriceTier[]>();
+  for (const t of tierRows) tiersByPlan.set(t.planId, [...(tiersByPlan.get(t.planId) ?? []), { upTo: t.upTo, unitAmountCents: t.unitAmountCents }]);
   const byPlan = new Map<string, { planKey: string; planName: string; count: number; cents: number }>();
   let demoCents = 0;
   let realCents = 0;
   for (const r of rows) {
-    if (!grantsAccess(r) || r.price <= 0) continue;
+    // Tiered plans (agency listings) bill per unit; flat plans bill their monthly price.
+    const tiers = tiersByPlan.get(r.planId);
+    const price = tiers?.length ? amountForQuantity(tiers, r.quantity) : r.flat;
+    if (!grantsAccess(r) || price <= 0) continue;
     const isDemo = r.provider === "mock" || r.isDemo;
-    if (isDemo) demoCents += r.price;
-    else realCents += r.price;
+    if (isDemo) demoCents += price;
+    else realCents += price;
     const entry = byPlan.get(r.planKey) ?? { planKey: r.planKey, planName: r.planName, count: 0, cents: 0 };
     entry.count += 1;
-    entry.cents += r.price;
+    entry.cents += price;
     byPlan.set(r.planKey, entry);
   }
   return { totalCents: demoCents + realCents, demoCents, realCents, byPlan: [...byPlan.values()], isDemoOnly: realCents === 0 && demoCents > 0 };

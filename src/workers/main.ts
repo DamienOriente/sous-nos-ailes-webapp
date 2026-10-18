@@ -11,6 +11,10 @@ import { processGenericJob, registerGenericTask } from "./processors/generic";
 import { processRemindersJob, REMINDERS_EVERY_MS } from "./processors/reminders";
 import { processRetentionJob, RETENTION_CRON, RETENTION_TZ } from "./processors/retention";
 import { closeQueues, createBullConnection, getQueue, type QueueJobData, type QueueName } from "./queues";
+import { syncAllAgencies } from "@/modules/billing/application/agency-billing";
+
+/** Agency quantities and holds (past_due grace periods end without any provider event). */
+const AGENCY_BILLING_EVERY_MS = 60 * 60 * 1000;
 
 /**
  * Background worker process (`pnpm worker`). One BullMQ Worker per queue,
@@ -38,11 +42,13 @@ async function declareSchedulers(): Promise<void> {
   await getQueue("email-outbox").upsertJobScheduler("email-outbox-drain", { every: EMAIL_OUTBOX_EVERY_MS }, { name: "drain", data: {} });
   await getQueue("reminders").upsertJobScheduler("reminders-dispatch", { every: REMINDERS_EVERY_MS }, { name: "dispatch", data: {} });
   await getQueue("retention").upsertJobScheduler("retention-daily", { pattern: RETENTION_CRON, tz: RETENTION_TZ }, { name: "run", data: {} });
+  await getQueue("generic").upsertJobScheduler("agency-billing-tick", { every: AGENCY_BILLING_EVERY_MS }, { name: "agency-billing-tick", data: { task: "agency-billing-tick" } });
   await getQueue("generic").upsertJobScheduler("calendar-sync-tick", { every: CALENDAR_SYNC_EVERY_MS }, { name: "calendar-sync-tick", data: { task: "calendar-sync-tick" } });
   logger.info("job schedulers declared");
 }
 
 async function main(): Promise<void> {
+  registerGenericTask("agency-billing-tick", async () => ({ organizations: await syncAllAgencies() }));
   registerGenericTask("calendar-sync-tick", async () => ({ scheduled: await scheduleActiveCalendarSyncs() }));
   const workers: Worker[] = [
     makeWorker("files-scan", processFilesScanJob, FILES_SCAN_CONCURRENCY),

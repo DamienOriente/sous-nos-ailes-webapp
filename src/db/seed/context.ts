@@ -31,6 +31,8 @@ export const DEMO_USERS = [
   { key: "ines", name: "Inès Garnier", email: "ines.photo@sousnosailes.test", role: "user", intent: "professional" }, // photographer
   { key: "paul", name: "Paul Nguyen", email: "paul@sousnosailes.test", role: "user", intent: "organizer" }, // second organizer (isolation tests)
   { key: "sofia", name: "Sofia Martins", email: "sofia.anim@sousnosailes.test", role: "user", intent: "professional" }, // animation, second event provider
+  { key: "agence", name: "Claire Morel", email: "agence@sousnosailes.test", role: "user", intent: "professional" }, // verified agency, three listings
+  { key: "agenceAttente", name: "Hugo Bernard", email: "agence.attente@sousnosailes.test", role: "user", intent: "professional" }, // agency request pending
   { key: "moderator", name: "Modération SNA", email: "moderateur@sousnosailes.test", role: "moderator", intent: "organizer" },
   { key: "admin", name: "Administration SNA", email: "admin@sousnosailes.test", role: "admin", intent: "organizer" },
   { key: "superadmin", name: "Super Admin SNA", email: "superadmin@sousnosailes.test", role: "super_admin", intent: "organizer" },

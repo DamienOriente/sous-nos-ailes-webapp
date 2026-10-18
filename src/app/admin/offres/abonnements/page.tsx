@@ -31,8 +31,8 @@ export default async function SubscriptionsAdminPage({ searchParams }: { searchP
         rowKey={(r) => r.id}
         emptyTitle="Aucun abonnement"
         columns={[
-          { key: "user", header: "Compte", cell: (r) => (<div><span className="font-medium">{r.userEmail}</span>{r.professionalName && <p className="text-xs text-muted-foreground">fiche : {r.professionalName}</p>}</div>) },
-          { key: "plan", header: "Offre", cell: (r) => `${r.planName} · ${formatEuros(r.priceMonthlyCents)}` },
+          { key: "user", header: "Compte", cell: (r) => (<div><span className="font-medium">{r.userEmail}</span>{r.professionalName && <p className="text-xs text-muted-foreground">fiche : {r.professionalName}</p>}{r.organizationName && <p className="text-xs text-muted-foreground">agence : {r.organizationName}</p>}</div>) },
+          { key: "plan", header: "Offre", cell: (r) => `${r.planName}, ${r.organizationName ? `${r.quantity} fiche(s), ` : ""}${formatEuros(r.monthlyCents)}` },
           { key: "status", header: "Statut", cell: (r) => (<div className="flex flex-wrap gap-1"><StatusBadge tone={r.status === "active" || r.status === "trialing" ? "success" : r.status === "past_due" ? "warning" : "neutral"}>{SUBSCRIPTION_STATUS_LABELS[r.status as SubscriptionStatus] ?? r.status}</StatusBadge>{r.cancelAtPeriodEnd && <StatusBadge tone="warning">fin à l'échéance</StatusBadge>}{(r.provider === "mock" || r.userIsDemo) && <StatusBadge tone="neutral" dot={false}>démo</StatusBadge>}</div>) },
           { key: "period", header: "Fin de période", cell: (r) => <span className="text-muted-foreground">{dateTime(r.currentPeriodEnd)}</span> },
           { key: "created", header: "Depuis", cell: (r) => <span className="text-muted-foreground">{dateTime(r.createdAt)}</span> },

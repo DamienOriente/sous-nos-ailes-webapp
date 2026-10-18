@@ -10,11 +10,13 @@ import { stripeConfigured } from "@/lib/env";
 import { getActor } from "@/lib/session";
 import { getSetting } from "@/modules/admin/application/settings-service";
 import { listPlans } from "@/modules/billing/application/subscription-service";
+import { loadAgencyPlan } from "@/modules/billing/application/agency-holds";
+import { AgencyTiers } from "@/components/billing/agency-tiers";
 
 export const metadata: Metadata = { title: "Tarifs", description: "Offres gratuites et payantes pour les organisateurs d'évènements et pour les professionnels. Sans engagement, résiliables en ligne." };
 
 export default async function PricingPage() {
-  const [organizerPlans, professionalPlans, liveEnabled, actor] = await Promise.all([listPlans("organizer"), listPlans("professional"), getSetting<boolean>("billing.live_enabled", false), getActor()]);
+  const [organizerPlans, professionalPlans, liveEnabled, actor, agencyPlan] = await Promise.all([listPlans("organizer"), listPlans("professional"), getSetting<boolean>("billing.live_enabled", false), getActor(), loadAgencyPlan()]);
   const showBanner = !stripeConfigured || !liveEnabled;
   const renderPlanCta = (audience: "organizer" | "professional", plan: { key: string; priceMonthlyCents: number }) => {
     if (plan.priceMonthlyCents === 0) {
@@ -58,6 +60,27 @@ export default async function PricingPage() {
           </p>
         </Container>
       </Section>
+      {agencyPlan && agencyPlan.tiers.length > 0 && (
+        <Section className="pt-0 sm:pt-0" id="agences">
+          <Container className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-start">
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold">Agences et structures à plusieurs activités</h2>
+              <p className="leading-7 text-muted-foreground text-pretty">
+                Un indépendant publie une fiche, et y ajoute ses autres métiers comme métiers secondaires. Une société, une association ou un organisme public qui gère plusieurs activités distinctes peut faire valider sa structure comme agence, puis publier une fiche par activité.
+              </p>
+              <p className="leading-7 text-muted-foreground text-pretty">
+                La première fiche est incluse. Chaque fiche suivante est facturée chaque mois, à un prix qui baisse avec le nombre de fiches. Le montant suit vos fiches en relecture ou en ligne, au prorata. L'offre Premium reste une option de chaque fiche.
+              </p>
+              <Button asChild variant="outline">
+                <Link href={actor ? "/app/pro/structure" : `/inscription?intent=professional&next=${encodeURIComponent("/app/pro/structure")}`}>Demander le statut agence</Link>
+              </Button>
+            </div>
+            <div className="rounded-xl border bg-card p-5">
+              <AgencyTiers tiers={agencyPlan.tiers} />
+            </div>
+          </Container>
+        </Section>
+      )}
       <Section className="pt-0 sm:pt-0" id="faq">
         <Container size="narrow" className="space-y-8">
           <h2 className="text-2xl font-semibold">Questions sur la facturation</h2>

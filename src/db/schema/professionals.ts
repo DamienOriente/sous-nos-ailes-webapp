@@ -90,6 +90,8 @@ export const professionals = pgTable(
     isDemo: boolean("is_demo").notNull().default(false),
     acceptsChildrenServices: boolean("accepts_children_services").notNull().default(false),
     publishedAt: tsz("published_at"),
+    /** Set when an agency stops paying for extra listings: hidden from the public, content and status kept. */
+    billingHoldAt: tsz("billing_hold_at"),
     ...timestamps,
     ...softDelete,
   },

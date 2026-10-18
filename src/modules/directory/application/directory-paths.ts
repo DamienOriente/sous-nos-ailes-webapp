@@ -2,6 +2,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
 import { professionalCategories, professionals } from "@/db/schema";
 import { findDepartmentByCode, findDepartmentBySlug, slugifyGeo } from "@/modules/professionals/domain/geo";
+import { isPublicListing } from "@/modules/directory/application/public-listing";
 
 export type IndexablePath = { path: string; categorySlug: string; geoSlug: string | null; count: number };
 
@@ -15,7 +16,7 @@ export async function listIndexableDirectoryPaths(executor: DbExecutor = db): Pr
     .select({ categorySlug: professionalCategories.slug, department: professionals.department, city: professionals.city, n: sql<number>`count(*)::int` })
     .from(professionals)
     .innerJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
-    .where(and(eq(professionals.status, "published"), isNull(professionals.deletedAt), eq(professionals.isDemo, false), eq(professionalCategories.isActive, true)))
+    .where(and(isPublicListing(), isNull(professionals.deletedAt), eq(professionals.isDemo, false), eq(professionalCategories.isActive, true)))
     .groupBy(professionalCategories.slug, professionals.department, professionals.city);
 
   const byCategory = new Map<string, number>();
@@ -56,14 +57,14 @@ export async function resolveGeoSegment(categorySlug: string, segment: string, e
       .select({ n: sql<number>`count(*)::int` })
       .from(professionals)
       .innerJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
-      .where(and(eq(professionalCategories.slug, categorySlug), eq(professionals.department, dept.code), eq(professionals.status, "published"), isNull(professionals.deletedAt)));
+      .where(and(eq(professionalCategories.slug, categorySlug), eq(professionals.department, dept.code), isPublicListing(), isNull(professionals.deletedAt)));
     return (r?.n ?? 0) > 0 ? { kind: "department", code: dept.code, name: dept.name } : null;
   }
   const cities = await executor
     .selectDistinct({ city: professionals.city })
     .from(professionals)
     .innerJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
-    .where(and(eq(professionalCategories.slug, categorySlug), eq(professionals.status, "published"), isNull(professionals.deletedAt), sql`${professionals.city} is not null`));
+    .where(and(eq(professionalCategories.slug, categorySlug), isPublicListing(), isNull(professionals.deletedAt), sql`${professionals.city} is not null`));
   const match = cities.find((c) => c.city && slugifyGeo(c.city) === segment);
   return match?.city ? { kind: "city", name: match.city } : null;
 }

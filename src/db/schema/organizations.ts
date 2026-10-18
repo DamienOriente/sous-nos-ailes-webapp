@@ -11,6 +11,8 @@ export const organizationTypeEnum = pgEnum("organization_type", [
   "public_body",
   "other",
 ]);
+/** Agency = structure allowed to run several listings, after a moderator checked it (2026-10-18 decision). */
+export const agencyStatusEnum = pgEnum("agency_status", ["none", "pending", "verified", "rejected"]);
 
 export const organizations = pgTable(
   "organizations",
@@ -33,6 +35,13 @@ export const organizations = pgTable(
     ownerUserId: text("owner_user_id")
       .notNull()
       .references(() => users.id, { onDelete: "restrict" }),
+    agencyStatus: agencyStatusEnum("agency_status").notNull().default("none"),
+    agencyRequestedAt: tsz("agency_requested_at"),
+    agencyReviewedAt: tsz("agency_reviewed_at"),
+    agencyReviewedBy: text("agency_reviewed_by").references(() => users.id, { onDelete: "set null" }),
+    agencyReviewNote: text("agency_review_note"),
+    /** Listing kept visible when the agency subscription stops (no FK: professionals references this table). */
+    primaryListingId: uuid("primary_listing_id"),
     ...timestamps,
     ...softDelete,
   },

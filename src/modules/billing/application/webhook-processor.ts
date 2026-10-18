@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 import { eventObject, isHandledEventType, readInvoiceSubscriptionId, readMetadata, readRef, readString, readSubscription, type JsonObject } from "@/modules/billing/domain/billing-events";
 import { mapStripeStatus, unixToDate } from "@/modules/billing/domain/subscription-status";
 import { notify } from "@/modules/notifications/application/notification-service";
+import { reconcileAgencyHolds } from "@/modules/billing/application/agency-holds";
 import { recordAudit } from "@/modules/admin/application/audit";
 
 export type BillingProvider = "stripe" | "mock";
@@ -102,6 +103,8 @@ async function handleCheckoutCompleted(tx: DbExecutor, provider: BillingProvider
   await tx.insert(subscriptions).values({
     userId,
     professionalId: meta.professionalId || null,
+    organizationId: meta.organizationId || null,
+    quantity: positiveInt(meta.quantity) ?? 1,
     planId: plan.id,
     status: "incomplete",
     stripeSubscriptionId: subscriptionId,
@@ -114,7 +117,7 @@ async function upsertSubscriptionFromObject(tx: DbExecutor, provider: BillingPro
   if (!snap.id) throw new Error("subscription event without id");
   const status = mapStripeStatus(snap.status);
   const [existing] = await tx
-    .select({ id: subscriptions.id, userId: subscriptions.userId, planId: subscriptions.planId, status: subscriptions.status })
+    .select({ id: subscriptions.id, userId: subscriptions.userId, planId: subscriptions.planId, status: subscriptions.status, organizationId: subscriptions.organizationId })
     .from(subscriptions)
     .where(eq(subscriptions.stripeSubscriptionId, snap.id))
     .limit(1);
@@ -127,14 +130,17 @@ async function upsertSubscriptionFromObject(tx: DbExecutor, provider: BillingPro
     cancelAtPeriodEnd: snap.cancelAtPeriodEnd,
     canceledAt: unixToDate(snap.canceledAt),
     endedAt: unixToDate(snap.endedAt),
+    ...(snap.quantity !== null ? { quantity: snap.quantity } : {}),
   };
 
   if (existing) {
     await tx
       .update(subscriptions)
-      .set({ ...periodPatch, ...(plan ? { planId: plan.id } : {}) })
+      .set({ ...periodPatch, ...(plan ? { planId: plan.id } : {}), ...(!existing.organizationId && snap.metadata.organizationId ? { organizationId: snap.metadata.organizationId } : {}) })
       .where(eq(subscriptions.id, existing.id));
     if (existing.status !== status) await notifyStatusChange(tx, existing.userId, status, snap.cancelAtPeriodEnd);
+    const orgId = existing.organizationId ?? snap.metadata.organizationId ?? null;
+    if (orgId) await reconcileAgencyHolds(orgId, tx);
     return;
   }
 
@@ -145,19 +151,21 @@ async function upsertSubscriptionFromObject(tx: DbExecutor, provider: BillingPro
   await tx.insert(subscriptions).values({
     userId,
     professionalId: snap.metadata.professionalId || null,
+    organizationId: snap.metadata.organizationId || null,
     planId: plan.id,
     stripeSubscriptionId: snap.id,
     provider,
     ...periodPatch,
   });
   await notifyStatusChange(tx, userId, status, snap.cancelAtPeriodEnd);
+  if (snap.metadata.organizationId) await reconcileAgencyHolds(snap.metadata.organizationId, tx);
 }
 
 async function handleSubscriptionDeleted(tx: DbExecutor, provider: BillingProvider, obj: JsonObject): Promise<void> {
   const snap = readSubscription(obj);
   if (!snap.id) throw new Error("subscription.deleted without id");
   const now = new Date();
-  const [existing] = await tx.select({ id: subscriptions.id, userId: subscriptions.userId }).from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, snap.id)).limit(1);
+  const [existing] = await tx.select({ id: subscriptions.id, userId: subscriptions.userId, organizationId: subscriptions.organizationId }).from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, snap.id)).limit(1);
   if (!existing) {
     // Deletion of something we never saw: nothing to revoke, but keep a trace.
     logger.warn({ provider, subscriptionId: snap.id }, "subscription.deleted for unknown subscription");
@@ -168,6 +176,7 @@ async function handleSubscriptionDeleted(tx: DbExecutor, provider: BillingProvid
     .set({ status: "canceled", canceledAt: unixToDate(snap.canceledAt) ?? now, endedAt: unixToDate(snap.endedAt) ?? now, cancelAtPeriodEnd: false })
     .where(eq(subscriptions.id, existing.id));
   await recordAudit(tx, { actorUserId: null, action: "billing.subscription.ended", resourceType: "subscription", resourceId: existing.id, metadata: { provider } });
+  if (existing.organizationId) await reconcileAgencyHolds(existing.organizationId, tx);
   await notify(
     { userId: existing.userId, type: "payment_alert", title: "Votre abonnement est terminé", body: "Les fonctionnalités Premium sont désactivées. Vos données restent conservées selon notre politique.", href: "/app/compte/abonnement", dedupeKey: `sub-ended:${existing.id}` },
     tx,
@@ -177,12 +186,13 @@ async function handleSubscriptionDeleted(tx: DbExecutor, provider: BillingProvid
 async function handleInvoicePaid(tx: DbExecutor, invoice: JsonObject): Promise<void> {
   const subId = readInvoiceSubscriptionId(invoice);
   if (!subId) return;
-  const [sub] = await tx.select({ id: subscriptions.id, status: subscriptions.status }).from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, subId)).limit(1);
+  const [sub] = await tx.select({ id: subscriptions.id, status: subscriptions.status, organizationId: subscriptions.organizationId }).from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, subId)).limit(1);
   if (!sub) return;
   // A paid invoice after a failed attempt restores access; the subscription.updated event carries the new period.
   if (sub.status === "past_due" || sub.status === "unpaid" || sub.status === "incomplete") {
     await tx.update(subscriptions).set({ status: "active" }).where(eq(subscriptions.id, sub.id));
   }
+  if (sub.organizationId) await reconcileAgencyHolds(sub.organizationId, tx);
 }
 
 async function handlePaymentFailed(tx: DbExecutor, invoice: JsonObject): Promise<void> {
@@ -216,6 +226,11 @@ async function handleTrialWillEnd(tx: DbExecutor, obj: JsonObject): Promise<void
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+function positiveInt(v: string | undefined): number | null {
+  const n = v ? Number.parseInt(v, 10) : Number.NaN;
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
 
 async function linkCustomer(tx: DbExecutor, userId: string, stripeCustomerId: string): Promise<void> {
   const [u] = await tx.select({ email: users.email }).from(users).where(eq(users.id, userId)).limit(1);

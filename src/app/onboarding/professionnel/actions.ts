@@ -8,6 +8,7 @@ import { createDraft, getManagedListing, saveStep1, saveStep2, saveStep3, saveSt
 import { step1Schema, step2Schema, step4Schema, step5Schema } from "@/modules/professionals/domain/listing-schema";
 import { tradeFormDataToObject } from "@/modules/professionals/domain/trade-forms";
 import { activateDefaultTools } from "@/modules/tools/application/tool-service";
+import { redirectOnListingQuota } from "@/app/app/pro/agency-flow";
 
 const idSchema = z.uuid();
 
@@ -34,6 +35,7 @@ export async function step1Action(_prev: FormState, form: FormData): Promise<For
     }
     await activateDefaultTools(id);
   } catch (e) {
+    redirectOnListingQuota(e);
     return toActionErrorWithFields(e);
   }
   redirect(wantsExit(form) ? "/app/pro" : stepUrl(id, 2));
@@ -90,6 +92,7 @@ export async function step5Action(_prev: FormState, form: FormData): Promise<For
     await saveTemplateChoice(actor, id, parsed.data.templateKey);
     if (!wantsExit(form)) await submitForReview(actor, id);
   } catch (e) {
+    redirectOnListingQuota(e, id);
     return toActionErrorWithFields(e);
   }
   redirect(wantsExit(form) ? "/app/pro" : `/app/pro/${id}?submitted=1`);

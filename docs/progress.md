@@ -174,3 +174,16 @@ Lighthouse mobile (4G lente simulée, build de production, Chrome headless), ava
 | /tarifs | 93 puis 92 | 3,1 s puis 3,4 s | 0,055 puis 0 |
 
 Les mesures varient de quelques points d'un passage à l'autre. L'objectif de 2,5 s pour le LCP n'est pas atteint en mobile simulé ; le reste du temps est le coût du premier octet de CSS et de la photo principale.
+
+## Fiches et agences (2026-10-18)
+
+| Élément | État |
+|---|---|
+| Une fiche par indépendant (création, onboarding, soumission) | Fait, testé (intégration + E2E) |
+| Statut agence demandé, relu par la modération | Fait, testé |
+| Abonnement agence à paliers dégressifs, quantité synchronisée | Fait en mode simulé, testé ; Stripe test à valider avec de vraies clés |
+| Retenue des fiches en cas d'impayé et retour au paiement | Fait, testé |
+| Paliers modifiables dans l'admin, barème sur /tarifs | Fait, testé |
+| Invitation de collaborateurs dans une agence | Non fait (hors périmètre de cette itération) |
+| Vérification automatique du SIRET (API Sirene) | Non fait, contrôle manuel par la modération |
+

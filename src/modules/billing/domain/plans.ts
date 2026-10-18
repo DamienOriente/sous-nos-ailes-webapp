@@ -42,12 +42,15 @@ export type FeatureKey = keyof typeof FEATURES;
 export type PlanSeed = {
   key: string;
   name: string;
-  audience: "organizer" | "professional";
+  audience: "organizer" | "professional" | "agency";
   description: string;
+  /** Flat monthly price; for a tiered plan, the price of the first unit (display only). */
   priceMonthlyCents: number;
   isDefault: boolean;
   sortOrder: number;
   features: Partial<Record<FeatureKey, { enabled: boolean; limit?: number }>>;
+  /** Graduated tiers billed per unit; seeded only when the plan has none yet (admins edit them). */
+  tiers?: { upTo: number | null; unitAmountCents: number }[];
 };
 
 export const PLAN_SEED: PlanSeed[] = [
@@ -137,5 +140,21 @@ export const PLAN_SEED: PlanSeed[] = [
       contacts: { enabled: true },
       "sponsored.eligible": { enabled: true },
     },
+  },
+  {
+    key: "agency_listings",
+    name: "Fiches supplémentaires (agences)",
+    audience: "agency",
+    description: "Pour les structures validées comme agence : chaque fiche au-delà de la première, au tarif dégressif. Premium reste une option par fiche.",
+    priceMonthlyCents: 1490,
+    isDefault: false,
+    sortOrder: 10,
+    features: {},
+    // Units = listings beyond the included one: units 1-2 are the 2nd and 3rd listings.
+    tiers: [
+      { upTo: 2, unitAmountCents: 1490 },
+      { upTo: 9, unitAmountCents: 990 },
+      { upTo: null, unitAmountCents: 690 },
+    ],
   },
 ];

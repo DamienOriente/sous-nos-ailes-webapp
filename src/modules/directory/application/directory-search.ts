@@ -4,6 +4,7 @@ import { configurationSettings, featuredPlacements, mediaAssets, professionalCat
 import { findCity, findDepartmentBySlug, findDepartmentByCode, departmentCentroid, haversineKm, slugifyGeo } from "@/modules/professionals/domain/geo";
 import { compareRanked, scoreListing } from "@/modules/professionals/domain/ranking";
 import { languagesFromFilter, PAGE_SIZE, type SearchFilters } from "@/modules/directory/domain/search-params";
+import { isPublicListing } from "@/modules/directory/application/public-listing";
 
 /** Candidate pool scanned before in-memory ranking. Fine for V1 volumes; revisit with a SQL ranking when > a few thousand published listings. */
 const CANDIDATE_LIMIT = 600;
@@ -104,7 +105,7 @@ export function weekdayFromIsoDate(date: string): number {
 }
 
 function buildWhere(filters: SearchFilters, categoryId: string | null, departmentCode: string | null, viewerUserId: string | null): SQL[] {
-  const where: SQL[] = [eq(professionals.status, "published"), isNull(professionals.deletedAt)];
+  const where: SQL[] = [isPublicListing(), isNull(professionals.deletedAt)];
   if (categoryId) {
     where.push(sql`(${professionals.primaryCategoryId} = ${categoryId} or exists (select 1 from professional_category_assignments a where a.professional_id = ${professionals.id} and a.category_id = ${categoryId}))`);
   }
@@ -325,7 +326,7 @@ export async function emptyStateSuggestions(executor: DbExecutor = db): Promise<
   const rows = await executor
     .select({ slug: professionalCategories.slug, name: professionalCategories.name, count: sql<number>`count(${professionals.id})::int` })
     .from(professionalCategories)
-    .innerJoin(professionals, and(eq(professionals.primaryCategoryId, professionalCategories.id), eq(professionals.status, "published"), isNull(professionals.deletedAt)))
+    .innerJoin(professionals, and(eq(professionals.primaryCategoryId, professionalCategories.id), isPublicListing(), isNull(professionals.deletedAt)))
     .groupBy(professionalCategories.slug, professionalCategories.name, professionalCategories.sortOrder)
     .orderBy(asc(professionalCategories.sortOrder))
     .limit(8);

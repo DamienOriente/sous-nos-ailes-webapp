@@ -11,6 +11,7 @@ import { archiveListing, getManagedListing, submitForReview, updateListing } fro
 import { listingEditSchema } from "@/modules/professionals/domain/listing-schema";
 import { tradeFormDataToObject } from "@/modules/professionals/domain/trade-forms";
 import { listActiveCategories } from "@/modules/professionals/application/professional-service";
+import { redirectOnListingQuota } from "@/app/app/pro/agency-flow";
 
 const idSchema = z.uuid();
 
@@ -42,6 +43,7 @@ export async function submitListingAction(id: string): Promise<ActionResult<unde
     revalidatePath(`/app/pro/${id}`, "layout");
     return { ok: true, data: undefined };
   } catch (e) {
+    redirectOnListingQuota(e, id);
     return toActionError(e);
   }
 }

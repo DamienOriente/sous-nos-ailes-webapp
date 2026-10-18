@@ -31,6 +31,15 @@ Règle d'accès (`domain/subscription-status.ts`) :
 
 Le retour navigateur après checkout n'est **jamais** une preuve : `/app/compte/abonnement/retour` interroge l'entitlement réel (server action `checkSubscriptionStateAction`) jusqu'à activation ou expiration du délai.
 
+## Abonnement agence (fiches supplémentaires, 2026-10-18)
+
+- **Plan** `agency_listings` (audience `agency`), paliers gradués dans `plan_price_tiers`, modifiables dans `/admin/offres` (« Paliers dégressifs »). Valeurs par défaut : unités 1 et 2 (2e et 3e fiches) à 14,90 €, unités 3 à 9 (4e à 10e) à 9,90 €, au-delà 6,90 €.
+- **Calcul** : `modules/billing/domain/tiered-pricing.ts` (`amountForQuantity`, `nextUnitPrice`, `validateTiers`), même sémantique que Stripe `tiers_mode: graduated`. Stripe : `ensureStripePrice` crée un Price `billing_scheme: tiered`.
+- **Quantité** = fiches en relecture ou en ligne − 1, jamais saisie par l'agence. `syncAgencyQuantity` l'aligne après une soumission ou un archivage, et toutes les heures (`agency-billing-tick` du worker). Stripe : mise à jour de l'item avec `proration_behavior: create_prorations` ; mock : évènement `customer.subscription.updated` local.
+- **Soumission d'une fiche en plus** : sans abonnement agence actif → page `/app/pro/[id]/ajout-agence` puis checkout de la quantité nécessaire ; avec abonnement → confirmation explicite du supplément mensuel (`confirmExtraCharge`) avant toute hausse.
+- **Impayé** : quand l'abonnement ne donne plus accès (résilié, terminé, `past_due` après la période payée), `reconcileAgencyHolds` retient les fiches au-delà de la 1re (celle choisie par l'agence, sinon la plus ancienne publiée) ; elles reviennent dès que l'accès revient. Notification au propriétaire dans les deux cas.
+- **À vérifier avec des clés Stripe de test** : la mise à jour à quantité 0 (agence revenue à une seule fiche) et la proratisation sur une vraie facture.
+
 ## Flux
 
 ### Souscription

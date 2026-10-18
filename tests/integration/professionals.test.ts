@@ -211,7 +211,8 @@ describe("inquiries", () => {
   });
 
   it("refuses inquiries to unpublished listings", async () => {
-    const { id: draft } = await createDraft(OWNER, { primaryCategoryId: categoryId, secondaryCategoryIds: [] });
+    // An independent runs one listing: the unpublished draft belongs to another account.
+    const { id: draft } = await createDraft(OTHER, { primaryCategoryId: categoryId, secondaryCategoryIds: [] });
     await expect(createPublicInquiry({ professionalId: draft, kind: "contact", requesterName: "X Y", requesterEmail: "x@y.test", message: "Bonjour, un message assez long.", consent: true, website: "", eventId: null }, null)).rejects.toBeInstanceOf(NotFoundError);
   });
 

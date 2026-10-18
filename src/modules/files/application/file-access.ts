@@ -5,6 +5,7 @@ import { ForbiddenError, NotFoundError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
 import { canGlobal, getEventAccess, getProfessionalAccess, requireEventPermission, requireGlobalPermission, requireProfessionalManage, type EventAccess } from "@/modules/authorization";
 import { PUBLIC_IMAGE_PURPOSES, type FilePurpose, type FileScope } from "@/modules/files/domain/policy";
+import { isListingRowPublic } from "@/modules/directory/application/public-listing";
 
 export type FileRecord = typeof files.$inferSelect;
 
@@ -41,11 +42,11 @@ export async function authorizeScopeWrite(actor: Actor, scope: FileScope, scopeI
   }
 }
 
-/** A professional image is public when its listing is published. Anonymous callers allowed. */
+/** A professional image is public when its listing is publicly visible. Anonymous callers allowed. */
 export async function isPubliclyVisible(file: FileRecord, executor: DbExecutor = db): Promise<boolean> {
   if (file.scope !== "professional" || !PUBLIC_IMAGE_PURPOSES.has(file.purpose as FilePurpose)) return false;
-  const [pro] = await executor.select({ status: professionals.status, deletedAt: professionals.deletedAt }).from(professionals).where(eq(professionals.id, file.scopeId)).limit(1);
-  return Boolean(pro && !pro.deletedAt && pro.status === "published");
+  const [pro] = await executor.select({ status: professionals.status, deletedAt: professionals.deletedAt, billingHoldAt: professionals.billingHoldAt }).from(professionals).where(eq(professionals.id, file.scopeId)).limit(1);
+  return Boolean(pro && isListingRowPublic(pro));
 }
 
 /**

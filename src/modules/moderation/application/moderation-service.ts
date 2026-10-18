@@ -4,6 +4,7 @@ import {
   appeals,
   moderationCases,
   moderationDecisions,
+  organizations,
   professionalCategories,
   professionalDocuments,
   professionalVerifications,
@@ -17,6 +18,7 @@ import { ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
 import { requireGlobalPermission } from "@/modules/authorization";
 import { caseStatusAfter, closesCase, targetProfessionalStatus, validateReason, type Decision } from "@/modules/moderation/domain/decisions";
+import { decideAgency } from "@/modules/professionals/application/agency-service";
 import { setListingStatusAsModerator } from "@/modules/professionals/application/professional-service";
 import { setVerification } from "@/modules/professionals/application/verification-service";
 import type { ProfessionalStatus } from "@/modules/professionals/domain/status";
@@ -30,7 +32,7 @@ import { recordAudit } from "@/modules/admin/application/audit";
  * administration module.
  */
 export type OpenCaseInput = {
-  kind: "profile_review" | "profile_update_review" | "report" | "review_moderation" | "appeal";
+  kind: "profile_review" | "profile_update_review" | "report" | "review_moderation" | "appeal" | "agency_review";
   resourceType: string;
   resourceId: string;
   professionalId?: string | null;
@@ -119,8 +121,26 @@ export async function getCaseDetail(actor: Actor, caseId: string) {
   const caseReports = await db.select().from(reports).where(eq(reports.caseId, caseId)).orderBy(desc(reports.createdAt));
   const caseAppeals = await db.select().from(appeals).where(eq(appeals.caseId, caseId)).orderBy(desc(appeals.createdAt));
   const professional = c.professionalId ? await getProfessionalForModeration(c.professionalId) : null;
+  const agency = c.kind === "agency_review" ? await getAgencyForModeration(c.resourceId) : null;
   const assignee = c.assignedToUserId ? (await db.select({ id: users.id, name: users.name }).from(users).where(eq(users.id, c.assignedToUserId)).limit(1))[0] ?? null : null;
-  return { case: c, decisions, reports: caseReports, appeals: caseAppeals, professional, assignee };
+  return { case: c, decisions, reports: caseReports, appeals: caseAppeals, professional, agency, assignee };
+}
+
+/** Agency request: the structure, its owner and the listings it would run. */
+async function getAgencyForModeration(organizationId: string) {
+  const [row] = await db
+    .select({ org: organizations, ownerName: users.name, ownerEmail: users.email })
+    .from(organizations)
+    .innerJoin(users, eq(users.id, organizations.ownerUserId))
+    .where(eq(organizations.id, organizationId))
+    .limit(1);
+  if (!row) return null;
+  const listings = await db
+    .select({ id: professionals.id, displayName: professionals.displayName, status: professionals.status, categoryName: professionalCategories.name })
+    .from(professionals)
+    .innerJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
+    .where(and(eq(professionals.organizationId, organizationId), isNull(professionals.deletedAt)));
+  return { ...row.org, ownerName: row.ownerName, ownerEmail: row.ownerEmail, listings };
 }
 
 /** Everything a moderator needs to read a listing (never the owner's private account data beyond identity). */
@@ -175,6 +195,10 @@ export async function decideCase(actor: Actor, caseId: string, input: DecideInpu
     if ((c.status === "resolved" || c.status === "dismissed") && input.decision !== "note") throw new ConflictError("Ce cas est déjà clos.");
 
     let professionalStatus: ProfessionalStatus | null = null;
+    if (c.kind === "agency_review") {
+      if (input.decision === "approve" || input.decision === "reject") await decideAgency(actor, c.resourceId, input.decision, reason, tx);
+      else if (input.decision !== "note" && input.decision !== "escalate" && input.decision !== "dismiss") throw new ValidationError("Une demande d'agence se valide ou se refuse.");
+    }
     if (c.professionalId && (c.kind === "profile_review" || c.kind === "profile_update_review" || c.kind === "appeal" || c.kind === "report")) {
       professionalStatus = await applyProfessionalDecision(tx, actor, c.professionalId, c.kind, input.decision, reason);
     }

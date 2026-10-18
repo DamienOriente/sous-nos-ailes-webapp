@@ -7,6 +7,7 @@ import { requireGlobalPermission } from "@/modules/authorization";
 import { grantsAccess } from "@/modules/billing/domain/subscription-status";
 import { getSetting } from "@/modules/admin/application/settings-service";
 import { recordAudit } from "@/modules/admin/application/audit";
+import { isPublicListing } from "@/modules/directory/application/public-listing";
 
 /**
  * Sponsored placements. Eligibility is checked at creation AND at query time:
@@ -82,7 +83,7 @@ export async function listActiveSponsoredProfessionalIds(filter: { categorySlug?
   const cap = await getSetting<number>("sponsored.max_per_query", 2, executor);
   if (cap <= 0) return [];
   const now = new Date();
-  const conds = [eq(featuredPlacements.isActive, true), lte(featuredPlacements.startsAt, now), gte(featuredPlacements.endsAt, now), eq(professionals.status, "published")];
+  const conds = [eq(featuredPlacements.isActive, true), lte(featuredPlacements.startsAt, now), gte(featuredPlacements.endsAt, now), isPublicListing()];
   if (filter.categorySlug) conds.push(sql`(${featuredPlacements.categorySlug} is null or ${featuredPlacements.categorySlug} = ${filter.categorySlug})`);
   if (filter.department) conds.push(sql`(${featuredPlacements.department} is null or ${featuredPlacements.department} = ${filter.department})`);
   const rows = await executor

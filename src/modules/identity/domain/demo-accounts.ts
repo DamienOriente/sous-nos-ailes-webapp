@@ -25,6 +25,8 @@ const ROLES: Record<DemoUserKey, { group: DemoAccountGroup; role: string; landin
   theo: { group: "professional", role: "DJ, offre gratuite", landing: "/app/pro" },
   ines: { group: "professional", role: "Photographe", landing: "/app/pro" },
   sofia: { group: "professional", role: "Animation enfants", landing: "/app/pro" },
+  agence: { group: "professional", role: "Agence validée, trois fiches", landing: "/app/pro" },
+  agenceAttente: { group: "professional", role: "Agence en attente de validation", landing: "/app/pro" },
   moderator: { group: "staff", role: "Modération des fiches et des avis", landing: "/admin" },
   admin: { group: "staff", role: "Administration", landing: "/admin" },
   superadmin: { group: "staff", role: "Super administration", landing: "/admin" },

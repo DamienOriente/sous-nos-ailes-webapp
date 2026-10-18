@@ -68,6 +68,10 @@ export type SubscriptionSnapshot = {
   customerId: string | null;
   status: string | null;
   priceId: string | null;
+  /** Billed units of the first item (agency plan); null when the payload does not say. */
+  quantity: number | null;
+  /** Stripe subscription item id (needed to change the quantity). */
+  itemId: string | null;
   currentPeriodStart: number | null;
   currentPeriodEnd: number | null;
   cancelAtPeriodEnd: boolean;
@@ -90,6 +94,8 @@ export function readSubscription(obj: JsonObject): SubscriptionSnapshot {
     customerId: readRef(obj, "customer"),
     status: readString(obj, "status"),
     priceId: price ? readString(price, "id") : readString(obj, "price_id"),
+    quantity: readNumber(first, "quantity") ?? readNumber(obj, "quantity"),
+    itemId: first ? readString(first, "id") : null,
     currentPeriodStart: readNumber(first, "current_period_start") ?? readNumber(obj, "current_period_start"),
     currentPeriodEnd: readNumber(first, "current_period_end") ?? readNumber(obj, "current_period_end"),
     cancelAtPeriodEnd: readBoolean(obj, "cancel_at_period_end"),

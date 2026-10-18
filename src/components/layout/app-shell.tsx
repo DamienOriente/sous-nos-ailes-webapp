@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import type { Actor } from "@/lib/session";
 import { canGlobal } from "@/modules/authorization";
+import { proNavLabel } from "@/modules/professionals/application/agency-service";
 import { initials } from "@/lib/utils";
 import { AppNavLinks, type NavItem } from "./app-nav-links";
 import { SignOutButton } from "./sign-out-button";
@@ -15,7 +16,7 @@ import { SignOutButton } from "./sign-out-button";
 const PRIMARY_NAV: NavItem[] = [
   { href: "/app", label: "Accueil", exact: true },
   { href: "/app/evenements", label: "Mes évènements" },
-  { href: "/app/pro", label: "Mes fiches pro" },
+  { href: "/app/pro", label: "Ma fiche pro" },
   { href: "/app/calendrier", label: "Calendrier" },
   { href: "/app/contacts", label: "Contacts" },
   { href: "/app/notifications", label: "Notifications" },
@@ -26,7 +27,7 @@ const PRIMARY_NAV: NavItem[] = [
  * Authenticated shell: sidebar on desktop, sheet on mobile. `secondaryNav`
  * lets a workspace (event, professional listing) add its own section.
  */
-export function AppShell({
+export async function AppShell({
   actor,
   children,
   unreadCount = 0,
@@ -37,7 +38,8 @@ export function AppShell({
   unreadCount?: number;
   secondaryNav?: { title: string; items: NavItem[] };
 }) {
-  const nav = PRIMARY_NAV.map((i) => (i.href === "/app/notifications" ? { ...i, badge: unreadCount } : i));
+  const proLabel = await proNavLabel(actor.userId);
+  const nav = PRIMARY_NAV.map((i) => (i.href === "/app/notifications" ? { ...i, badge: unreadCount } : i.href === "/app/pro" ? { ...i, label: proLabel } : i));
   const showAdmin = canGlobal(actor, "admin.dashboard");
   const sidebar = (
     <div className="flex h-full flex-col gap-6">

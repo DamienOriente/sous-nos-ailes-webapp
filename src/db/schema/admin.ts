@@ -3,7 +3,7 @@ import { index, jsonb, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { id, timestamps, tsz } from "./_shared";
 import { users } from "./identity";
 
-export const moderationCaseKindEnum = pgEnum("moderation_case_kind", ["profile_review", "profile_update_review", "report", "review_moderation", "appeal"]);
+export const moderationCaseKindEnum = pgEnum("moderation_case_kind", ["profile_review", "profile_update_review", "report", "review_moderation", "appeal", "agency_review"]);
 export const moderationCaseStatusEnum = pgEnum("moderation_case_status", ["open", "in_review", "resolved", "dismissed"]);
 
 /** One case per thing to moderate. Decisions are appended, never edited. */

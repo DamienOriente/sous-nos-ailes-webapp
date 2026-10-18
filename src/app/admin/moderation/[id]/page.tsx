@@ -17,6 +17,7 @@ import { privateFileHref } from "@/modules/files/application/file-urls";
 import { CASE_KIND_LABELS, CASE_STATUS_LABELS, DECISION_LABELS, type Decision } from "@/modules/moderation/domain/decisions";
 import { getCaseDetail, listModeratorsForAssignment } from "@/modules/moderation/application/moderation-service";
 import { STATUS_LABELS, STATUS_TONES, type ProfessionalStatus } from "@/modules/professionals/domain/status";
+import { AGENCY_STATUS_LABELS, AGENCY_TYPE_LABELS } from "@/modules/professionals/domain/agency-schema";
 import { DOCUMENT_KIND_LABELS, VERIFICATION_KIND_LABELS, VERIFICATION_KINDS, verificationLevelLabel, type DocumentKind } from "@/modules/professionals/domain/verification";
 import { requireAdminPage } from "../../_lib/admin-page";
 import { assignCaseAction, decideCaseAction, reviewDocumentAction, reviewVerificationAction } from "../actions";
@@ -32,6 +33,8 @@ function allowedDecisions(kind: string, proStatus: ProfessionalStatus | null, ca
       return proStatus === "suspended" ? ["reinstate", "reject", "note", "escalate"] : ["approve", "request_changes", "suspend", "dismiss", "note", "escalate"];
     case "report":
       return proStatus ? ["dismiss", "suspend", "reinstate", "request_changes", "note", "escalate"] : ["dismiss", "note", "escalate"];
+    case "agency_review":
+      return ["approve", "reject", "note", "escalate"];
     case "appeal":
       return proStatus === "suspended" || proStatus === "rejected" ? ["reinstate", "approve", "dismiss", "note"] : ["dismiss", "note"];
     default:
@@ -50,7 +53,7 @@ export default async function ModerationCasePage({ params }: { params: Promise<{
     throw e;
   }
   const moderators = await listModeratorsForAssignment();
-  const { case: c, professional: pro } = detail;
+  const { case: c, professional: pro, agency } = detail;
   const canDecide = canGlobal(actor, "moderation.decide");
   const canSeeDocs = canGlobal(actor, "moderation.documents.view");
   const proStatus = (pro?.status ?? null) as ProfessionalStatus | null;
@@ -60,7 +63,7 @@ export default async function ModerationCasePage({ params }: { params: Promise<{
     <div className="space-y-6">
       <Link href="/admin/moderation" className="text-sm text-muted-foreground hover:underline">Retour à la file de modération</Link>
       <PageHeader
-        title={pro ? pro.displayName : `${c.resourceType} ${c.resourceId.slice(0, 8)}`}
+        title={pro ? pro.displayName : agency ? agency.name : `${c.resourceType} ${c.resourceId.slice(0, 8)}`}
         description={c.summary ?? undefined}
         actions={
           <>
@@ -91,6 +94,30 @@ export default async function ModerationCasePage({ params }: { params: Promise<{
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="space-y-6">
+          {agency && (
+            <Card className="gap-4 p-6">
+              <h2 className="font-semibold">Structure demandant le statut agence</h2>
+              <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                <div><dt className="text-muted-foreground">Raison sociale</dt><dd>{agency.name}</dd></div>
+                <div><dt className="text-muted-foreground">Type</dt><dd>{AGENCY_TYPE_LABELS[agency.type as keyof typeof AGENCY_TYPE_LABELS] ?? agency.type}</dd></div>
+                <div><dt className="text-muted-foreground">SIRET</dt><dd className="tabular-nums">{agency.siret ?? "Non renseigné"}</dd></div>
+                <div><dt className="text-muted-foreground">Adresse</dt><dd>{[agency.addressLine1, agency.postalCode, agency.city].filter(Boolean).join(", ") || "Non renseignée"}</dd></div>
+                <div><dt className="text-muted-foreground">Responsable</dt><dd>{agency.ownerName}, {agency.ownerEmail}</dd></div>
+                <div><dt className="text-muted-foreground">Statut actuel</dt><dd>{AGENCY_STATUS_LABELS[agency.agencyStatus]}</dd></div>
+              </dl>
+              <div>
+                <h3 className="text-sm font-medium">Fiches rattachées ({agency.listings.length})</h3>
+                <ul className="mt-2 space-y-1 text-sm">
+                  {agency.listings.map((l) => (
+                    <li key={l.id}>
+                      <Link href={`/admin/professionnels/${l.id}`} className="underline">{l.displayName || "Fiche sans nom"}</Link>, {l.categoryName} ({STATUS_LABELS[l.status as ProfessionalStatus]})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <p className="text-xs text-muted-foreground text-pretty">Vérifiez le SIRET sur l'annuaire officiel des entreprises et que l'activité justifie plusieurs fiches. Valider permet d'ajouter des fiches payantes ; refuser limite la structure à une fiche visible.</p>
+            </Card>
+          )}
           {pro && (
             <Card className="gap-4 p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">

@@ -12,7 +12,7 @@ import { formatEuros } from "@/lib/utils";
 import { FEATURES, type FeatureKey } from "@/modules/billing/domain/plans";
 import { listPlansAdmin } from "@/modules/billing/application/billing-admin";
 import { requireAdminPage } from "../_lib/admin-page";
-import { createPlanAction, savePlanFeaturesAction, updatePlanAction } from "./actions";
+import { createPlanAction, savePlanFeaturesAction, savePlanTiersAction, updatePlanAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +92,41 @@ export default async function OffersPage() {
               </p>
               <ActionSubmit size="sm">Enregistrer le plan</ActionSubmit>
             </ActionForm>
+            {p.audience === "agency" && (
+              <details open>
+                <summary className="cursor-pointer text-sm font-medium">Paliers dégressifs</summary>
+                <p className="mt-2 text-xs text-muted-foreground text-pretty">
+                  Une unité = une fiche au-delà de la première. « Jusqu'à » est cumulatif (2 = les 2 premières unités, soit la 2e et la 3e fiche) ; laissez-le vide sur le dernier palier. Les abonnements en cours gardent leur prix Stripe actuel.
+                </p>
+                <ActionForm action={savePlanTiersAction} successMessage="Paliers enregistrés (abonnements existants inchangés)." className="mt-3 space-y-2">
+                  <input type="hidden" name="planId" value={p.id} />
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-muted-foreground">
+                        <th scope="col" className="py-1 font-medium">Jusqu'à (unités)</th>
+                        <th scope="col" className="py-1 font-medium">Prix par unité TTC (€)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from({ length: Math.max(p.tiers.length + 1, 4) }, (_, i) => {
+                        const t = p.tiers[i];
+                        return (
+                          <tr key={i}>
+                            <td className="py-1 pr-2">
+                              <Input name={`upTo:${i}`} type="number" min={1} defaultValue={t ? (t.upTo ?? "") : ""} placeholder="sans limite" aria-label={`Palier ${i + 1} : jusqu'à`} className="h-8" />
+                            </td>
+                            <td className="py-1">
+                              <Input name={`price:${i}`} type="number" step="0.01" min={0} defaultValue={t ? (t.unitAmountCents / 100).toFixed(2) : ""} aria-label={`Palier ${i + 1} : prix`} className="h-8" />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  <ActionSubmit size="sm" variant="outline">Enregistrer les paliers</ActionSubmit>
+                </ActionForm>
+              </details>
+            )}
             <details>
               <summary className="cursor-pointer text-sm font-medium">Fonctionnalités et limites</summary>
               <ActionForm action={savePlanFeaturesAction} successMessage="Fonctionnalités enregistrées." className="mt-3 space-y-2">

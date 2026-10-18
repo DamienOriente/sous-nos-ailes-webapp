@@ -26,7 +26,12 @@ import { canTransition, changedMajorFields, type ProfessionalStatus } from "@/mo
 import { buildTradeSchema } from "@/modules/professionals/domain/trade-forms";
 import { computeVerificationLevel, type VerificationKind, type VerificationStatus } from "@/modules/professionals/domain/verification";
 import { sirenFromSiret } from "@/modules/professionals/domain/siret";
+import { syncAgencyQuantity } from "@/modules/billing/application/agency-billing";
 import { audit } from "./audit";
+import { findOwnedOrganization } from "./agency-service";
+import { assertListingSlot, ListingLimitError, type SubmitOptions } from "./listing-slot";
+
+export { ListingLimitError, type SubmitOptions };
 import { ensurePublicProfileIfAvailable } from "./page-bridge";
 
 export type ProfessionalRow = typeof professionals.$inferSelect;
@@ -62,6 +67,8 @@ export async function listManagedListings(actor: Actor, executor: DbExecutor = d
       categoryName: professionalCategories.name,
       categoryIcon: professionalCategories.icon,
       ownerUserId: professionals.ownerUserId,
+      organizationId: professionals.organizationId,
+      billingHoldAt: professionals.billingHoldAt,
     })
     .from(professionals)
     .innerJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
@@ -147,26 +154,46 @@ async function replaceSecondaryCategories(professionalId: string, primaryId: str
   if (valid.length) await executor.insert(professionalCategoryAssignments).values(valid.map((v) => ({ professionalId, categoryId: v.id })));
 }
 
-/** Step 1 creates the draft right away so progress is never lost. */
+/**
+ * Step 1 creates the draft right away so progress is never lost.
+ * An independent holds a single listing (draft included); a verified agency may open more,
+ * paid when they are submitted. An advisory lock per user makes the check race-free
+ * (double click, two tabs).
+ */
 export async function createDraft(actor: Actor, input: Step1Input, executor: DbExecutor = db): Promise<{ id: string }> {
-  const category = await assertCategory(input.primaryCategoryId, executor);
-  const placeholder = `brouillon-${crypto.randomUUID().slice(0, 8)}`;
-  const [row] = await executor
-    .insert(professionals)
-    .values({
-      ownerUserId: actor.userId,
-      slug: placeholder,
-      displayName: "",
-      primaryCategoryId: category.id,
-      status: "draft",
-      acceptsChildrenServices: category.isChildcare,
-      isDemo: actor.isDemo,
-    })
-    .returning({ id: professionals.id });
-  if (!row) throw new Error("insert failed");
-  await replaceSecondaryCategories(row.id, category.id, input.secondaryCategoryIds, executor);
-  await audit({ actorUserId: actor.userId, action: "professional.created", resourceType: "professional", resourceId: row.id, metadata: { categorySlug: category.slug } }, executor);
-  return { id: row.id };
+  const run = async (tx: DbExecutor): Promise<{ id: string }> => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`listing-create:${actor.userId}`}))`);
+    const org = await findOwnedOrganization(actor.userId, tx);
+    if (org?.agencyStatus !== "verified") {
+      const [existing] = await tx
+        .select({ id: professionals.id })
+        .from(professionals)
+        .where(and(eq(professionals.ownerUserId, actor.userId), isNull(professionals.deletedAt)))
+        .orderBy(asc(professionals.createdAt))
+        .limit(1);
+      if (existing) throw new ListingLimitError(existing.id);
+    }
+    const category = await assertCategory(input.primaryCategoryId, tx);
+    const placeholder = `brouillon-${crypto.randomUUID().slice(0, 8)}`;
+    const [row] = await tx
+      .insert(professionals)
+      .values({
+        ownerUserId: actor.userId,
+        organizationId: org?.id ?? null,
+        slug: placeholder,
+        displayName: "",
+        primaryCategoryId: category.id,
+        status: "draft",
+        acceptsChildrenServices: category.isChildcare,
+        isDemo: actor.isDemo,
+      })
+      .returning({ id: professionals.id });
+    if (!row) throw new Error("insert failed");
+    await replaceSecondaryCategories(row.id, category.id, input.secondaryCategoryIds, tx);
+    await audit({ actorUserId: actor.userId, action: "professional.created", resourceType: "professional", resourceId: row.id, organizationId: org?.id ?? null, metadata: { categorySlug: category.slug } }, tx);
+    return { id: row.id };
+  };
+  return executor === db ? db.transaction(run) : run(executor);
 }
 
 export async function saveStep1(actor: Actor, professionalId: string, input: Step1Input, executor: DbExecutor = db): Promise<void> {
@@ -186,27 +213,34 @@ async function ensureSlug(professionalId: string, displayName: string, current: 
   return resolveUniqueSlug(displayName, (c) => taken.has(c));
 }
 
-/** Creates (or updates) the organisation when the listing is operated by a company/association. */
+/**
+ * Identity of the structure behind a listing. One organisation per account: reused across
+ * listings, never duplicated. An agency's identity (name, SIRET) is managed on its own page
+ * and moderated, so the listing form never overwrites it.
+ */
 async function upsertOrganization(actor: Actor, listing: ProfessionalRow, input: Step2Input, executor: DbExecutor): Promise<string | null> {
-  if (input.organizationType === "sole_trader" && !input.siret) return listing.organizationId;
+  const [linked] = listing.organizationId ? await executor.select().from(organizations).where(eq(organizations.id, listing.organizationId)).limit(1) : [];
+  const org = linked ?? (await findOwnedOrganization(actor.userId, executor));
+  if (org && org.agencyStatus !== "none") return org.id;
+  if (input.organizationType === "sole_trader" && !input.siret) return org?.id ?? null;
   const siret = input.siret && input.siret.length === 14 ? input.siret : null;
   const siren = input.siret ? (input.siret.length === 14 ? sirenFromSiret(input.siret) : input.siret) : null;
-  if (listing.organizationId) {
+  if (org) {
     await executor
       .update(organizations)
       .set({ name: input.displayName, type: input.organizationType, siren, siret, city: input.city, postalCode: input.postalCode })
-      .where(eq(organizations.id, listing.organizationId));
-    return listing.organizationId;
+      .where(eq(organizations.id, org.id));
+    return org.id;
   }
   const taken = new Set((await executor.select({ slug: organizations.slug }).from(organizations)).map((r) => r.slug));
   const slug = resolveUniqueSlug(input.displayName, (c) => taken.has(c));
-  const [org] = await executor
+  const [created] = await executor
     .insert(organizations)
     .values({ name: input.displayName, slug, type: input.organizationType, siren, siret, city: input.city, postalCode: input.postalCode, ownerUserId: actor.userId })
     .returning({ id: organizations.id });
-  if (!org) throw new Error("organization insert failed");
-  await executor.insert(organizationMembers).values({ organizationId: org.id, userId: actor.userId, role: "owner", acceptedAt: new Date() }).onConflictDoNothing();
-  return org.id;
+  if (!created) throw new Error("organization insert failed");
+  await executor.insert(organizationMembers).values({ organizationId: created.id, userId: actor.userId, role: "owner", acceptedAt: new Date() }).onConflictDoNothing();
+  return created.id;
 }
 
 export async function saveStep2(actor: Actor, professionalId: string, input: Step2Input, executor: DbExecutor = db): Promise<void> {
@@ -292,10 +326,11 @@ export async function saveTemplateChoice(actor: Actor, professionalId: string, t
 }
 
 /** Owner submits the listing: draft/changes_requested/rejected → pending_review, opens a moderation case. */
-export async function submitForReview(actor: Actor, professionalId: string): Promise<void> {
-  await db.transaction(async (tx) => {
+export async function submitForReview(actor: Actor, professionalId: string, opts: SubmitOptions = {}): Promise<void> {
+  const organizationId = await db.transaction(async (tx) => {
     const { listing, category } = await loadManaged(actor, professionalId, tx);
     if (!canTransition(listing.status, "pending_review", "owner")) throw new ConflictError("Cette fiche ne peut pas être soumise dans son état actuel.");
+    await assertListingSlot(listing, opts, tx);
     if (!listing.displayName || !listing.city) throw new ValidationError("Renseignez au moins le nom commercial et la ville avant de soumettre.");
     const { completeness } = await recomputeDerived(professionalId, tx);
     if (completeness.score < SUBMISSION_MIN_SCORE) throw new ValidationError(`Complétez votre fiche (au moins ${SUBMISSION_MIN_SCORE} %, actuellement ${completeness.score} %).`);
@@ -308,7 +343,10 @@ export async function submitForReview(actor: Actor, professionalId: string): Pro
     await openModerationCase({ kind: "profile_review", resourceType: "professional", resourceId: professionalId, professionalId, openedByUserId: actor.userId, summary: `Fiche « ${listing.displayName} » (${category.name}) soumise pour validation.` }, tx);
     await audit({ actorUserId: actor.userId, action: "professional.submitted", resourceType: "professional", resourceId: professionalId, metadata: { from: listing.status, to: "pending_review" } }, tx);
     await notify({ userId: actor.userId, type: "system", title: "Fiche envoyée à la validation", body: "Notre équipe relit votre fiche. Vous serez prévenu dès la publication.", href: `/app/pro/${professionalId}`, dedupeKey: `pro:${professionalId}:submitted` }, tx);
+    return listing.organizationId;
   });
+  // After commit: the billed quantity follows the listings in review or online.
+  if (organizationId) await syncAgencyQuantity(organizationId);
 }
 
 /**
@@ -365,12 +403,14 @@ export async function updateListing(actor: Actor, professionalId: string, input:
 
 /** Soft delete: deletedAt + status archived. The slug stays reserved. */
 export async function archiveListing(actor: Actor, professionalId: string, reason?: string): Promise<void> {
-  await db.transaction(async (tx) => {
+  const organizationId = await db.transaction(async (tx) => {
     const { listing } = await loadManaged(actor, professionalId, tx);
     if (!canTransition(listing.status, "archived", "owner")) throw new ConflictError("Fiche déjà archivée.");
     await tx.update(professionals).set({ status: "archived", deletedAt: new Date(), statusReason: reason ?? null }).where(eq(professionals.id, professionalId));
     await audit({ actorUserId: actor.userId, action: "professional.archived", resourceType: "professional", resourceId: professionalId, organizationId: listing.organizationId, metadata: { from: listing.status }, reason }, tx);
+    return listing.organizationId;
   });
+  if (organizationId) await syncAgencyQuantity(organizationId);
 }
 
 /** Moderator transition (approve/publish/suspend/request changes/reject). The admin module calls this from its decision workflow. */

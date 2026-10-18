@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
 import { professionalCategories, professionals } from "@/db/schema";
+import { isPublicListing } from "@/modules/directory/application/public-listing";
 
 /**
  * Real numbers for the public site. Nothing here is estimated or rounded up:
@@ -15,7 +16,7 @@ export type PublicCounters = {
 };
 
 export async function getPublicCounters(executor: DbExecutor = db): Promise<PublicCounters> {
-  const published = and(eq(professionals.status, "published"), isNull(professionals.deletedAt));
+  const published = and(isPublicListing(), isNull(professionals.deletedAt));
   const [totals] = await executor
     .select({
       total: sql<number>`count(*)::int`,

@@ -3,10 +3,11 @@ import { db, type DbExecutor } from "@/db/client";
 import { professionalCategories, professionalFavorites, professionals } from "@/db/schema";
 import { NotFoundError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
+import { isPublicListing } from "@/modules/directory/application/public-listing";
 
 /** Toggle a favourite on a published listing. Returns the new state. */
 export async function toggleFavorite(actor: Actor, professionalId: string, executor: DbExecutor = db): Promise<{ isFavorite: boolean }> {
-  const [pro] = await executor.select({ id: professionals.id }).from(professionals).where(and(eq(professionals.id, professionalId), eq(professionals.status, "published"), isNull(professionals.deletedAt))).limit(1);
+  const [pro] = await executor.select({ id: professionals.id }).from(professionals).where(and(eq(professionals.id, professionalId), isPublicListing(), isNull(professionals.deletedAt))).limit(1);
   if (!pro) throw new NotFoundError();
   const deleted = await executor.delete(professionalFavorites).where(and(eq(professionalFavorites.userId, actor.userId), eq(professionalFavorites.professionalId, professionalId))).returning({ id: professionalFavorites.professionalId });
   if (deleted.length) return { isFavorite: false };

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { organizations } from "@/db/schema";
@@ -24,6 +24,7 @@ import { findDepartmentByCode } from "@/modules/professionals/domain/geo";
 import { EVENT_TYPE_OPTIONS, LANGUAGE_OPTIONS, labelFor } from "@/modules/professionals/domain/listing-schema";
 import { summarizeTradeDetails } from "@/modules/professionals/domain/trade-forms";
 import { step1Action, step2Action, step3Action, step4Action, step5Action } from "./actions";
+import { existingIndependentListingId } from "@/modules/professionals/application/agency-service";
 
 export const metadata: Metadata = { title: "Créer ma fiche professionnelle" };
 
@@ -35,6 +36,11 @@ export default async function ProfessionalOnboardingPage({ searchParams }: { sea
   const sp = await searchParams;
   const id = typeof sp.id === "string" ? sp.id : null;
   const exampleActive = sp.exemple === "1";
+  if (!id) {
+    // One listing per independent: a second "create" lands on the existing one, with the explanation.
+    const existing = await existingIndependentListingId(actor.userId);
+    if (existing) redirect(`/app/pro/${existing}?limite=1`);
+  }
   let managed: ManagedListing | null = null;
   if (id) {
     try {

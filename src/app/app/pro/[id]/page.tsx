@@ -36,6 +36,24 @@ export default async function ProDashboardPage({ params, searchParams }: { param
   return (
     <div className="space-y-6">
       <WelcomeCard firstName={firstName} listingName={listing.displayName || "Fiche sans nom"} status={listing.status} slug={listing.slug} baseHref={base} preview={preview} />
+      {sp.limite === "1" && (
+        <Alert>
+          <AlertTitle>Un compte indépendant a une seule fiche</AlertTitle>
+          <AlertDescription>
+            Vos autres activités s'ajoutent comme métiers secondaires de cette fiche. Si vous êtes une société ou une association avec plusieurs activités, faites valider votre structure comme agence depuis{" "}
+            <Link href="/app/pro/structure" className="underline underline-offset-2">
+              Ma structure
+            </Link>
+            .
+          </AlertDescription>
+        </Alert>
+      )}
+      {listing.billingHoldAt && (
+        <Alert>
+          <AlertTitle>Fiche retirée de l'annuaire</AlertTitle>
+          <AlertDescription>L'abonnement agence ne couvre plus cette fiche. Elle est conservée telle quelle et revient dès le règlement de l'abonnement.</AlertDescription>
+        </Alert>
+      )}
       {sp.submitted === "1" && (
         <Alert>
           <AlertTitle>Fiche envoyée à la validation</AlertTitle>

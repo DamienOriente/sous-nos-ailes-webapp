@@ -15,6 +15,13 @@
       "when": 1792266007575,
       "tag": "0001_event_cover",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792332546734,
+      "tag": "0002_agency_listings",
+      "breakpoints": true
     }
   ]
 }

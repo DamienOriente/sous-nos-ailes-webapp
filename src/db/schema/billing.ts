@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { boolean, index, integer, jsonb, pgEnum, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { id, timestamps, tsz } from "./_shared";
 import { users } from "./identity";
+import { organizations } from "./organizations";
 import { professionals } from "./professionals";
 
 /**
@@ -9,7 +10,7 @@ import { professionals } from "./professionals";
  * owner validates them; nothing here is charged for real until Stripe live keys
  * are configured and the legal checklist is complete.
  */
-export const planAudienceEnum = pgEnum("plan_audience", ["organizer", "professional"]);
+export const planAudienceEnum = pgEnum("plan_audience", ["organizer", "professional", "agency"]);
 
 export const plans = pgTable(
   "plans",
@@ -30,6 +31,24 @@ export const plans = pgTable(
     ...timestamps,
   },
   (t) => [uniqueIndex("plans_key_uq").on(t.key)],
+);
+
+/**
+ * Graduated price tiers (Stripe `tiers_mode: graduated`). A plan with tiers is billed per unit:
+ * units 1..upTo of the first tier at its price, the next ones at the next tier's price, etc.
+ * `upTo` null = the last, unbounded tier.
+ */
+export const planPriceTiers = pgTable(
+  "plan_price_tiers",
+  {
+    id: id(),
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => plans.id, { onDelete: "cascade" }),
+    upTo: integer("up_to"),
+    unitAmountCents: integer("unit_amount_cents").notNull(),
+  },
+  (t) => [uniqueIndex("plan_price_tiers_uq").on(t.planId, t.upTo), index("plan_price_tiers_plan_idx").on(t.planId)],
 );
 
 /** Feature flags per plan, with optional numeric limits (e.g. contacts.max = 50). */
@@ -83,6 +102,10 @@ export const subscriptions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     professionalId: uuid("professional_id").references(() => professionals.id, { onDelete: "set null" }),
+    /** Agency plan: the organisation whose extra listings are paid. */
+    organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "set null" }),
+    /** Billed units (agency plan: listings beyond the first). Always 1 for flat plans. */
+    quantity: integer("quantity").notNull().default(1),
     planId: uuid("plan_id")
       .notNull()
       .references(() => plans.id, { onDelete: "restrict" }),
@@ -101,6 +124,7 @@ export const subscriptions = pgTable(
     index("subscriptions_user_idx").on(t.userId, t.status),
     uniqueIndex("subscriptions_stripe_uq").on(t.stripeSubscriptionId),
     index("subscriptions_pro_idx").on(t.professionalId),
+    index("subscriptions_org_idx").on(t.organizationId),
   ],
 );
 
@@ -158,7 +182,8 @@ export const featuredPlacements = pgTable(
   (t) => [index("featured_placements_lookup_idx").on(t.categorySlug, t.department, t.startsAt, t.endsAt)],
 );
 
-export const plansRelations = relations(plans, ({ many }) => ({ features: many(planFeatures), subscriptions: many(subscriptions) }));
+export const plansRelations = relations(plans, ({ many }) => ({ features: many(planFeatures), tiers: many(planPriceTiers), subscriptions: many(subscriptions) }));
+export const planPriceTiersRelations = relations(planPriceTiers, ({ one }) => ({ plan: one(plans, { fields: [planPriceTiers.planId], references: [plans.id] }) }));
 export const planFeaturesRelations = relations(planFeatures, ({ one }) => ({ plan: one(plans, { fields: [planFeatures.planId], references: [plans.id] }) }));
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   plan: one(plans, { fields: [subscriptions.planId], references: [plans.id] }),

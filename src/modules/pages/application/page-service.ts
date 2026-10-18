@@ -24,6 +24,8 @@ import { generateDefaultContent, mergeContentForTemplate } from "@/modules/pages
 import { migrateContent, pageContentSchema, parseContent, parseTheme, SCHEMA_VERSION, seoFieldsSchema, type PageContent, type PageTheme } from "@/modules/pages/domain/page-schema";
 import type { PageRenderData, ProfessionalSnapshot } from "@/modules/pages/domain/render-data";
 import { getTemplate, getTemplateOrDefault, isFreeTemplate } from "@/modules/pages/templates/registry";
+import { isListingRowPublic, isPublicListing } from "@/modules/directory/application/public-listing";
+import { assertListingSlot, type SubmitOptions } from "@/modules/professionals/application/listing-slot";
 
 /**
  * Public page lifecycle: one public_profiles row per listing, many
@@ -284,7 +286,7 @@ export async function getPublishedPage(slug: string, executor: DbExecutor = db):
     .innerJoin(professionalCategories, eq(professionalCategories.id, professionals.primaryCategoryId))
     .where(eq(publicProfiles.slug, slug))
     .limit(1);
-  if (!row || !row.profile.publishedVersionId || row.pro.status !== "published" || row.pro.deletedAt) return null;
+  if (!row || !row.profile.publishedVersionId || !isListingRowPublic(row.pro)) return null;
   const [version] = await executor.select().from(profileVersions).where(eq(profileVersions.id, row.profile.publishedVersionId)).limit(1);
   if (!version || version.status !== "approved") return null;
   const data = await buildRenderData(row.pro, row.cat, version, executor);
@@ -305,7 +307,7 @@ export async function listIndexablePagePaths(executor: DbExecutor = db): Promise
     .select({ slug: publicProfiles.slug, updatedAt: publicProfiles.updatedAt, publishedAt: professionals.publishedAt })
     .from(publicProfiles)
     .innerJoin(professionals, eq(professionals.id, publicProfiles.professionalId))
-    .where(and(eq(publicProfiles.isIndexable, true), eq(professionals.status, "published"), eq(professionals.isDemo, false), sql`${publicProfiles.publishedVersionId} is not null`));
+    .where(and(eq(publicProfiles.isIndexable, true), isPublicListing(), eq(professionals.isDemo, false), sql`${publicProfiles.publishedVersionId} is not null`));
   return rows.map((r) => ({ path: `/pro/${r.slug}`, lastModified: r.updatedAt }));
 }
 
@@ -451,7 +453,7 @@ export async function saveDraft(actor: Actor, professionalId: string, input: Sav
   return { versionId: created.id, versionNumber: created.versionNumber, savedAt: created.updatedAt.toISOString() };
 }
 
-export async function submitForReview(actor: Actor, professionalId: string, executor: DbExecutor = db): Promise<{ versionId: string; caseId: string }> {
+export async function submitForReview(actor: Actor, professionalId: string, executor: DbExecutor = db, opts: SubmitOptions = {}): Promise<{ versionId: string; caseId: string }> {
   const access = await requireProfessionalManage(actor, professionalId, executor);
   const { profile, draft } = await loadProfileAndDraft(professionalId, executor);
   if (draft.status === "submitted") throw new ConflictError("Cette version est déjà en cours de modération.");
@@ -461,6 +463,11 @@ export async function submitForReview(actor: Actor, professionalId: string, exec
   const visibleBlocks = content.data.filter((b) => !b.hidden);
   if (visibleBlocks.length === 0) throw new ValidationError("Ajoutez au moins une section visible avant de soumettre.");
   if (!visibleBlocks.some((b) => b.type === "hero")) throw new ValidationError("La page doit comporter une section En-tête visible.");
+  if (!profile.publishedVersionId) {
+    // First submission puts the listing in review: it needs a listing slot (agencies pay extra ones).
+    const [listing] = await executor.select({ id: professionals.id, status: professionals.status, organizationId: professionals.organizationId }).from(professionals).where(eq(professionals.id, professionalId)).limit(1);
+    if (listing) await assertListingSlot(listing, opts, executor);
+  }
 
   const now = new Date();
   await executor.update(profileVersions).set({ status: "submitted", submittedAt: now, reviewNote: null, updatedAt: now }).where(eq(profileVersions.id, draft.id));

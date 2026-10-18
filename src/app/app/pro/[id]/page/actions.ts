@@ -6,6 +6,8 @@ import { toActionError, ValidationError, type ActionResult } from "@/lib/errors"
 import { requireActorOrThrow } from "@/lib/session";
 import { saveDraft, submitForReview } from "@/modules/pages/application/page-service";
 import { pageContentSchema, seoFieldsSchema, themeSchema } from "@/modules/pages/domain/page-schema";
+import { redirectOnListingQuota } from "@/app/app/pro/agency-flow";
+import { syncListingAgency } from "@/modules/professionals/application/listing-slot";
 
 /**
  * Builder actions: thin validation + service call. The content itself is
@@ -49,10 +51,12 @@ export async function submitForReviewAction(professionalId: string): Promise<Act
     const id = z.uuid().safeParse(professionalId);
     if (!id.success) throw new ValidationError();
     const res = await submitForReview(actor, id.data);
+    await syncListingAgency(id.data);
     revalidatePath(`/app/pro/${id.data}/page`);
     revalidatePath(`/app/pro/${id.data}`);
     return { ok: true, data: { versionId: res.versionId } };
   } catch (e) {
+    redirectOnListingQuota(e, professionalId);
     return toActionError(e);
   }
 }

@@ -16,7 +16,8 @@ test("connexion en un clic avec un compte de démonstration, puis changement de 
 
   await page.goto("/connexion?changer=1");
   await page.getByRole("button", { name: /Marie Delcourt/ }).click();
-  await expect(page).toHaveURL(/\/app\/pro$/);
+  // An independent has one listing: /app/pro goes straight to it.
+  await expect(page).toHaveURL(/\/app\/pro\/[0-9a-f-]{36}$/);
 });
 
 test("un compte de démonstration inconnu est refusé sans ouvrir de session", async ({ page }) => {

@@ -65,6 +65,7 @@ export const CASE_KIND_LABELS: Record<string, string> = {
   report: "Signalement",
   review_moderation: "Avis à modérer",
   appeal: "Recours",
+  agency_review: "Demande de statut agence",
 };
 
 export const CASE_STATUS_LABELS: Record<string, string> = { open: "Ouvert", in_review: "En cours", resolved: "Résolu", dismissed: "Classé" };

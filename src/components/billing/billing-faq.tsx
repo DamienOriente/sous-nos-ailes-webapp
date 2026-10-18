@@ -7,6 +7,10 @@ const ITEMS: Array<{ q: string; a: React.ReactNode }> = [
     a: "Les offres payantes sont des abonnements mensuels à reconduction tacite : le montant est prélevé chaque mois à la date anniversaire de la souscription, jusqu'à résiliation. Le prix affiché est TTC.",
   },
   {
+    q: "Comment sont facturées les fiches d'une agence ?",
+    a: "La première fiche est incluse. Chaque fiche supplémentaire s'ajoute à l'abonnement agence au moment où elle part en relecture, au tarif dégressif affiché plus haut. Le montant est ajusté au prorata de la période en cours, à la hausse comme à la baisse quand une fiche est archivée. Si l'abonnement agence s'arrête, une seule fiche reste visible ; les autres sont conservées et reviennent dès le règlement.",
+  },
+  {
     q: "Comment annuler ?",
     a: "En ligne, depuis Mon compte, onglet Abonnement, bouton « Résilier à l'échéance ». Aucun appel, aucun courrier. L'abonnement reste actif jusqu'à la fin de la période déjà payée, puis s'arrête sans frais.",
   },

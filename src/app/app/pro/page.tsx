@@ -1,34 +1,67 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FormMessage } from "@/components/shared/form-message";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { VerificationBadge } from "@/components/directory/verification-badge";
 import { requireActor } from "@/lib/session";
-import { formatDateFr } from "@/lib/utils";
+import { formatDateFr, formatEuros } from "@/lib/utils";
+import { getAccountStructure } from "@/modules/professionals/application/agency-service";
 import { listManagedListings } from "@/modules/professionals/application/professional-service";
 import { STATUS_LABELS, STATUS_TONES } from "@/modules/professionals/domain/status";
+import { PrimaryListingButton } from "./primary-listing-button";
 
-export const metadata: Metadata = { title: "Mes fiches pro" };
+export const metadata: Metadata = { title: "Fiche pro" };
 
-export default async function ProListingsPage() {
+function listingHref(l: { id: string; status: string }): string {
+  return l.status === "draft" ? `/onboarding/professionnel?id=${l.id}&step=2` : `/app/pro/${l.id}`;
+}
+
+export default async function ProListingsPage({ searchParams }: { searchParams: Promise<{ paiement?: string }> }) {
   const actor = await requireActor("/app/pro");
-  const listings = await listManagedListings(actor);
+  const [listings, structure, sp] = await Promise.all([listManagedListings(actor), getAccountStructure(actor), searchParams]);
+  const agency = structure.isVerifiedAgency;
+  const managesOthers = listings.some((l) => l.ownerUserId !== actor.userId);
+  // An independent has one listing: the list page is just a detour.
+  const only = listings[0];
+  if (!agency && !managesOthers && listings.length === 1 && only) redirect(listingHref(only));
+
+  const primaryId = structure.organization?.primaryListingId ?? null;
+  const canCreate = agency || listings.length === 0;
+  const createLabel = listings.length === 0 ? "Créer ma fiche" : "Ajouter une fiche";
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Mes fiches pro"
-        description="Vos fiches dans l'annuaire, leur statut de validation et leur avancement."
+        title={agency ? "Mes fiches pro" : "Ma fiche pro"}
+        description={
+          agency
+            ? "Les fiches de votre agence, leur statut de validation et ce qu'elles coûtent. La première est incluse, les suivantes sont facturées au tarif dégressif."
+            : "Votre fiche dans l'annuaire, son statut de validation et son avancement."
+        }
         actions={
-          <Button asChild>
-            <Link href="/onboarding/professionnel">
-              Créer une fiche
-            </Link>
-          </Button>
+          <>
+            <Button asChild variant="outline">
+              <Link href="/app/pro/structure">Ma structure</Link>
+            </Button>
+            {canCreate && (
+              <Button asChild>
+                <Link href="/onboarding/professionnel">{createLabel}</Link>
+              </Button>
+            )}
+          </>
         }
       />
+      {sp.paiement === "agence" && <FormMessage success="Paiement enregistré : votre abonnement agence est actif." />}
+      {agency && structure.nextListingCents !== null && (
+        <p className="text-sm text-muted-foreground">
+          {structure.state?.subscriptionGrantsAccess ? `Abonnement agence : ${formatEuros(structure.monthlyCents)} TTC par mois pour ${structure.state.paidExtra} fiche(s) en plus de la première. ` : ""}
+          Une fiche de plus coûterait {formatEuros(structure.nextListingCents)} TTC par mois, facturée quand vous l'envoyez à la relecture.
+        </p>
+      )}
       {listings.length === 0 ? (
         <EmptyState
           title="Aucune fiche pour le moment"
@@ -53,20 +86,24 @@ export default async function ProListingsPage() {
                     </h2>
                     <p className="text-sm text-muted-foreground">
                       {l.categoryName}
-                      {l.city ? ` · ${l.city}` : ""}
+                      {l.city ? `, ${l.city}` : ""}
                     </p>
                   </div>
-                  <StatusBadge tone={STATUS_TONES[l.status]}>{STATUS_LABELS[l.status]}</StatusBadge>
+                  <StatusBadge tone={l.billingHoldAt ? "warning" : STATUS_TONES[l.status]}>{l.billingHoldAt ? "Retirée de l'annuaire" : STATUS_LABELS[l.status]}</StatusBadge>
                 </div>
+                {l.billingHoldAt && <p className="text-sm text-pretty">L'abonnement agence ne couvre plus cette fiche. Elle est conservée et revient dès le règlement.</p>}
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                   <span>Complétude {l.completenessScore} %</span>
                   <VerificationBadge level={l.verificationLevel} />
                   {l.ownerUserId !== actor.userId && <span className="text-xs">Via votre organisation</span>}
                 </div>
+                {agency && l.organizationId === structure.organization?.id && listings.length > 1 && (
+                  <div className="text-sm">{l.id === primaryId ? <span className="text-muted-foreground">Reste visible en cas d'impayé</span> : <PrimaryListingButton professionalId={l.id} />}</div>
+                )}
                 <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-xs text-muted-foreground">
                   <span>Modifiée le {formatDateFr(l.updatedAt)}</span>
                   <Button asChild size="sm" variant="outline">
-                    <Link href={l.status === "draft" ? `/onboarding/professionnel?id=${l.id}&step=2` : `/app/pro/${l.id}`}>{l.status === "draft" ? "Reprendre" : "Ouvrir"}</Link>
+                    <Link href={listingHref(l)}>{l.status === "draft" ? "Reprendre" : "Ouvrir"}</Link>
                   </Button>
                 </div>
               </Card>

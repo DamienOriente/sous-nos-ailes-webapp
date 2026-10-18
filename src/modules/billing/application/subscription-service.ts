@@ -8,6 +8,7 @@ import type { Actor } from "@/lib/session";
 import { requireProfessionalManage } from "@/modules/authorization";
 import { FEATURES, type FeatureKey } from "@/modules/billing/domain/plans";
 import { grantsAccess } from "@/modules/billing/domain/subscription-status";
+import { sortTiers, type PriceTier } from "@/modules/billing/domain/tiered-pricing";
 import { getStripe } from "@/modules/billing/infrastructure/stripe-client";
 import { getEffectivePlan, type EffectivePlan, type PlanAudience } from "@/modules/billing/application/entitlements";
 import { ingestBillingEvent } from "@/modules/billing/application/webhook-processor";
@@ -68,20 +69,33 @@ async function findCurrentPaidSubscription(userId: string, audience: PlanAudienc
   return rows.find((r) => (!professionalId || !r.professionalId || r.professionalId === professionalId) && grantsAccess(r)) ?? null;
 }
 
-/** Creates the Stripe Product/Price for a plan on first use (test mode) and persists the ids. */
-export async function ensureStripePrice(stripe: Stripe, plan: typeof plans.$inferSelect, executor: DbExecutor = db): Promise<string> {
+/**
+ * Creates the Stripe Product/Price for a plan on first use (test mode) and persists the ids.
+ * A plan with tiers gets a graduated tiered Price billed per unit (agency listings).
+ */
+export async function ensureStripePrice(stripe: Stripe, plan: typeof plans.$inferSelect, executor: DbExecutor = db, tiers: readonly PriceTier[] = []): Promise<string> {
   if (plan.stripePriceId) return plan.stripePriceId;
   let productId = plan.stripeProductId;
   if (!productId) {
     const product = await stripe.products.create({ name: plan.name, description: plan.description || undefined, metadata: { planKey: plan.key, audience: plan.audience } });
     productId = product.id;
   }
-  const price = await stripe.prices.create({ product: productId, currency: plan.currency.toLowerCase(), unit_amount: plan.priceMonthlyCents, recurring: { interval: "month" }, metadata: { planKey: plan.key } });
+  const price = tiers.length
+    ? await stripe.prices.create({
+        product: productId,
+        currency: plan.currency.toLowerCase(),
+        recurring: { interval: "month", usage_type: "licensed" },
+        billing_scheme: "tiered",
+        tiers_mode: "graduated",
+        tiers: sortTiers(tiers).map((t) => ({ up_to: t.upTo ?? "inf", unit_amount: t.unitAmountCents })),
+        metadata: { planKey: plan.key },
+      })
+    : await stripe.prices.create({ product: productId, currency: plan.currency.toLowerCase(), unit_amount: plan.priceMonthlyCents, recurring: { interval: "month" }, metadata: { planKey: plan.key } });
   await executor.update(plans).set({ stripeProductId: productId, stripePriceId: price.id }).where(eq(plans.id, plan.id));
   return price.id;
 }
 
-async function ensureStripeCustomer(stripe: Stripe, actor: Actor, executor: DbExecutor): Promise<string> {
+export async function ensureStripeCustomer(stripe: Stripe, actor: Actor, executor: DbExecutor): Promise<string> {
   const [existing] = await executor.select().from(billingCustomers).where(eq(billingCustomers.userId, actor.userId)).limit(1);
   if (existing?.stripeCustomerId) return existing.stripeCustomerId;
   const customer = await stripe.customers.create({ email: actor.email, name: actor.name, metadata: { userId: actor.userId } });

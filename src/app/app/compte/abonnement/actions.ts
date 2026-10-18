@@ -5,6 +5,7 @@ import { toActionError, ValidationError, type ActionResult } from "@/lib/errors"
 import { requireActorOrThrow } from "@/lib/session";
 import type { CheckoutState } from "@/components/billing/checkout-return-poller";
 import { getEffectivePlan } from "@/modules/billing/application/entitlements";
+import { agencyReturnPath, completeMockAgencyCheckout } from "@/modules/billing/application/agency-billing";
 import { cancelAtPeriodEnd, completeMockCheckout, openCustomerPortal, resumeSubscription, simulateMockPeriodEnd, startCheckout } from "@/modules/billing/application/subscription-service";
 
 const audienceSchema = z.enum(["organizer", "professional"]);
@@ -45,6 +46,29 @@ export async function completeMockCheckoutAction(formData: FormData): Promise<Ac
     if (professionalId) params.set("professionalId", professionalId);
     if (res.subscriptionId) params.set("session_id", `mock_${res.subscriptionId}`);
     return { ok: true, data: { redirectTo: `/app/compte/abonnement/retour?${params.toString()}` } };
+  } catch (e) {
+    return toActionError(e);
+  }
+}
+
+const agencyMockSchema = z.object({
+  organizationId: z.uuid(),
+  quantity: z.coerce.number().int().min(1).max(500),
+  professionalId: z.uuid().optional().or(z.literal("")),
+  outcome: z.enum(["success", "failure"]),
+});
+
+/** Mock provider for the agency subscription (quantity = listings beyond the first). */
+export async function completeMockAgencyCheckoutAction(formData: FormData): Promise<ActionResult<{ redirectTo: string }>> {
+  try {
+    const actor = await requireActorOrThrow();
+    const parsed = agencyMockSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) throw new ValidationError("Paramètres invalides.");
+    const { organizationId, quantity, professionalId, outcome } = parsed.data;
+    await completeMockAgencyCheckout(actor, { organizationId, quantity, professionalId: professionalId || null, outcome });
+    revalidatePath("/app/pro", "layout");
+    if (outcome === "failure") return { ok: true, data: { redirectTo: professionalId ? `/app/pro/${professionalId}/ajout-agence` : "/app/pro" } };
+    return { ok: true, data: { redirectTo: agencyReturnPath(professionalId || null) } };
   } catch (e) {
     return toActionError(e);
   }

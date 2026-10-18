@@ -17,6 +17,7 @@ import { listEventsForActor } from "@/modules/events/application/event-service";
 import { EVENT_STATUS_TONES, isEventLive, type EventStatus } from "@/modules/events/domain/event-status";
 import { EVENT_STATUS_LABELS, EVENT_TYPE_LABELS } from "@/modules/events/domain/event-types";
 import { shortlistAction } from "./actions";
+import { isPublicListing } from "@/modules/directory/application/public-listing";
 
 export const metadata: Metadata = { title: "Mes évènements" };
 
@@ -35,7 +36,7 @@ export default async function EventsListPage({ searchParams }: { searchParams: P
   const list = all.filter((e) => filter.match(e.status));
 
   // Directory → "add this professional to one of my events".
-  const invitePro = invite && /^[0-9a-f-]{36}$/i.test(invite) ? (await db.select({ id: professionals.id, displayName: professionals.displayName, tagline: professionals.tagline }).from(professionals).where(and(eq(professionals.id, invite), eq(professionals.status, "published"), isNull(professionals.deletedAt))).limit(1))[0] : undefined;
+  const invitePro = invite && /^[0-9a-f-]{36}$/i.test(invite) ? (await db.select({ id: professionals.id, displayName: professionals.displayName, tagline: professionals.tagline }).from(professionals).where(and(eq(professionals.id, invite), isPublicListing(), isNull(professionals.deletedAt))).limit(1))[0] : undefined;
   const manageable = all.filter((e) => isEventLive(e.status) && ["owner", "lead_organizer", "co_organizer", "wedding_planner"].includes(e.role));
 
   return (

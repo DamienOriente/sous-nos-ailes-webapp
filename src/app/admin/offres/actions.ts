@@ -4,7 +4,7 @@ import { z } from "zod";
 import { toActionError, ValidationError, type ActionResult } from "@/lib/errors";
 import { requireActorOrThrow } from "@/lib/session";
 import { FEATURES, type FeatureKey } from "@/modules/billing/domain/plans";
-import { createPlan, setPlanFeature, updatePlan } from "@/modules/billing/application/billing-admin";
+import { createPlan, setPlanFeature, setPlanTiers, updatePlan } from "@/modules/billing/application/billing-admin";
 import { createPromoCode, setPromoActive } from "@/modules/billing/application/promo-codes";
 import { createFeaturedPlacement, setFeaturedPlacementActive } from "@/modules/billing/application/featured-placements";
 import { bool, int, optStr, str } from "@/app/admin/_lib/admin-page";
@@ -42,6 +42,28 @@ export async function savePlanFeaturesAction(formData: FormData): Promise<Action
     }
     revalidate();
     return { ok: true, data: undefined };
+  } catch (e) {
+    return toActionError(e);
+  }
+}
+
+/** Graduated tiers: rows `upTo:<i>` (empty = unbounded) and `price:<i>` in euros; empty rows are ignored. */
+export async function savePlanTiersAction(formData: FormData): Promise<ActionResult<{ affectedSubscriptions: number }>> {
+  try {
+    const actor = await requireActorOrThrow();
+    const planId = z.uuid().parse(str(formData, "planId"));
+    const tiers: { upTo: number | null; unitAmountCents: number }[] = [];
+    for (let i = 0; i < 8; i += 1) {
+      const price = str(formData, `price:${i}`).replace(",", ".");
+      if (!price) continue;
+      const cents = Math.round(Number.parseFloat(price) * 100);
+      if (!Number.isFinite(cents)) throw new ValidationError("Prix invalide.");
+      const upTo = int(formData, `upTo:${i}`);
+      tiers.push({ upTo: upTo ?? null, unitAmountCents: cents });
+    }
+    const res = await setPlanTiers(actor, planId, tiers);
+    revalidate();
+    return { ok: true, data: res };
   } catch (e) {
     return toActionError(e);
   }

@@ -94,11 +94,15 @@ export async function AppShell({
                   {unreadCount > 0 && <span className="absolute top-1 right-1 size-2 rounded-full bg-destructive" aria-hidden="true" />}
                 </Link>
               </Button>
-              <Link href="/app/compte" className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-muted" aria-label="Mon compte">
-                <Avatar className="size-7">
-                  <AvatarFallback className="text-xs">{initials(actor.name)}</AvatarFallback>
-                </Avatar>
-                <span className="hidden max-w-32 truncate text-sm font-medium sm:inline">{actor.name}</span>
+              {/* Accessible name = the visible name (axe label-content-name-mismatch), initials hidden from assistive tech. */}
+              <Link href="/app/compte" className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-muted">
+                <span aria-hidden="true">
+                  <Avatar className="size-7">
+                    <AvatarFallback className="text-xs">{initials(actor.name)}</AvatarFallback>
+                  </Avatar>
+                </span>
+                <span className="sr-only sm:not-sr-only sm:max-w-32 sm:truncate sm:text-sm sm:font-medium">{actor.name}</span>
+                <span className="sr-only">, mon compte</span>
               </Link>
               <SignOutButton />
             </div>

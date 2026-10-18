@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { boolean, index, integer, jsonb, pgEnum, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, date, index, integer, jsonb, pgEnum, pgTable, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { id, timestamps, tsz } from "./_shared";
 import { users } from "./identity";
 import { events, eventMembers, eventProfessionals } from "./events";
@@ -121,6 +121,8 @@ export const inquiries = pgTable(
     quoteCents: integer("quote_cents"),
     quoteNote: text("quote_note"),
     quoteFileId: uuid("quote_file_id"),
+    /** Snapshot of the event brief as sent (what the professional saw), when sent from an event. */
+    brief: jsonb("brief").$type<Record<string, unknown>>(),
     isDemo: boolean("is_demo").notNull().default(false),
     ...timestamps,
   },
@@ -145,6 +147,71 @@ export const inquiryEvents = pgTable(
     createdAt: tsz("created_at").notNull().defaultNow(),
   },
   (t) => [index("inquiry_events_inquiry_idx").on(t.inquiryId, t.createdAt)],
+);
+
+/**
+ * Structured quotes (2026-10-18): every quote sent on an inquiry is a new version, in a common
+ * format so organisers can compare providers side by side. The latest version is the current one;
+ * `inquiries.quote_cents` mirrors its total for lists.
+ */
+export const quoteCancellationEnum = pgEnum("quote_cancellation", ["flexible", "moderate", "strict", "custom"]);
+
+export const inquiryQuotes = pgTable(
+  "inquiry_quotes",
+  {
+    id: id(),
+    inquiryId: uuid("inquiry_id")
+      .notNull()
+      .references(() => inquiries.id, { onDelete: "cascade" }),
+    version: integer("version").notNull(),
+    totalCents: integer("total_cents").notNull(),
+    lineItems: jsonb("line_items").$type<{ label: string; quantity: number; unitCents: number }[]>().notNull().default([]),
+    inclusions: jsonb("inclusions").$type<string[]>().notNull().default([]),
+    exclusions: jsonb("exclusions").$type<string[]>().notNull().default([]),
+    depositCents: integer("deposit_cents").notNull().default(0),
+    /** Balance due this many days before the event (0 = on the day). */
+    balanceDueDays: integer("balance_due_days"),
+    cancellationPolicy: quoteCancellationEnum("cancellation_policy").notNull().default("moderate"),
+    cancellationTerms: text("cancellation_terms"),
+    validUntil: date("valid_until", { mode: "string" }),
+    note: text("note"),
+    quoteFileId: uuid("quote_file_id"),
+    createdByUserId: text("created_by_user_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: tsz("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("inquiry_quotes_version_uq").on(t.inquiryId, t.version), index("inquiry_quotes_inquiry_idx").on(t.inquiryId)],
+);
+
+/**
+ * 48-hour option on a professional's date (2026-10-18). Blocks the date for other organisers while
+ * active; the professional confirms (the date stays blocked) or releases it; it lapses on its own.
+ */
+export const professionalHoldStatusEnum = pgEnum("professional_hold_status", ["active", "confirmed", "released", "expired"]);
+
+export const professionalHolds = pgTable(
+  "professional_holds",
+  {
+    id: id(),
+    professionalId: uuid("professional_id")
+      .notNull()
+      .references(() => professionals.id, { onDelete: "cascade" }),
+    requesterUserId: text("requester_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    eventId: uuid("event_id").references(() => events.id, { onDelete: "set null" }),
+    inquiryId: uuid("inquiry_id").references(() => inquiries.id, { onDelete: "set null" }),
+    holdDate: date("hold_date", { mode: "string" }).notNull(),
+    status: professionalHoldStatusEnum("status").notNull().default("active"),
+    expiresAt: tsz("expires_at").notNull(),
+    resolvedAt: tsz("resolved_at"),
+    resolvedByUserId: text("resolved_by_user_id").references(() => users.id, { onDelete: "set null" }),
+    isDemo: boolean("is_demo").notNull().default(false),
+    ...timestamps,
+  },
+  (t) => [
+    index("professional_holds_pro_date_idx").on(t.professionalId, t.holdDate, t.status),
+    index("professional_holds_requester_idx").on(t.requesterUserId, t.status),
+  ],
 );
 
 // ── Notifications ───────────────────────────────────────────────────────────

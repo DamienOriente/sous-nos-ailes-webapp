@@ -20,6 +20,8 @@ export type ProfessionalCardProps = {
   hideFavorite?: boolean;
   /** Above-the-fold card: load its image eagerly. */
   priority?: boolean;
+  /** Date searched in the directory: carried to the page so an option can be placed on it. */
+  date?: string;
 };
 
 export function priceLabel(p: { priceFromCents: number | null; priceToCents: number | null; priceUnit: string | null }): string | null {
@@ -38,8 +40,8 @@ function slugIndex(slug: string): number {
 }
 
 /** Directory result card. Also used on category pages, the home page and in the organiser's favourites. */
-export function ProfessionalCard({ professional: p, signedIn = false, sponsored = false, hideFavorite = false, priority = false }: ProfessionalCardProps) {
-  const href = `/pro/${p.slug}`;
+export function ProfessionalCard({ professional: p, signedIn = false, sponsored = false, hideFavorite = false, priority = false, date }: ProfessionalCardProps) {
+  const href = date ? `/pro/${p.slug}?date=${date}#contact` : `/pro/${p.slug}`;
   const price = priceLabel(p);
   const fallback = p.coverFileId ? null : categoryPhoto(p.categorySlug, slugIndex(p.slug));
   const rating = p.averageRating !== null && p.reviewCount > 0 ? p.averageRating : null;

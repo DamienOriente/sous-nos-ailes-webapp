@@ -56,6 +56,10 @@ export const events = pgTable(
     expectedChildren: integer("expected_children"),
     budgetCents: integer("budget_cents"),
     preferences: text("preferences"),
+    /** Shared brief (2026-10-18): style/ambience in a few words, and whether the indicative budget is sent to providers. */
+    style: text("style"),
+    briefShareBudget: boolean("brief_share_budget").notNull().default(false),
+    briefUpdatedAt: tsz("brief_updated_at"),
     /** Ambience photo from the demo catalogue (modules/media/demo-photos id). Chosen at creation, changeable in settings. */
     coverPhotoId: text("cover_photo_id"),
     /** Personal cover uploaded by the organiser (files.id, scope event / purpose cover). Takes precedence over coverPhotoId. */

@@ -14,6 +14,8 @@ export function buildEventNav(eventId: string, access: EventAccess): EventNavIte
   if (has("event.tasks.view")) items.push({ href: `${base}/taches`, label: "Tâches" });
   if (has("event.milestones.view")) items.push({ href: `${base}/planning`, label: "Planning" });
   if (has("event.providers.view")) items.push({ href: `${base}/prestataires`, label: "Prestataires" });
+  if (has("event.inquiries.view")) items.push({ href: `${base}/brief`, label: "Brief" });
+  if (has("event.inquiries.view")) items.push({ href: `${base}/devis`, label: "Devis" });
   if (has("event.budget.view")) items.push({ href: `${base}/budget`, label: "Budget" });
   if (has("event.guests.view")) items.push({ href: `${base}/invites`, label: "Invités" });
   if (has("event.invitations.manage")) items.push({ href: `${base}/invitations`, label: "Invitations" });

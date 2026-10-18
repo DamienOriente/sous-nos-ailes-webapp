@@ -5,6 +5,7 @@ import { findCity, findDepartmentBySlug, findDepartmentByCode, departmentCentroi
 import { compareRanked, scoreListing } from "@/modules/professionals/domain/ranking";
 import { languagesFromFilter, PAGE_SIZE, type SearchFilters } from "@/modules/directory/domain/search-params";
 import { isPublicListing } from "@/modules/directory/application/public-listing";
+import { freeOnDateSql } from "@/modules/directory/application/availability";
 
 /** Candidate pool scanned before in-memory ranking. Fine for V1 volumes; revisit with a SQL ranking when > a few thousand published listings. */
 const CANDIDATE_LIMIT = 600;
@@ -127,12 +128,8 @@ function buildWhere(filters: SearchFilters, categoryId: string | null, departmen
         or exists (select 1 from professional_categories c where c.id = ${professionals.primaryCategoryId} and c.name ilike ${"%" + q + "%"}))`,
     );
   }
-  if (filters.date) {
-    const weekday = weekdayFromIsoDate(filters.date);
-    // Excluded when an explicit unavailability covers the day, or when a weekly grid exists without that weekday.
-    where.push(sql`not exists (select 1 from calendar_entries ce where ce.professional_id = ${professionals.id} and ce.kind = 'unavailability' and ce.starts_at < (${filters.date}::date + interval '1 day') and ce.ends_at > ${filters.date}::date)`);
-    where.push(sql`(not exists (select 1 from professional_availability pa where pa.professional_id = ${professionals.id}) or exists (select 1 from professional_availability pa where pa.professional_id = ${professionals.id} and pa.weekday = ${weekday}))`);
-  }
+  // Real availability: weekly grid, declared unavailability, confirmed bookings, synced calendars, options of other organisers.
+  if (filters.date) where.push(freeOnDateSql(filters.date, viewerUserId));
   if (filters.favorites === "1" && viewerUserId) {
     where.push(sql`exists (select 1 from professional_favorites f where f.professional_id = ${professionals.id} and f.user_id = ${viewerUserId})`);
   }

@@ -59,7 +59,11 @@ Règles :
 
 - 2026-10-18 : un indépendant = une fiche ; plusieurs fiches réservées aux agences validées par la modération (`agency_review`), fiches au-delà de la 1re facturées par l'abonnement `agency_listings` à paliers dégressifs (quantité synchronisée, retenue `billing_hold_at` en cas d'impayé). Détails : docs/billing.md, docs/domain-model.md.
 
+- 2026-10-18 : brief partagé = les champs de l'évènement (date, lieu, invités, budget partagé ou non, style, besoins), figé en instantané `inquiries.brief` à chaque envoi ; envoi groupé à 10 pros maximum (`sendBriefToProfessionals`). Disponibilité réelle calculée par `modules/directory/application/availability.ts` (grille hebdo, indisponibilités, réservations confirmées, calendriers synchronisés, options) ; options de 48 h dans `professional_holds` (5 actives par organisateur, verrou par pro et date). Devis au format commun versionnés dans `inquiry_quotes`, comparés par métier sur `/app/evenements/[id]/devis`.
+
 ## Pièges rencontrés
+- Disponibilité d'un prestataire pour un évènement donné : passer `excludeEventId`, sinon ses propres réservations sur cet évènement le font apparaître « déjà réservé ».
+- Les e-mails mis en file par un test d'intégration doivent être supprimés en fin de test : `drainEmailOutbox(50)` des autres fichiers prend les plus anciens d'abord.
 - Une organisation par propriétaire : `upsertOrganization` et `requestAgencyStatus` réutilisent `findOwnedOrganization`. Les anciennes bases peuvent en avoir une par fiche (créées avant le 2026-10-18) : l'organisation agence l'emporte, puis la plus ancienne.
 - Toute requête qui expose une fiche au public doit utiliser `isPublicListing()` : un simple `status = 'published'` montrerait une fiche retenue pour impayé.
 - `ALTER TYPE ... ADD VALUE` (migration 0002) : la nouvelle valeur d'enum ne peut pas être utilisée dans la même transaction ; le seed tourne après la migration, donc pas de souci, mais ne pas l'utiliser dans une migration de données groupée.

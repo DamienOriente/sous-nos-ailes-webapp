@@ -8,6 +8,10 @@ import { InquiryStatusBadge } from "@/components/inquiries/inquiry-status-badge"
 import { requireActor } from "@/lib/session";
 import { cn, formatDateFr } from "@/lib/utils";
 import { countInquiriesByStatus, listInquiriesForProfessional } from "@/modules/inquiries/application/inquiry-service";
+import { isHoldLive, listHoldsForProfessional } from "@/modules/inquiries/application/hold-service";
+import { HoldActionButton } from "@/components/brief/hold-buttons";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { confirmHoldAction, releaseHoldAction } from "@/app/app/options/actions";
 import { INQUIRY_KIND_LABELS, INQUIRY_STATUS_LABELS, INQUIRY_STATUSES, type InquiryStatus } from "@/modules/inquiries/domain/inquiry-status";
 
 export const metadata: Metadata = { title: "Demandes" };
@@ -17,7 +21,7 @@ export default async function InquiriesPage({ params, searchParams }: { params: 
   const sp = await searchParams;
   const actor = await requireActor(`/app/pro/${id}/demandes`);
   const status = (INQUIRY_STATUSES as readonly string[]).includes(sp.status ?? "") ? (sp.status as InquiryStatus) : "all";
-  const [items, counts] = await Promise.all([listInquiriesForProfessional(actor, id, status), countInquiriesByStatus(actor, id)]);
+  const [items, counts, holds] = await Promise.all([listInquiriesForProfessional(actor, id, status), countInquiriesByStatus(actor, id), listHoldsForProfessional(actor, id)]);
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const base = `/app/pro/${id}/demandes`;
   return (
@@ -39,6 +43,47 @@ export default async function InquiriesPage({ params, searchParams }: { params: 
           ))}
         </ul>
       </nav>
+      {holds.length > 0 && (
+        <section id="options" aria-labelledby="options-h" className="space-y-3">
+          <h2 id="options-h" className="text-lg font-semibold">
+            Options sur vos dates
+          </h2>
+          <ul className="divide-y rounded-2xl border bg-card" data-testid="holds-list">
+            {holds.map(({ hold, requesterName, eventName }) => {
+              const live = isHoldLive(hold);
+              return (
+                <li key={hold.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0 text-sm">
+                    <p className="font-medium">
+                      {formatDateFr(new Date(`${hold.holdDate}T12:00:00Z`), { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                    </p>
+                    <p className="text-muted-foreground">
+                      {requesterName}
+                      {eventName ? `, ${eventName}` : ""}
+                      {live ? `. Option valable jusqu'au ${formatDateFr(hold.expiresAt, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}.` : ""}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {hold.status === "confirmed" ? (
+                      <>
+                        <StatusBadge tone="success">Date confirmée</StatusBadge>
+                        <HoldActionButton run={releaseHoldAction.bind(null, hold.id)} label="Libérer" done="Date libérée." />
+                      </>
+                    ) : live ? (
+                      <>
+                        <HoldActionButton run={confirmHoldAction.bind(null, hold.id)} label="Confirmer la date" done="Date confirmée." variant="default" />
+                        <HoldActionButton run={releaseHoldAction.bind(null, hold.id)} label="Libérer" done="Option libérée." />
+                      </>
+                    ) : (
+                      <StatusBadge tone="neutral">Option expirée</StatusBadge>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
       {items.length === 0 ? (
         <IllustratedEmpty
           title={status === "all" ? "Aucune demande reçue pour l'instant" : "Aucune demande dans ce statut"}

@@ -13,6 +13,10 @@ import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { getActor } from "@/lib/session";
+import { PlaceHoldForm } from "@/components/brief/hold-buttons";
+import { placeHoldAction } from "@/app/app/options/actions";
+import { listOrganizedEvents } from "@/modules/events/application/brief-service";
+import { isIsoDate } from "@/modules/directory/domain/availability";
 import { isFavorite } from "@/modules/directory/application/favorites-service";
 import { publicImageHref } from "@/modules/files/application/file-urls";
 import { getPublishedPage, incrementViewCount } from "@/modules/pages/application/page-service";
@@ -61,8 +65,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
-export default async function PublicProfessionalPage({ params }: { params: Promise<Params> }) {
+export default async function PublicProfessionalPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ date?: string }> }) {
   const { slug } = await params;
+  const sp = await searchParams;
   const page = await load(slug);
   if (!page) notFound();
   const { data } = page;
@@ -74,6 +79,9 @@ export default async function PublicProfessionalPage({ params }: { params: Promi
 
   const [actor, ua, activity] = await Promise.all([getActor(), headers().then((h) => h.get("user-agent") ?? ""), getPublicActivity(pro.id)]);
   const favorite = actor ? await isFavorite(actor.userId, pro.id).catch(() => false) : false;
+  // The service refuses an option on one's own listing; the form is shown to any signed-in visitor.
+  const organized = actor ? await listOrganizedEvents(actor) : [];
+  const holdDate = isIsoDate(sp.date) ? sp.date : null;
 
   if (!BOT_UA.test(ua)) {
     after(() => incrementViewCount(page.publicProfileId).catch((err) => logger.warn({ err, slug }, "view count increment failed")));
@@ -131,7 +139,20 @@ export default async function PublicProfessionalPage({ params }: { params: Promi
         data={data}
         mode="public"
         slots={{
-          inquiryForm: <InquiryForm professionalId={pro.id} professionalName={pro.displayName} defaultKind="quote" />,
+          inquiryForm: (
+            <div className="space-y-8">
+              <InquiryForm professionalId={pro.id} professionalName={pro.displayName} defaultKind="quote" requester={actor ? { name: actor.name, email: actor.email } : null} events={organized.map((e) => ({ id: e.id, name: e.name }))} />
+              {actor ? (
+                <section aria-labelledby="hold-h" className="rounded-xl border p-5">
+                  <h3 id="hold-h" className="font-heading text-lg font-semibold">
+                    Réserver la date pendant 48 h
+                  </h3>
+                  <p className="mt-1 mb-4 text-sm text-muted-foreground text-pretty">Le temps d'échanger avec {pro.displayName}, la date n'est plus proposée aux autres organisateurs. Sans confirmation, l'option tombe d'elle-même.</p>
+                  <PlaceHoldForm professionalId={pro.id} professionalName={pro.displayName} events={organized} defaultDate={holdDate} action={placeHoldAction} />
+                </section>
+              ) : null}
+            </div>
+          ),
           verificationBadge: <VerificationBadge level={pro.verificationLevel} statements={statements} size="md" />,
         }}
       />

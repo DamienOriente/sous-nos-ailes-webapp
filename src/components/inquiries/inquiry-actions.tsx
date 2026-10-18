@@ -2,12 +2,12 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { ActionForm, FieldErrorText, type FormAction } from "@/components/professionals/action-form";
 import { FileUpload, type UploadedFileInfo } from "@/components/files/file-upload";
+import { QuoteFormFields } from "./quote-form-fields";
 import type { ActionResult } from "@/lib/errors";
 import { INQUIRY_ACTIONS, INQUIRY_STATUS_LABELS, nextInquiryStatuses, type InquiryStatus } from "@/modules/inquiries/domain/inquiry-status";
 
@@ -18,9 +18,11 @@ type Props = {
   replyAction: FormAction;
   quoteAction: FormAction;
   transitionAction: (professionalId: string, inquiryId: string, toStatus: string) => Promise<ActionResult<undefined>>;
+  /** Guests from the brief, to show the price per guest while typing. */
+  guests?: number | null;
 };
 
-export function InquiryActions({ professionalId, inquiryId, status, replyAction, quoteAction, transitionAction }: Props) {
+export function InquiryActions({ professionalId, inquiryId, status, replyAction, quoteAction, transitionAction, guests = null }: Props) {
   const [tab, setTab] = useState<"reply" | "quote">("reply");
   const [quoteFile, setQuoteFile] = useState<UploadedFileInfo | null>(null);
   const [pending, start] = useTransition();
@@ -108,26 +110,18 @@ export function InquiryActions({ professionalId, inquiryId, status, replyAction,
           <input type="hidden" name="professionalId" value={professionalId} />
           <input type="hidden" name="inquiryId" value={inquiryId} />
           <input type="hidden" name="quoteFileId" value={quoteFile?.id ?? ""} />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="quote-amount">
-                Montant TTC (€) <span aria-hidden="true">*</span>
-              </Label>
-              <Input id="quote-amount" name="quoteEuros" inputMode="decimal" required placeholder="450" />
-              <FieldErrorText name="quoteCents" />
-            </div>
-            <div className="space-y-2">
-              <Label>Devis PDF (facultatif)</Label>
-              <FileUpload scope="professional" scopeId={professionalId} purpose="quote" accept="application/pdf" onUploaded={setQuoteFile} label={quoteFile ? `Remplacer ${quoteFile.originalName}` : "Joindre le devis"} />
-              {quoteFile && <p className="text-xs text-muted-foreground">{quoteFile.originalName} : analysé avant mise à disposition.</p>}
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="quote-note">Détail du devis</Label>
-              <Textarea id="quote-note" name="quoteNote" rows={3} maxLength={2000} placeholder="Ce qui est compris, horaires, conditions…" />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="quote-message">Message d'accompagnement</Label>
-              <Textarea id="quote-message" name="message" rows={3} maxLength={3000} />
+          <div className="space-y-6">
+            <QuoteFormFields guests={guests} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Devis PDF (facultatif)</Label>
+                <FileUpload scope="professional" scopeId={professionalId} purpose="quote" accept="application/pdf" onUploaded={setQuoteFile} label={quoteFile ? `Remplacer ${quoteFile.originalName}` : "Joindre le devis"} />
+                {quoteFile && <p className="text-xs text-muted-foreground">{quoteFile.originalName} : analysé avant mise à disposition.</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quote-message">Message d'accompagnement</Label>
+                <Textarea id="quote-message" name="message" rows={3} maxLength={3000} />
+              </div>
             </div>
           </div>
         </ActionForm>

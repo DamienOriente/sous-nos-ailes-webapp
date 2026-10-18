@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <div className="space-y-8" aria-busy="true" aria-label="Chargement">
+    <div className="space-y-8" aria-busy="true" role="status" aria-label="Chargement">
       <div className="space-y-2">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-8 w-64" />

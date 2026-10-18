@@ -17,6 +17,8 @@ export type InquiryFormProps = {
   requester?: { name: string; email: string } | null;
   /** Event the organiser is contacting from (`?event=`); kept server side only if they organise it. */
   eventId?: string | null;
+  /** Signed-in organiser's events: picking one attaches its brief instead of retyping the details. */
+  events?: { id: string; name: string }[];
   className?: string;
 };
 
@@ -26,8 +28,10 @@ type FieldErrors = Record<string, string[]>;
  * Public inquiry form posted to /api/inquiries. Honeypot field `website` is
  * visually hidden; consent is mandatory; errors come back per field.
  */
-export function InquiryForm({ professionalId, professionalName, defaultKind = "contact", requester = null, eventId = null, className }: InquiryFormProps) {
+export function InquiryForm({ professionalId, professionalName, defaultKind = "contact", requester = null, eventId = null, events = [], className }: InquiryFormProps) {
   const [kind, setKind] = useState<InquiryKind>(defaultKind);
+  const [briefEventId, setBriefEventId] = useState<string>(eventId ?? events[0]?.id ?? "");
+  const briefEvent = events.find((e) => e.id === briefEventId) ?? null;
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -42,7 +46,7 @@ export function InquiryForm({ professionalId, professionalName, defaultKind = "c
     const payload: Record<string, unknown> = {
       professionalId,
       kind,
-      eventId,
+      eventId: briefEvent ? briefEvent.id : eventId,
       requesterName: form.get("requesterName"),
       requesterEmail: form.get("requesterEmail"),
       requesterPhone: form.get("requesterPhone"),
@@ -110,6 +114,26 @@ export function InquiryForm({ professionalId, professionalName, defaultKind = "c
             <FieldLabel htmlFor="inq-phone">Téléphone (facultatif)</FieldLabel>
             <Input id="inq-phone" name="requesterPhone" type="tel" autoComplete="tel" />
           </Field>
+          {events.length > 0 && (
+            <Field>
+              <FieldLabel htmlFor="inq-brief">Joindre le brief de</FieldLabel>
+              <select id="inq-brief" value={briefEventId} onChange={(e) => setBriefEventId(e.target.value)} className="h-9 w-full rounded-lg border bg-background px-3 text-sm">
+                {events.map((ev) => (
+                  <option key={ev.id} value={ev.id}>
+                    {ev.name}
+                  </option>
+                ))}
+                <option value="">Aucun, je décris ma demande</option>
+              </select>
+            </Field>
+          )}
+        </div>
+        {briefEvent ? (
+          <p className="rounded-xl bg-muted/50 p-3 text-sm text-pretty" data-testid="inquiry-brief-note">
+            Le brief de « {briefEvent.name} » est joint : date, lieu, nombre d'invités, style et besoins. Vous pouvez ajouter un mot ci-dessous.
+          </p>
+        ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field>
             <FieldLabel htmlFor="inq-type">Type d'évènement</FieldLabel>
             <select id="inq-type" name="eventTypeLabel" className="h-9 w-full rounded-lg border bg-background px-3 text-sm" defaultValue="">
@@ -139,9 +163,10 @@ export function InquiryForm({ professionalId, professionalName, defaultKind = "c
             <Input id="inq-children" name="childrenCount" type="number" min={0} inputMode="numeric" />
           </Field>
         </div>
+        )}
         <Field data-invalid={Boolean(err("message"))}>
-          <FieldLabel htmlFor="inq-message">Votre message</FieldLabel>
-          <Textarea id="inq-message" name="message" rows={5} required minLength={10} placeholder={kind === "quote" ? "Décrivez la prestation souhaitée : horaires, nombre d'enfants et âges, lieu…" : "Présentez votre évènement et votre besoin."} aria-invalid={Boolean(err("message"))} />
+          <FieldLabel htmlFor="inq-message">{briefEvent ? "Votre message (facultatif)" : "Votre message"}</FieldLabel>
+          <Textarea id="inq-message" name="message" rows={briefEvent ? 3 : 5} required={!briefEvent} minLength={briefEvent ? undefined : 10} placeholder={kind === "quote" ? "Décrivez la prestation souhaitée : horaires, nombre d'enfants et âges, lieu…" : "Présentez votre évènement et votre besoin."} aria-invalid={Boolean(err("message"))} />
           <FieldDescription>Ne partagez pas d'information de santé ni de document ici : vous pourrez le faire de manière sécurisée après la mise en relation.</FieldDescription>
           {err("message") && <FieldError>{err("message")}</FieldError>}
         </Field>

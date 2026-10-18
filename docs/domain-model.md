@@ -151,3 +151,10 @@ Invariants : pas de date de naissance (âge seulement) ; données de santé chif
 - **Acceptation** : le compte connecté doit avoir l'adresse invitée, vérifiée. La ligne `organization_members` n'est créée (ou complétée) qu'à ce moment, avec `accepted_at`. Sans `accepted_at`, aucun accès (`getOrganizationMembership` dans `modules/authorization`).
 - **Facturation** : l'abonnement agence reste au propriétaire. Un membre peut envoyer à la relecture une fiche dont l'emplacement est déjà payé ; une fiche qui ouvrirait ou augmenterait l'abonnement est refusée (`assertListingSlot`), et le checkout agence n'accepte que le propriétaire.
 - **Journal** : `organization.member_invited`, `organization.invitation_revoked`, `organization.member_joined`, `organization.member_role_changed` (de/vers), `organization.member_removed`.
+
+## Brief, options et devis (2026-10-18)
+
+- **Brief** : pas de table dédiée. Ce sont les champs de `events` (`style`, `preferences`, `brief_share_budget`…). À chaque envoi, `inquiries.brief` garde l'instantané reçu par le pro.
+- **Option** (`professional_holds`) : `active` pendant 48 h, puis `confirmed` par le pro, `released` par l'une ou l'autre partie, ou `expired`. Une option active ou confirmée rend la date indisponible aux autres organisateurs.
+- **Devis** (`inquiry_quotes`) : une ligne par version (`version` croissante), la dernière fait foi ; `inquiries.quote_cents` reprend son total. Les conditions d'annulation proposées sont celles du professionnel, la plateforme ne les garantit pas.
+

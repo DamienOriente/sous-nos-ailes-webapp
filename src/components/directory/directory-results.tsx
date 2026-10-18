@@ -34,7 +34,7 @@ export function DirectoryResults({
           </div>
           <div className="grid gap-6 sm:grid-cols-2">
             {result.sponsored.map((p) => (
-              <ProfessionalCard key={p.id} professional={p} signedIn={signedIn} sponsored />
+              <ProfessionalCard key={p.id} professional={p} signedIn={signedIn} sponsored date={filters.date || undefined} />
             ))}
           </div>
         </section>
@@ -44,9 +44,13 @@ export function DirectoryResults({
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="results-title" className="text-sm text-muted-foreground" data-testid="results-count">
             {result.total === 0 ? "Aucun résultat" : result.total === 1 ? "1 professionnel" : `${result.total} professionnels`}
-            {result.origin ? ` · distance depuis ${result.origin.label}` : ""}
+            {filters.date ? `, libres le ${new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${filters.date}T12:00:00Z`))}` : ""}
+            {result.origin ? `, distance depuis ${result.origin.label}` : ""}
           </h2>
-          <p className="text-xs text-muted-foreground">Ordre des résultats : métier, proximité, disponibilité, fiche complète, vérifications. Les résultats sponsorisés sont séparés et étiquetés.</p>
+          <p className="text-xs text-muted-foreground">
+            {filters.date ? "Disponibilité vérifiée sur l'agenda de chaque professionnel : réservations, indisponibilités, calendriers synchronisés et options en cours. " : ""}
+            Ordre des résultats : métier, proximité, disponibilité, fiche complète, vérifications. Les résultats sponsorisés sont séparés et étiquetés.
+          </p>
         </div>
         {result.items.length === 0 ? (
           <div role="status" className="grid items-center gap-6 rounded-3xl border border-dashed bg-card p-6 sm:p-8 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)]">
@@ -77,7 +81,7 @@ export function DirectoryResults({
             {/* A listing already shown in the sponsored block is not repeated below (same card, same photo twice). */}
             {result.items.filter((p) => !result.sponsored.some((s) => s.id === p.id)).map((p) => (
               <li key={p.id}>
-                <ProfessionalCard professional={p} signedIn={signedIn} />
+                <ProfessionalCard professional={p} signedIn={signedIn} date={filters.date || undefined} />
               </li>
             ))}
           </ul>

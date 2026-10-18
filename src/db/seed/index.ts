@@ -38,6 +38,7 @@ async function loadModuleSeeds(): Promise<ModuleSeed[]> {
     { name: "agencies", path: "./agencies" },
     { name: "pages", path: "./pages" },
     { name: "events", path: "./events" },
+    { name: "briefs", path: "./briefs" },
     { name: "guests", path: "./guests" },
     { name: "children", path: "./children" },
     { name: "collaboration", path: "./collaboration" },

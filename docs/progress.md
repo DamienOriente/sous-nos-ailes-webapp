@@ -187,3 +187,15 @@ Les mesures varient de quelques points d'un passage à l'autre. L'objectif de 2,
 | Invitation de collaborateurs dans une agence | Non fait (hors périmètre de cette itération) |
 | Vérification automatique du SIRET (API Sirene) | Non fait, contrôle manuel par la modération |
 
+## Brief, disponibilité réelle et comparateur de devis (2026-10-18)
+
+| Élément | État |
+|---|---|
+| Brief de l'évènement édité une fois, budget envoyé seulement si l'organisateur le choisit | Fait, testé (intégration + E2E) |
+| Envoi du brief à plusieurs pros (liste de l'évènement et favoris), sans doublon | Fait, testé |
+| Brief joint depuis la page publique d'un pro, instantané visible côté pro | Fait, testé |
+| Recherche par date sur la disponibilité réelle (grille, indisponibilités, réservations, agendas synchronisés, options) | Fait, testé ; les récurrences (RRULE) des entrées d'agenda ne sont pas dépliées |
+| Option de 48 h : pose, confirmation ou libération par le pro, expiration automatique (worker, toutes les 15 min) | Fait, testé |
+| Devis au format commun (lignes, inclus, non inclus, acompte, solde, annulation, validité), versionné | Fait, testé |
+| Comparateur côte à côte par métier, acceptation et refus par l'organisateur | Fait, testé |
+

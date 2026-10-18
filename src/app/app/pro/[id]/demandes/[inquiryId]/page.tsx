@@ -9,7 +9,10 @@ import { isAppError } from "@/lib/errors";
 import { requireActor } from "@/lib/session";
 import { formatDateFr, formatEuros } from "@/lib/utils";
 import { privateFileHref } from "@/modules/files/application/file-urls";
-import { getInquiryForProfessional } from "@/modules/inquiries/application/inquiry-service";
+import { getInquiryForProfessional, latestQuote } from "@/modules/inquiries/application/inquiry-service";
+import { BriefCard } from "@/components/brief/brief-card";
+import { readBriefSnapshot } from "@/modules/events/domain/brief";
+import { CANCELLATION_LABELS, type CancellationPolicy } from "@/modules/inquiries/domain/quote";
 import { INQUIRY_KIND_LABELS, INQUIRY_STATUS_LABELS } from "@/modules/inquiries/domain/inquiry-status";
 import { quoteInquiryAction, replyInquiryAction, transitionInquiryAction } from "../actions";
 
@@ -26,6 +29,8 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
     throw e;
   }
   const { inquiry, history } = data;
+  const brief = readBriefSnapshot(inquiry.brief);
+  const quote = await latestQuote(inquiryId);
   return (
     <div className="space-y-6">
       <Button asChild variant="link" size="sm" className="px-0">
@@ -46,6 +51,7 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {brief && <BriefCard brief={brief} title="Brief envoyé par l'organisateur" className="bg-muted/30" />}
               <dl className="grid gap-3 text-sm sm:grid-cols-2">
                 <Item label="E-mail" value={<a href={`mailto:${inquiry.requesterEmail}`} className="underline">{inquiry.requesterEmail}</a>} />
                 <Item label="Téléphone" value={inquiry.requesterPhone ?? "Non renseigné"} />
@@ -61,8 +67,21 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
                 </p>
               </div>
               {inquiry.quoteCents !== null && (
-                <div className="rounded-xl border p-4 text-sm">
-                  <p className="font-medium">Devis envoyé : {formatEuros(inquiry.quoteCents)}</p>
+                <div className="rounded-xl border p-4 text-sm" data-testid="sent-quote">
+                  <p className="font-medium">
+                    Devis envoyé{quote && quote.version > 1 ? ` (version ${quote.version})` : ""} : {formatEuros(inquiry.quoteCents)}
+                  </p>
+                  {quote && (
+                    <ul className="mt-2 space-y-1 text-muted-foreground">
+                      {quote.lineItems.length > 0 && <li>{quote.lineItems.map((l) => `${l.quantity > 1 ? `${l.quantity} × ` : ""}${l.label}`).join(", ")}</li>}
+                      {quote.inclusions.length > 0 && <li>Inclus : {quote.inclusions.join(", ")}</li>}
+                      {quote.exclusions.length > 0 && <li>Non inclus : {quote.exclusions.join(", ")}</li>}
+                      <li>
+                        Acompte {quote.depositCents > 0 ? formatEuros(quote.depositCents) : "aucun"}, annulation {CANCELLATION_LABELS[quote.cancellationPolicy as CancellationPolicy].label.toLowerCase()}
+                        {quote.validUntil ? `, valable jusqu'au ${quote.validUntil}` : ""}
+                      </li>
+                    </ul>
+                  )}
                   {inquiry.quoteNote && <p className="mt-1 text-muted-foreground">{inquiry.quoteNote}</p>}
                   {inquiry.quoteFileId && (
                     <a href={privateFileHref(inquiry.quoteFileId)} className="mt-2 inline-block underline" target="_blank" rel="noreferrer">
@@ -78,7 +97,7 @@ export default async function InquiryDetailPage({ params }: { params: Promise<{ 
               <CardTitle>Répondre</CardTitle>
             </CardHeader>
             <CardContent>
-              <InquiryActions professionalId={id} inquiryId={inquiryId} status={inquiry.status} replyAction={replyInquiryAction} quoteAction={quoteInquiryAction} transitionAction={transitionInquiryAction} />
+              <InquiryActions professionalId={id} inquiryId={inquiryId} status={inquiry.status} replyAction={replyInquiryAction} quoteAction={quoteInquiryAction} transitionAction={transitionInquiryAction} guests={brief?.guests ?? inquiry.guestsCount} />
             </CardContent>
           </Card>
         </div>

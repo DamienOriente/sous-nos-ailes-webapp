@@ -91,3 +91,7 @@
 | Accès | Propriétaire | Admin/owner d'organisation | Manager d'organisation | Membre d'organisation |
 |---|:---:|:---:|:---:|:---:|
 | Gérer la fiche (`requireProfessionalManage`) | ✅ | ✅ | ✅ | · (lecture seule) |
+| Gérer l'équipe de l'agence (`requireMemberManager`) | ✅ (propriétaire de l'organisation) | ✅ | · | · |
+| Ouvrir ou augmenter l'abonnement agence | ✅ (propriétaire de l'organisation) | · | · | · |
+
+Une adhésion sans `accepted_at` (invitation non acceptée) ne donne aucun droit : `getOrganizationMembership` la filtre pour les fiches, les fichiers d'organisation et les carnets de contacts.

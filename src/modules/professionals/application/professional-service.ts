@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
 import {
   eventMembers,
@@ -50,7 +50,7 @@ export async function listManagedListings(actor: Actor, executor: DbExecutor = d
     await executor
       .select({ organizationId: organizationMembers.organizationId })
       .from(organizationMembers)
-      .where(and(eq(organizationMembers.userId, actor.userId), inArray(organizationMembers.role, ["owner", "admin", "manager"])))
+      .where(and(eq(organizationMembers.userId, actor.userId), inArray(organizationMembers.role, ["owner", "admin", "manager"]), isNotNull(organizationMembers.acceptedAt)))
   ).map((r) => r.organizationId);
 
   const where = orgIds.length ? or(eq(professionals.ownerUserId, actor.userId), inArray(professionals.organizationId, orgIds)) : eq(professionals.ownerUserId, actor.userId);
@@ -330,7 +330,7 @@ export async function submitForReview(actor: Actor, professionalId: string, opts
   const organizationId = await db.transaction(async (tx) => {
     const { listing, category } = await loadManaged(actor, professionalId, tx);
     if (!canTransition(listing.status, "pending_review", "owner")) throw new ConflictError("Cette fiche ne peut pas être soumise dans son état actuel.");
-    await assertListingSlot(listing, opts, tx);
+    await assertListingSlot(actor.userId, listing, opts, tx);
     if (!listing.displayName || !listing.city) throw new ValidationError("Renseignez au moins le nom commercial et la ville avant de soumettre.");
     const { completeness } = await recomputeDerived(professionalId, tx);
     if (completeness.score < SUBMISSION_MIN_SCORE) throw new ValidationError(`Complétez votre fiche (au moins ${SUBMISSION_MIN_SCORE} %, actuellement ${completeness.score} %).`);

@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
 import { eventMembers, eventPermissions, events, professionalCategories, professionals, organizationMembers } from "@/db/schema";
 import { ForbiddenError, NotFoundError } from "@/lib/errors";
@@ -89,6 +89,22 @@ export function isChildScopeAssignmentOnly(access: EventAccess, permission: Even
   return access.childScopeIsAssignmentOnly && CHILD_ASSIGNMENT_SCOPED.has(permission);
 }
 
+// ── Organisations ───────────────────────────────────────────────────────────
+export type OrganizationRole = (typeof organizationMembers.$inferSelect)["role"];
+
+/**
+ * Accepted membership of the actor in an organisation, or null. A row without
+ * `accepted_at` (invitation not accepted yet) grants nothing.
+ */
+export async function getOrganizationMembership(actor: Actor, organizationId: string, executor: DbExecutor = db): Promise<{ id: string; role: OrganizationRole } | null> {
+  const [m] = await executor
+    .select({ id: organizationMembers.id, role: organizationMembers.role })
+    .from(organizationMembers)
+    .where(and(eq(organizationMembers.organizationId, organizationId), eq(organizationMembers.userId, actor.userId), isNotNull(organizationMembers.acceptedAt)))
+    .limit(1);
+  return m ?? null;
+}
+
 // ── Professional listings ───────────────────────────────────────────────────
 export type ProfessionalAccess = { professionalId: string; ownerUserId: string; organizationId: string | null; role: "owner" | "org_admin" | "org_manager" | "org_member" };
 
@@ -102,11 +118,7 @@ export async function getProfessionalAccess(actor: Actor, professionalId: string
   if (!pro || pro.deletedAt) return null;
   if (pro.ownerUserId === actor.userId) return { professionalId, ownerUserId: pro.ownerUserId, organizationId: pro.organizationId, role: "owner" };
   if (pro.organizationId) {
-    const [m] = await executor
-      .select({ role: organizationMembers.role })
-      .from(organizationMembers)
-      .where(and(eq(organizationMembers.organizationId, pro.organizationId), eq(organizationMembers.userId, actor.userId)))
-      .limit(1);
+    const m = await getOrganizationMembership(actor, pro.organizationId, executor);
     if (m) {
       const role = m.role === "owner" || m.role === "admin" ? "org_admin" : m.role === "manager" ? "org_manager" : "org_member";
       return { professionalId, ownerUserId: pro.ownerUserId, organizationId: pro.organizationId, role };

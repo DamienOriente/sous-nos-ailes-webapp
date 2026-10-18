@@ -21,7 +21,7 @@ function listingHref(l: { id: string; status: string }): string {
   return l.status === "draft" ? `/onboarding/professionnel?id=${l.id}&step=2` : `/app/pro/${l.id}`;
 }
 
-export default async function ProListingsPage({ searchParams }: { searchParams: Promise<{ paiement?: string }> }) {
+export default async function ProListingsPage({ searchParams }: { searchParams: Promise<{ paiement?: string; equipe?: string }> }) {
   const actor = await requireActor("/app/pro");
   const [listings, structure, sp] = await Promise.all([listManagedListings(actor), getAccountStructure(actor), searchParams]);
   const agency = structure.isVerifiedAgency;
@@ -36,7 +36,7 @@ export default async function ProListingsPage({ searchParams }: { searchParams: 
   return (
     <div className="space-y-8">
       <PageHeader
-        title={agency ? "Mes fiches pro" : "Ma fiche pro"}
+        title={agency || managesOthers ? "Mes fiches pro" : "Ma fiche pro"}
         description={
           agency
             ? "Les fiches de votre agence, leur statut de validation et ce qu'elles coûtent. La première est incluse, les suivantes sont facturées au tarif dégressif."
@@ -56,6 +56,7 @@ export default async function ProListingsPage({ searchParams }: { searchParams: 
         }
       />
       {sp.paiement === "agence" && <FormMessage success="Paiement enregistré : votre abonnement agence est actif." />}
+      {sp.equipe === "1" && <FormMessage success="Vous faites maintenant partie de l'équipe : les fiches de l'agence apparaissent ci-dessous." />}
       {agency && structure.nextListingCents !== null && (
         <p className="text-sm text-muted-foreground">
           {structure.state?.subscriptionGrantsAccess ? `Abonnement agence : ${formatEuros(structure.monthlyCents)} TTC par mois pour ${structure.state.paidExtra} fiche(s) en plus de la première. ` : ""}

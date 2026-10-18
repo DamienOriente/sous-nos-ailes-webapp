@@ -8,7 +8,7 @@ Vocabulaire partagé (code en anglais, UI en français) et relations entre agré
 |---|---|
 | **Utilisateur** (`users`) | Un compte. Rôle global `user` / `moderator` / `admin` / `super_admin`. Les rôles métier (organisateur, professionnel) sont contextuels, jamais globaux : la même personne peut organiser son mariage et publier une fiche. |
 | **Profil** (`user_profiles`) | Données applicatives 1:1 : prénom, nom, téléphone, ville, intention d'inscription (`organizer` / `professional`), onboarding. |
-| **Organisation** (`organizations`, `organization_members`) | Structure juridique d'un compte (une seule par propriétaire, réutilisée par toutes ses fiches). Rôles `owner` / `admin` / `manager` / `collaborator` / `contributor`. `agency_status` (`none` / `pending` / `verified` / `rejected`) : seule une structure validée par la modération (société, association, organisme public, avec SIRET) peut avoir plusieurs fiches. |
+| **Organisation** (`organizations`, `organization_members`) | Structure juridique d'un compte (une seule par propriétaire, réutilisée par toutes ses fiches). Rôles `owner` / `admin` / `manager` / `collaborator` / `contributor` ; une adhésion ne compte qu'une fois `accepted_at` renseigné. Invitations en attente dans `organization_invitations`. `agency_status` (`none` / `pending` / `verified` / `rejected`) : seule une structure validée par la modération (société, association, organisme public, avec SIRET) peut avoir plusieurs fiches. |
 | **Actor** | Identité minimale passée à chaque service : `{ userId, email, name, globalRole, emailVerified, isDemo }`. |
 
 ## Annuaire et professionnels
@@ -143,3 +143,11 @@ Invariants : pas de date de naissance (âge seulement) ; données de santé chif
 - **Quota** (`modules/professionals/domain/listing-quota.ts`) : une fiche occupe un emplacement de `pending_review` à `published` (et `suspended`). La 1re est incluse ; les suivantes sont payées par l'abonnement agence.
 - **Retenue** : `professionals.billing_hold_at` masque une fiche du public (annuaire, page, sitemap, images, demandes) sans toucher à son statut ni à son contenu. Toute requête publique passe par `isPublicListing()` (`modules/directory/application/public-listing.ts`).
 
+## Équipe d'une agence (2026-10-18)
+
+- **Qui gère** : le propriétaire de l'organisation (`organizations.owner_user_id`) et ses administrateurs acceptés, seulement si l'agence est validée (`agency_status = verified`). Service : `modules/professionals/application/member-service.ts`, règles pures dans `domain/members.ts`. Page : `/app/pro/structure`.
+- **Rôles attribuables** : `admin` (fiches et équipe) et `manager` (fiches seulement). Le rôle `owner` ne se transmet pas par ce parcours ; le propriétaire ne peut être ni retiré ni rétrogradé.
+- **Invitation** (`organization_invitations`) : adresse e-mail normalisée, rôle, jeton aléatoire à usage unique dont seul le HMAC est stocké, valable 7 jours, 30 invitations au plus par agence sur 24 h. Réinviter la même adresse annule le lien précédent. Le lien (`/app/pro/structure/invitation/<jeton>`) n'est envoyé que par e-mail.
+- **Acceptation** : le compte connecté doit avoir l'adresse invitée, vérifiée. La ligne `organization_members` n'est créée (ou complétée) qu'à ce moment, avec `accepted_at`. Sans `accepted_at`, aucun accès (`getOrganizationMembership` dans `modules/authorization`).
+- **Facturation** : l'abonnement agence reste au propriétaire. Un membre peut envoyer à la relecture une fiche dont l'emplacement est déjà payé ; une fiche qui ouvrirait ou augmenterait l'abonnement est refusée (`assertListingSlot`), et le checkout agence n'accepte que le propriétaire.
+- **Journal** : `organization.member_invited`, `organization.invitation_revoked`, `organization.member_joined`, `organization.member_role_changed` (de/vers), `organization.member_removed`.

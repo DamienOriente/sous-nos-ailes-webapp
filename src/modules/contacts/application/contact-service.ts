@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
 import { contactEventLinks, contacts, eventGuests, eventMembers, events, organizationMembers, organizations } from "@/db/schema";
 import { ConflictError, ForbiddenError, NotFoundError, PaymentRequiredError, ValidationError } from "@/lib/errors";
@@ -46,7 +46,7 @@ export async function listOrganizationScopes(actor: Actor, executor: DbExecutor 
     .select({ id: organizations.id, name: organizations.name, role: organizationMembers.role })
     .from(organizationMembers)
     .innerJoin(organizations, eq(organizations.id, organizationMembers.organizationId))
-    .where(and(eq(organizationMembers.userId, actor.userId), isNull(organizations.deletedAt)));
+    .where(and(eq(organizationMembers.userId, actor.userId), isNotNull(organizationMembers.acceptedAt), isNull(organizations.deletedAt)));
   return rows.map((r) => ({ id: r.id, name: r.name, role: r.role, canWrite: WRITE_ROLES.has(r.role) }));
 }
 

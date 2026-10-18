@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AgencyTiers } from "@/components/billing/agency-tiers";
+import { AgencyTeam } from "@/components/professionals/agency-team";
 import { ActionForm, FieldErrorText } from "@/components/professionals/action-form";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -10,8 +11,12 @@ import { Label } from "@/components/ui/label";
 import { requireActor } from "@/lib/session";
 import { formatDateFr, formatEuros } from "@/lib/utils";
 import { getAccountStructure } from "@/modules/professionals/application/agency-service";
+import { listMembers, listMyAgencies } from "@/modules/professionals/application/member-service";
+import { ORGANIZATION_ROLE_LABELS } from "@/modules/professionals/domain/members";
 import { AGENCY_STATUS_LABELS, AGENCY_TYPE_LABELS, AGENCY_TYPE_VALUES } from "@/modules/professionals/domain/agency-schema";
-import { requestAgencyAction } from "./actions";
+import { changeMemberRoleAction, inviteMemberAction, removeMemberAction, requestAgencyAction, revokeMemberInvitationAction } from "./actions";
+
+const TEAM_ACTIONS = { invite: inviteMemberAction, changeRole: changeMemberRoleAction, remove: removeMemberAction, revoke: revokeMemberInvitationAction };
 
 export const metadata: Metadata = { title: "Ma structure" };
 
@@ -19,7 +24,9 @@ const TONES = { none: "neutral", pending: "warning", verified: "success", reject
 
 export default async function StructurePage() {
   const actor = await requireActor("/app/pro/structure");
-  const s = await getAccountStructure(actor);
+  const [s, agencies] = await Promise.all([getAccountStructure(actor), listMyAgencies(actor)]);
+  const teams = await Promise.all(agencies.filter((a) => a.canManageMembers).map((a) => listMembers(actor, a.organizationId)));
+  const memberships = agencies.filter((a) => a.role !== "owner");
   const org = s.organization;
   const status = org?.agencyStatus ?? "none";
   const editable = status !== "verified";
@@ -65,6 +72,26 @@ export default async function StructurePage() {
           </p>
         </Card>
       )}
+
+      {memberships.length > 0 && (
+        <Card className="gap-2 p-5">
+          <h2 className="font-heading text-lg font-semibold">Agences dont vous êtes membre</h2>
+          <ul className="space-y-1 text-sm">
+            {memberships.map((m) => (
+              <li key={m.organizationId}>
+                <span className="font-medium">{m.name}</span>, {ORGANIZATION_ROLE_LABELS[m.role].toLowerCase()}
+              </li>
+            ))}
+          </ul>
+          <p className="text-sm text-muted-foreground text-pretty">
+            Vous retrouvez leurs fiches dans <Link href="/app/pro" className="text-primary underline-offset-4 hover:underline">vos fiches pro</Link>. L&apos;abonnement agence reste géré par le propriétaire de chaque agence.
+          </p>
+        </Card>
+      )}
+
+      {teams.map((team) => (
+        <AgencyTeam key={team.organizationId} team={team} actorUserId={actor.userId} actions={TEAM_ACTIONS} />
+      ))}
 
       {status === "pending" && (
         <Card className="gap-2 p-5">

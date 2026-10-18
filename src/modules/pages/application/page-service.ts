@@ -466,7 +466,7 @@ export async function submitForReview(actor: Actor, professionalId: string, exec
   if (!profile.publishedVersionId) {
     // First submission puts the listing in review: it needs a listing slot (agencies pay extra ones).
     const [listing] = await executor.select({ id: professionals.id, status: professionals.status, organizationId: professionals.organizationId }).from(professionals).where(eq(professionals.id, professionalId)).limit(1);
-    if (listing) await assertListingSlot(listing, opts, executor);
+    if (listing) await assertListingSlot(actor.userId, listing, opts, executor);
   }
 
   const now = new Date();

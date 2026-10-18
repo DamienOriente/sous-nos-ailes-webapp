@@ -133,13 +133,13 @@ describe("agency billing with graduated tiers", () => {
     a = (await listing(AGENCY, "a", "published", 30)).id;
     const draftB = await listing(AGENCY, "b", "draft");
     b = draftB.id;
-    const details = await paymentDetails(assertListingSlot(draftB, {}));
+    const details = await paymentDetails(assertListingSlot(AGENCY.userId, draftB, {}));
     expect(details).toMatchObject({ reason: "agency_subscription_required", quantity: 1, monthlyCents: 1490, addedCents: 1490 });
     const res = await startAgencyCheckout(AGENCY, { organizationId: orgId, quantity: 1, professionalId: b });
     expect(res.provider).toBe("mock");
     expect(res.url).toContain("audience=agency");
     await completeMockAgencyCheckout(AGENCY, { organizationId: orgId, quantity: 1, professionalId: b, outcome: "success" });
-    await expect(assertListingSlot(draftB, {})).resolves.toBeUndefined();
+    await expect(assertListingSlot(AGENCY.userId, draftB, {})).resolves.toBeUndefined();
     await db.update(professionals).set({ status: "published", publishedAt: new Date(Date.now() - 10 * 86_400_000) }).where(eq(professionals.id, b));
     expect((await syncAgencyQuantity(orgId)).quantity).toBe(1);
   });
@@ -147,13 +147,13 @@ describe("agency billing with graduated tiers", () => {
   it("the 3rd listing asks for confirmation, then the quantity follows the listings", async () => {
     const draftC = await listing(AGENCY, "c", "draft");
     c = draftC.id;
-    const details = await paymentDetails(assertListingSlot(draftC, {}));
+    const details = await paymentDetails(assertListingSlot(AGENCY.userId, draftC, {}));
     expect(details).toMatchObject({ reason: "agency_extra_confirmation", quantity: 2, monthlyCents: 2980, addedCents: 1490 });
-    await expect(assertListingSlot(draftC, { confirmExtraCharge: true })).resolves.toBeUndefined();
+    await expect(assertListingSlot(AGENCY.userId, draftC, { confirmExtraCharge: true })).resolves.toBeUndefined();
     await db.update(professionals).set({ status: "pending_review" }).where(eq(professionals.id, c));
     expect((await syncAgencyQuantity(orgId)).quantity).toBe(2);
     const fourth = await listing(AGENCY, "d", "draft");
-    expect(await paymentDetails(assertListingSlot(fourth, {}))).toMatchObject({ quantity: 3, monthlyCents: 2980 + 990, addedCents: 990 });
+    expect(await paymentDetails(assertListingSlot(AGENCY.userId, fourth, {}))).toMatchObject({ quantity: 3, monthlyCents: 2980 + 990, addedCents: 990 });
     await db.delete(professionals).where(eq(professionals.id, fourth.id));
   });
 

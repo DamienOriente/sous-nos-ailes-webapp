@@ -9,6 +9,7 @@ import { requireActor } from "@/lib/session";
 import { formatEuros } from "@/lib/utils";
 import { getAgencyState, loadAgencyPlan } from "@/modules/billing/application/agency-holds";
 import { amountForQuantity } from "@/modules/billing/domain/tiered-pricing";
+import { AGENCY_OWNER_BILLING_MESSAGE } from "@/modules/professionals/application/listing-slot";
 import { getManagedListing } from "@/modules/professionals/application/professional-service";
 import { billableExtraListings, countsAgainstQuota } from "@/modules/professionals/domain/listing-quota";
 import { AgencyAddButtons } from "./agency-add-buttons";
@@ -31,6 +32,8 @@ export default async function AgencyAddPage({ params, searchParams }: { params: 
   const before = amountForQuantity(tiers, state.subscriptionGrantsAccess ? state.paidExtra : 0);
   const after = amountForQuantity(tiers, needed);
   const name = listing.displayName || "Fiche sans nom";
+  // Billing stays with the agency owner: members only send listings whose slot is already paid.
+  const isOwner = state.organization.ownerUserId === actor.userId;
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <PageHeader title="Ajouter cette fiche à l'abonnement agence" description={`« ${name} » est une fiche de plus pour votre agence. La première fiche est incluse, les suivantes sont facturées chaque mois au tarif dégressif.`} />
@@ -53,6 +56,8 @@ export default async function AgencyAddPage({ params, searchParams }: { params: 
         </p>
         {covered ? (
           <AgencyAddButtons professionalId={id} mode="pay" label="Envoyer la fiche à la relecture" />
+        ) : !isOwner ? (
+          <p className="text-sm font-medium text-pretty">{AGENCY_OWNER_BILLING_MESSAGE}</p>
         ) : state.subscriptionGrantsAccess ? (
           <AgencyAddButtons professionalId={id} mode="confirm" label={`Ajouter la fiche (${formatEuros(after - before)} de plus par mois) et l'envoyer`} />
         ) : (

@@ -66,6 +66,31 @@ export const organizationMembers = pgTable(
   (t) => [uniqueIndex("organization_members_uq").on(t.organizationId, t.userId), index("organization_members_user_idx").on(t.userId)],
 );
 
+/**
+ * Pending invitation to join an agency (2026-10-18). The invitee may not have an account
+ * yet, so the membership row is only created on acceptance. Only the HMAC of the
+ * single-use token is stored.
+ */
+export const organizationInvitations = pgTable(
+  "organization_invitations",
+  {
+    id: id(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: organizationRoleEnum("role").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    invitedByUserId: text("invited_by_user_id").references(() => users.id, { onDelete: "set null" }),
+    expiresAt: tsz("expires_at").notNull(),
+    acceptedAt: tsz("accepted_at"),
+    acceptedByUserId: text("accepted_by_user_id").references(() => users.id, { onDelete: "set null" }),
+    revokedAt: tsz("revoked_at"),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("organization_invitations_token_uq").on(t.tokenHash), index("organization_invitations_org_idx").on(t.organizationId, t.email)],
+);
+
 export const organizationsRelations = relations(organizations, ({ one, many }) => ({
   owner: one(users, { fields: [organizations.ownerUserId], references: [users.id] }),
   members: many(organizationMembers),

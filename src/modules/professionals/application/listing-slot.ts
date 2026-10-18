@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
 import { professionals } from "@/db/schema";
-import { AppError, isAppError } from "@/lib/errors";
+import { AppError, ForbiddenError, isAppError } from "@/lib/errors";
 import { getAgencyState, loadAgencyPlan } from "@/modules/billing/application/agency-holds";
 import { syncAgencyQuantity } from "@/modules/billing/application/agency-billing";
 import { amountForQuantity, nextUnitPrice } from "@/modules/billing/domain/tiered-pricing";
@@ -13,6 +13,8 @@ export class ListingLimitError extends AppError {
     super("conflict", "Un compte indépendant a une seule fiche professionnelle. Pour en gérer plusieurs, faites valider votre structure comme agence.", { existingListingId });
   }
 }
+
+export const AGENCY_OWNER_BILLING_MESSAGE = "Cette fiche s'ajoute à l'abonnement agence : seul le propriétaire de l'agence peut l'envoyer à la relecture.";
 
 export type SubmitOptions = { confirmExtraCharge?: boolean };
 
@@ -30,8 +32,10 @@ export function agencyPaymentDetails(e: unknown): AgencyPaymentDetails | null {
  * A verified agency pays listings beyond the first: without an active agency subscription
  * the caller is sent to checkout; with one, the extra monthly amount must be confirmed
  * before the quantity grows. A non-agency structure never gets a second counted listing.
+ * Billing stays with the agency owner: a member may send a listing whose slot is already
+ * paid, never one that would open or grow the subscription.
  */
-export async function assertListingSlot(listing: { id: string; status: string; organizationId: string | null }, opts: SubmitOptions, executor: DbExecutor = db): Promise<void> {
+export async function assertListingSlot(actorUserId: string, listing: { id: string; status: string; organizationId: string | null }, opts: SubmitOptions, executor: DbExecutor = db): Promise<void> {
   if (!listing.organizationId || countsAgainstQuota(listing.status)) return;
   const state = await getAgencyState(listing.organizationId, executor);
   if (!state) return;
@@ -42,6 +46,7 @@ export async function assertListingSlot(listing: { id: string; status: string; o
   }
   const needed = billableExtraListings(state.countedListings + 1);
   if (needed <= state.paidExtra) return;
+  if (state.organization.ownerUserId !== actorUserId) throw new ForbiddenError(AGENCY_OWNER_BILLING_MESSAGE);
   const tiers = (await loadAgencyPlan(executor))?.tiers ?? [];
   const details: AgencyPaymentDetails = {
     reason: state.subscriptionGrantsAccess ? "agency_extra_confirmation" : "agency_subscription_required",

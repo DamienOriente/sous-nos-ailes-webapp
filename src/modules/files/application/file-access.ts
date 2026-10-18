@@ -1,9 +1,9 @@
 import { and, eq, or } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
-import { channelMembers, eventChannels, eventDocuments, eventProfessionals, messageAttachments, messages, organizationMembers, professionals, type files } from "@/db/schema";
+import { channelMembers, eventChannels, eventDocuments, eventProfessionals, messageAttachments, messages, professionals, type files } from "@/db/schema";
 import { ForbiddenError, NotFoundError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
-import { canGlobal, getEventAccess, getProfessionalAccess, requireEventPermission, requireGlobalPermission, requireProfessionalManage, type EventAccess } from "@/modules/authorization";
+import { canGlobal, getEventAccess, getOrganizationMembership, getProfessionalAccess, requireEventPermission, requireGlobalPermission, requireProfessionalManage, type EventAccess } from "@/modules/authorization";
 import { PUBLIC_IMAGE_PURPOSES, type FilePurpose, type FileScope } from "@/modules/files/domain/policy";
 import { isListingRowPublic } from "@/modules/directory/application/public-listing";
 
@@ -27,11 +27,7 @@ export async function authorizeScopeWrite(actor: Actor, scope: FileScope, scopeI
       return;
     }
     case "organization": {
-      const [m] = await executor
-        .select({ role: organizationMembers.role })
-        .from(organizationMembers)
-        .where(and(eq(organizationMembers.organizationId, scopeId), eq(organizationMembers.userId, actor.userId)))
-        .limit(1);
+      const m = await getOrganizationMembership(actor, scopeId, executor);
       if (!m) throw new NotFoundError();
       if (!["owner", "admin", "manager"].includes(m.role)) throw new ForbiddenError();
       return;
@@ -78,12 +74,7 @@ export async function canReadFile(actor: Actor | null, file: FileRecord, executo
     }
     case "organization": {
       if (!actor) return false;
-      const [m] = await executor
-        .select({ id: organizationMembers.id })
-        .from(organizationMembers)
-        .where(and(eq(organizationMembers.organizationId, file.scopeId), eq(organizationMembers.userId, actor.userId)))
-        .limit(1);
-      return Boolean(m);
+      return Boolean(await getOrganizationMembership(actor, file.scopeId, executor));
     }
     case "system":
       return Boolean(actor && canGlobal(actor, "admin.users.manage"));

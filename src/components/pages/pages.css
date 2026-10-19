@@ -5,6 +5,9 @@
  * Everything else is Tailwind in the template components; this file only holds
  * what utilities cannot express: colour-scheme wiring, dotted leaders, columns.
  */
+/* Fonts offered to professionals for their own page (template pairings), independent of the app UI. */
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/figtree";
 @import "@fontsource-variable/cormorant";
 @import "@fontsource-variable/caveat";
 @import "@fontsource-variable/bricolage-grotesque";

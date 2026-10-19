@@ -28,7 +28,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   // Font preloads are discovered from the HTML, not after the CSS has been parsed.
-  for (const file of ["figtree-latin", "fraunces-latin"]) preload(`/fonts/${file}.woff2`, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+  for (const file of ["source-sans-3-latin", "source-serif-4-latin"]) preload(`/fonts/${file}.woff2`, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   return (
     <html lang="fr" suppressHydrationWarning data-scroll-behavior="smooth">
       {/* suppressHydrationWarning: browser extensions (ColorZilla, Grammarly…) add attributes to <body> before React hydrates. */}

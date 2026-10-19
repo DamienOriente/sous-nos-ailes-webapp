@@ -34,6 +34,8 @@
     "@fontsource-variable/cormorant": "5.3.0",
     "@fontsource-variable/figtree": "^5.3.0",
     "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/source-sans-3": "^5.3.1",
+    "@fontsource-variable/source-serif-4": "^5.3.1",
     "@hookform/resolvers": "5.9.1",
     "better-auth": "1.7.10",
     "bullmq": "6.3.16",

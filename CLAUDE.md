@@ -85,7 +85,8 @@ Règles :
 - Images Docker : `minio/minio` doit être pré-tiré (quay.io inaccessible depuis ce poste) ; `clamav/clamav-debian:stable` pour arm64.
 
 - 2026-10-18 : images des fiches servies par `/api/files/[id]/public` en streaming (plus de redirection vers une URL signée qui change à chaque requête), `Cache-Control: public, max-age=86400, stale-while-revalidate` pour les images publiques, `private, no-store` sinon. Variante `card` (640 px) ajoutée ; les anciens fichiers la reçoivent avec `pnpm exec tsx scripts/backfill-card-variant.ts`. Les images de l'API fichiers passent par `FilesImage` (chargeur `filesImageLoader`, choisit thumb/card/medium/large selon la largeur demandée), le reste (photos Unsplash de démo) par l'optimiseur de Next.
-- 2026-10-18 : polices latin de Fraunces et Figtree hébergées dans `public/fonts`, préchargées depuis le layout (en-tête `Link`), cache immuable. `experimental.inlineCss: true`.
+- 2026-10-18 : polices latin hébergées dans `public/fonts`, préchargées depuis le layout (en-tête `Link`), cache immuable. `experimental.inlineCss: true`.
+- 2026-10-19 : polices de l'application = Source Serif 4 (titres) + Source Sans 3 (texte), axe graisse seul (51 Ko et 29 Ko en latin). Fraunces et Figtree ne sont plus chargées que par `components/pages/pages.css`, pour les pages publiques des pros qui les ont choisies.
 
 ## État d'avancement
 

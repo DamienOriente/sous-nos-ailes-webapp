@@ -72,7 +72,7 @@ Demande du propriétaire : le site ne doit pas faire « vibecodé ». Liste à f
 9. **Espacement régulier** : utiliser `Container`/`Section` (`src/components/shared/section.tsx`, py-14 sm:py-20) pour les sections de pages ; un seul espace titre→contenu (`mt-8`), grilles de cartes `gap-6`, padding de carte `p-6` (`p-4` pour les cartes denses de l'app). Pas de mélange de `py-8/10/12/16/24` entre sections voisines.
 10. **Fade-in au scroll** : aucun (vérifier).
 11. **Graphiques** : barres/séries CSS ou SVG maison avec libellés et valeurs, pas de composant de graphique générique.
-12. **Polices** : Fraunces (titres) + Figtree (texte) ; Space Grotesk supprimée ; pas de nouvelle famille.
+12. **Polices** : application en Source Serif 4 (titres) + Source Sans 3 (texte) depuis le 2026-10-19 ; Fraunces et Figtree restent seulement parmi les choix proposés aux pros pour leur page ; pas de nouvelle famille.
 13. **Grain/dégradés texturés** : aucun.
 14. **Tirets cadratins « — » (U+2014)** : interdits dans tout texte visible (titres, descriptions, `metadata`, e-mails, gabarits juridiques, données de démonstration du seed, textes d'exemple). Remplacer au cas par cas par une virgule, deux-points, point, parenthèses ou « · » ; valeur vide « — » → « Non renseigné » (texte) ou « n/d » (chiffre). Les noms d'affichage du seed (« Marie Delcourt — Garde d'enfants ») deviennent « Marie Delcourt, garde d'enfants évènementielle ». Ne touche pas aux commentaires de code ni à `docs/`.
 15. **Boutons** : actions visibles = `default` (principale) ou `outline` (secondaire) ou lien texte ; `variant="ghost"` seulement pour un bouton icône seule dans une barre d'outils. Survol = changement de couleur opaque.

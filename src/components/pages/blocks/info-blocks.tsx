@@ -121,7 +121,7 @@ export function AvailabilityBlock({ block, ctx, variant = "grid" }: BlockProps<"
       </SectionHeading>
       <ul className={cn("grid gap-2", variant === "compact" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-4 lg:grid-cols-7")}>
         {byDay.map((d) => (
-          <li key={d.name} className={cn("rounded-(--pg-radius-md) border border-(--pg-border) p-3", d.slots.length > 0 ? "bg-(--pg-surface)" : "opacity-80", variant === "compact" && "flex items-center justify-between")}>
+          <li key={d.name} className={cn("rounded-(--pg-radius-md) border border-(--pg-border) p-3", d.slots.length > 0 ? "bg-(--pg-surface)" : "border-dashed" /* no opacity: muted text must keep its contrast */, variant === "compact" && "flex items-center justify-between")}>
             <p className="text-sm font-medium">{d.name}</p>
             <p className="mt-1 text-xs text-(--pg-muted)">{d.slots.length > 0 ? d.slots.join(", ") : "Pas de créneau"}</p>
           </li>

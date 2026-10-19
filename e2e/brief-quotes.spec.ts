@@ -45,6 +45,10 @@ test("option de 48 h : posée depuis la page publique, visible puis libérée da
   await signInAs(page, /Louis Marchand/);
   await page.goto("/pro/fleurs-sauvages-atelier?date=2027-06-12");
   const form = page.getByTestId("hold-form");
+  // Other test files create events on the same date: pick the demo wedding explicitly.
+  const select = form.getByLabel("Pour l'évènement");
+  const value = await select.locator("option", { hasText: "Mariage de Louis et Lisa" }).first().getAttribute("value");
+  await select.selectOption(value!);
   await form.getByRole("button", { name: "Poser une option de 48 h" }).click();
   await expect(page.getByTestId("hold-placed")).toContainText("Option posée chez");
 
@@ -58,14 +62,15 @@ test("option de 48 h : posée depuis la page publique, visible puis libérée da
 });
 
 test("côté pro : le brief reçu et le devis au format commun", async ({ page }) => {
-  await signInAs(page, /Julien Rossi/);
+  // Théo's quote still awaits an answer (Julien's was accepted in the demo).
+  await signInAs(page, /Théo Lambert/);
   await page.goto("/app/pro");
   await page.waitForURL(/\/app\/pro\/[0-9a-f-]{36}/);
   const listing = new URL(page.url()).pathname.split("/").slice(0, 4).join("/");
   await page.goto(`${listing}/demandes`);
   await page.getByTestId("inquiries-list").getByRole("link").filter({ hasText: "voici le brief de notre mariage" }).first().click();
   await expect(page.getByRole("region", { name: "Brief envoyé par l'organisateur" })).toContainText("Champêtre chic");
-  await expect(page.getByTestId("sent-quote")).toContainText("Inclus : Vaisselle et verrerie");
+  await expect(page.getByTestId("sent-quote")).toContainText("Inclus : Sonorisation");
   await page.getByRole("tab", { name: "Envoyer un devis" }).click();
   await page.getByRole("button", { name: "Détailler par lignes" }).click();
   await page.getByLabel("Ligne 1 : prestation").fill("Menu");

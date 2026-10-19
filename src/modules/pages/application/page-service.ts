@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db, type DbExecutor } from "@/db/client";
 import {
   auditLogs,
@@ -12,6 +12,8 @@ import {
   profileVersions,
   publicProfiles,
   users,
+  events,
+  inquiries,
 } from "@/db/schema";
 import { ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
 import type { Actor } from "@/lib/session";
@@ -26,6 +28,7 @@ import type { PageRenderData, ProfessionalSnapshot } from "@/modules/pages/domai
 import { getTemplate, getTemplateOrDefault, isFreeTemplate } from "@/modules/pages/templates/registry";
 import { isListingRowPublic, isPublicListing } from "@/modules/directory/application/public-listing";
 import { assertListingSlot, type SubmitOptions } from "@/modules/professionals/application/listing-slot";
+import { verifiedLabel } from "@/modules/professionals/domain/review-eligibility";
 
 /**
  * Public page lifecycle: one public_profiles row per listing, many
@@ -171,10 +174,17 @@ export async function buildRenderData(pro: ProfessionalRow, cat: CategoryRow, ve
         body: professionalReviews.body,
         replyBody: professionalReviews.replyBody,
         createdAt: professionalReviews.createdAt,
+        eventType: events.type,
+        eventDate: events.eventDate,
+        inquiryLabel: inquiries.eventTypeLabel,
+        inquiryDate: inquiries.eventDate,
       })
       .from(professionalReviews)
       .innerJoin(users, eq(users.id, professionalReviews.authorUserId))
-      .where(and(eq(professionalReviews.professionalId, pro.id), eq(professionalReviews.status, "published")))
+      .leftJoin(events, eq(events.id, professionalReviews.eventId))
+      .leftJoin(inquiries, eq(inquiries.id, professionalReviews.inquiryId))
+      // Only reviews proven by a finished collaboration on the platform are shown.
+      .where(and(eq(professionalReviews.professionalId, pro.id), eq(professionalReviews.status, "published"), isNotNull(professionalReviews.verifiedVia)))
       .orderBy(desc(professionalReviews.createdAt))
       .limit(12),
     executor
@@ -198,7 +208,7 @@ export async function buildRenderData(pro: ProfessionalRow, cat: CategoryRow, ve
     theme: readTheme(version),
     content,
     services,
-    reviews: reviews.map((r) => ({ ...r, authorName: firstNameAndInitial(r.authorName), createdAt: r.createdAt.toISOString() })),
+    reviews: reviews.map(({ eventType, eventDate, inquiryLabel, inquiryDate, ...r }) => ({ ...r, authorName: firstNameAndInitial(r.authorName), createdAt: r.createdAt.toISOString(), verifiedLabel: eventType ? verifiedLabel(eventType, eventDate) : verifiedLabel(inquiryLabel, inquiryDate) })),
     availability,
     verifications: verifications.map((v) => ({ ...v, reviewedAt: v.reviewedAt?.toISOString() ?? null })),
     images,

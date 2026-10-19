@@ -13,6 +13,8 @@ import { processRetentionJob, RETENTION_CRON, RETENTION_TZ } from "./processors/
 import { closeQueues, createBullConnection, getQueue, type QueueJobData, type QueueName } from "./queues";
 import { syncAllAgencies } from "@/modules/billing/application/agency-billing";
 import { expireHolds } from "@/modules/inquiries/application/hold-service";
+import { remindUpcomingPayments } from "@/modules/events/application/payment-service";
+import { remindReviewsAfterEvents } from "@/modules/professionals/application/review-service";
 
 /** Agency quantities and holds (past_due grace periods end without any provider event). */
 const AGENCY_BILLING_EVERY_MS = 60 * 60 * 1000;
@@ -43,6 +45,8 @@ async function declareSchedulers(): Promise<void> {
   await getQueue("email-outbox").upsertJobScheduler("email-outbox-drain", { every: EMAIL_OUTBOX_EVERY_MS }, { name: "drain", data: {} });
   await getQueue("reminders").upsertJobScheduler("reminders-dispatch", { every: REMINDERS_EVERY_MS }, { name: "dispatch", data: {} });
   await getQueue("retention").upsertJobScheduler("retention-daily", { pattern: RETENTION_CRON, tz: RETENTION_TZ }, { name: "run", data: {} });
+  // 08:00 Paris: payment due dates and "how was your event?" (2026-10-19).
+  await getQueue("generic").upsertJobScheduler("daily-reminders", { pattern: "0 8 * * *", tz: "Europe/Paris" }, { name: "daily-reminders", data: { task: "daily-reminders" } });
   await getQueue("generic").upsertJobScheduler("holds-expiry-tick", { every: 15 * 60 * 1000 }, { name: "holds-expiry-tick", data: { task: "holds-expiry-tick" } });
   await getQueue("generic").upsertJobScheduler("agency-billing-tick", { every: AGENCY_BILLING_EVERY_MS }, { name: "agency-billing-tick", data: { task: "agency-billing-tick" } });
   await getQueue("generic").upsertJobScheduler("calendar-sync-tick", { every: CALENDAR_SYNC_EVERY_MS }, { name: "calendar-sync-tick", data: { task: "calendar-sync-tick" } });
@@ -50,6 +54,7 @@ async function declareSchedulers(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  registerGenericTask("daily-reminders", async () => ({ payments: await remindUpcomingPayments(), reviews: await remindReviewsAfterEvents() }));
   registerGenericTask("holds-expiry-tick", async () => ({ expired: await expireHolds() }));
   registerGenericTask("agency-billing-tick", async () => ({ organizations: await syncAllAgencies() }));
   registerGenericTask("calendar-sync-tick", async () => ({ scheduled: await scheduleActiveCalendarSyncs() }));

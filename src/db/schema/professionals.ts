@@ -238,12 +238,35 @@ export const professionalReviews = pgTable(
     moderationNote: text("moderation_note"),
     replyBody: text("reply_body"),
     repliedAt: tsz("replied_at"),
+    /** How the collaboration was proven (2026-10-19): "event" = confirmed provider of the author's event, "inquiry" = confirmed booking. */
+    verifiedVia: text("verified_via").$type<"event" | "inquiry">(),
     ...timestamps,
   },
   (t) => [
     index("professional_reviews_pro_idx").on(t.professionalId, t.status),
     uniqueIndex("professional_reviews_author_event_uq").on(t.professionalId, t.authorUserId, t.eventId),
   ],
+);
+
+/**
+ * A professional recommends partners they work with (2026-10-19). Shown on their public page;
+ * "often booked with" is computed separately from confirmed bookings.
+ */
+export const professionalRecommendations = pgTable(
+  "professional_recommendations",
+  {
+    id: id(),
+    professionalId: uuid("professional_id")
+      .notNull()
+      .references(() => professionals.id, { onDelete: "cascade" }),
+    recommendedProfessionalId: uuid("recommended_professional_id")
+      .notNull()
+      .references(() => professionals.id, { onDelete: "cascade" }),
+    note: text("note"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("professional_recommendations_uq").on(t.professionalId, t.recommendedProfessionalId), index("professional_recommendations_target_idx").on(t.recommendedProfessionalId)],
 );
 
 /** Tool catalogue: admin-managed. Entitlement + role + trade decide activation. */

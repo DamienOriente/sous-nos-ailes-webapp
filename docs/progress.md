@@ -199,3 +199,15 @@ Les mesures varient de quelques points d'un passage à l'autre. L'objectif de 2,
 | Devis au format commun (lignes, inclus, non inclus, acompte, solde, annulation, validité), versionné | Fait, testé |
 | Comparateur côte à côte par métier, acceptation et refus par l'organisateur | Fait, testé |
 
+## Avis vérifiés, jour J en direct, budget, réseau, rétroplanning (2026-10-19)
+
+| Élément | État |
+|---|---|
+| Avis réservés aux organisateurs ayant une prestation confirmée et passée ; badge « avis vérifié (Mariage, juin 2026) » | Fait, testé |
+| Rappel « Comment s'est passé votre évènement ? » le lendemain | Fait (worker quotidien), non testé de bout en bout |
+| Jour J en direct : dépendances, retards propagés, début et fin d'étape, notifications ciblées, page qui se rafraîchit | Fait, testé |
+| Budget alimenté par un devis accepté : ligne, dépense engagée, acompte et solde datés, rappels J-7 / J / J+1 | Fait, testé |
+| Recommandations entre pros et « souvent réservé avec » (au moins 2 évènements communs) | Fait, testé |
+| Rétroplanning des réservations par type d'évènement, ajout en tâches datées | Fait, testé |
+| Contraste du texte secondaire des pages pro (toutes palettes, fond teinté compris) | Corrigé, testé |
+

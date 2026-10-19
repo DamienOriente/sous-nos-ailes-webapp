@@ -13,7 +13,9 @@ export function buildEventNav(eventId: string, access: EventAccess): EventNavIte
   if (has("event.view")) items.push({ href: base, label: "Tableau de bord", exact: true });
   if (has("event.tasks.view")) items.push({ href: `${base}/taches`, label: "Tâches" });
   if (has("event.milestones.view")) items.push({ href: `${base}/planning`, label: "Planning" });
+  if (has("event.milestones.view")) items.push({ href: `${base}/jour-j`, label: "Jour J" });
   if (has("event.providers.view")) items.push({ href: `${base}/prestataires`, label: "Prestataires" });
+  if (has("event.inquiries.view")) items.push({ href: `${base}/retroplanning`, label: "Rétroplanning" });
   if (has("event.inquiries.view")) items.push({ href: `${base}/brief`, label: "Brief" });
   if (has("event.inquiries.view")) items.push({ href: `${base}/devis`, label: "Devis" });
   if (has("event.budget.view")) items.push({ href: `${base}/budget`, label: "Budget" });

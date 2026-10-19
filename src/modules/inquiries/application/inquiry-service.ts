@@ -10,6 +10,7 @@ import { notify } from "@/modules/notifications/application/notification-service
 import { canTransitionInquiry, INQUIRY_STATUS_LABELS, type InquiryStatus } from "@/modules/inquiries/domain/inquiry-status";
 import type { PublicInquiryInput } from "@/modules/inquiries/domain/inquiry-schema";
 import { isPublicListing } from "@/modules/directory/application/public-listing";
+import { recordAcceptedQuoteInBudget } from "@/modules/events/application/payment-service";
 import { briefSummary, buildBrief, type EventBrief } from "@/modules/events/domain/brief";
 import { compareQuotes, type CancellationPolicy, type ComparableQuote, type StructuredQuote } from "@/modules/inquiries/domain/quote";
 
@@ -404,6 +405,8 @@ export async function answerQuote(actor: Actor, eventId: string, inquiryId: stri
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(new Date());
     if (decision === "accepted" && q?.validUntil && q.validUntil < today) throw new ConflictError("Ce devis a expiré : demandez au professionnel de le mettre à jour.");
     await tx.update(inquiries).set({ status: decision }).where(eq(inquiries.id, inquiryId));
+    // The accepted quote feeds the budget and the payment schedule (deposit, balance).
+    if (decision === "accepted") await recordAcceptedQuoteInBudget(eventId, inquiryId, tx);
     await tx.insert(inquiryEvents).values({ inquiryId, actorUserId: actor.userId, fromStatus: "quoted", toStatus: decision, note: decision === "accepted" ? `Devis accepté par l'organisateur${q ? ` (version ${q.version})` : ""}.` : "Devis refusé par l'organisateur." });
     await notify(
       {

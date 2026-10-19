@@ -249,7 +249,9 @@ export async function seed(ctx: SeedContext): Promise<void> {
     if (!author) continue;
     const createdAt = new Date(ctx.now.getTime() - r.daysAgo * 24 * 3600 * 1000);
     const inquiryCreatedAt = new Date(createdAt.getTime() - 40 * 24 * 3600 * 1000);
-    const eventId = r.authorKey === "louis" || r.authorKey === "lisa" ? (ctx.events.louisLisa ?? null) : r.authorKey === "paul" && r.proKey === "sofia" ? (ctx.events.baptemeChloe ?? null) : null;
+    // These reviews prove themselves by a past booking (the inquiry below): the demo events of the
+    // same organisers are upcoming, so linking them would date the review in the future.
+    const eventId: string | null = null;
     let [inquiry] = await db
       .select({ id: inquiries.id })
       .from(inquiries)
@@ -298,6 +300,8 @@ export async function seed(ctx: SeedContext): Promise<void> {
         authorUserId,
         eventId,
         inquiryId: inquiry.id,
+        // Every demo review hangs on a booking the professional confirmed.
+        verifiedVia: eventId ? "event" : "inquiry",
         rating: r.rating,
         title: r.title,
         body: r.body,
@@ -308,7 +312,7 @@ export async function seed(ctx: SeedContext): Promise<void> {
         updatedAt: createdAt,
       });
     } else {
-      await db.update(professionalReviews).set({ rating: r.rating, title: r.title, body: r.body, status: "published", replyBody: r.reply ?? null, inquiryId: inquiry.id, createdAt }).where(eq(professionalReviews.id, existing.id));
+      await db.update(professionalReviews).set({ rating: r.rating, title: r.title, body: r.body, status: "published", replyBody: r.reply ?? null, inquiryId: inquiry.id, eventId: null, verifiedVia: "inquiry", createdAt }).where(eq(professionalReviews.id, existing.id));
     }
   }
   for (const professionalId of Object.values(ctx.professionals)) await refreshRating(professionalId, db);

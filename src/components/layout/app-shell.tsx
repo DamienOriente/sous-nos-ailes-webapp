@@ -19,6 +19,7 @@ const PRIMARY_NAV: NavItem[] = [
   { href: "/app/pro", label: "Ma fiche pro" },
   { href: "/app/calendrier", label: "Calendrier" },
   { href: "/app/contacts", label: "Contacts" },
+  { href: "/app/avis", label: "Mes avis" },
   { href: "/app/notifications", label: "Notifications" },
   { href: "/app/compte", label: "Mon compte" },
 ];

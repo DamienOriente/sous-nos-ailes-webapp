@@ -163,6 +163,8 @@ export const eventProfessionals = pgTable(
   (t) => [index("event_professionals_event_idx").on(t.eventId), index("event_professionals_pro_idx").on(t.professionalId)],
 );
 
+export const milestoneLiveStatusEnum = pgEnum("milestone_live_status", ["planned", "in_progress", "done"]);
+
 export const taskStatusEnum = pgEnum("task_status", ["todo", "in_progress", "done", "cancelled"]);
 export const taskPriorityEnum = pgEnum("task_priority", ["low", "normal", "high", "urgent"]);
 
@@ -223,9 +225,45 @@ export const eventMilestones = pgTable(
     /** Which provider categories are concerned (for trade-specific views). */
     categorySlugs: jsonb("category_slugs").$type<string[]>().notNull().default([]),
     sortOrder: integer("sort_order").notNull().default(0),
+    // ── Live day (2026-10-19) ──
+    /** This step cannot start before that one ends (a delay propagates). No FK: self reference kept simple, checked in the service. */
+    dependsOnMilestoneId: uuid("depends_on_milestone_id"),
+    /** Delay reported on this step itself, in minutes (dependants shift by propagation, not by this column). */
+    delayMinutes: integer("delay_minutes").notNull().default(0),
+    delayReason: text("delay_reason"),
+    liveStatus: milestoneLiveStatusEnum("live_status").notNull().default("planned"),
+    startedAt: tsz("started_at"),
+    completedAt: tsz("completed_at"),
     ...timestamps,
   },
   (t) => [index("event_milestones_event_idx").on(t.eventId, t.startsAt)],
+);
+
+/**
+ * Payment schedule owed to providers (2026-10-19): deposit and balance created from an accepted
+ * quote, reminders before each due date. The platform never collects money: it only reminds.
+ */
+export const paymentItemKindEnum = pgEnum("payment_item_kind", ["deposit", "balance", "other"]);
+export const eventPaymentItems = pgTable(
+  "event_payment_items",
+  {
+    id: id(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    budgetLineId: uuid("budget_line_id").references(() => eventBudgetLines.id, { onDelete: "set null" }),
+    /** Accepted quote this item comes from (no FK: inquiries live in the collaboration schema). */
+    inquiryId: uuid("inquiry_id"),
+    payeeName: text("payee_name").notNull(),
+    kind: paymentItemKindEnum("kind").notNull(),
+    label: text("label").notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    dueDate: date("due_date", { mode: "string" }).notNull(),
+    paidAt: date("paid_at", { mode: "string" }),
+    remindedAt: tsz("reminded_at"),
+    ...timestamps,
+  },
+  (t) => [index("event_payment_items_event_idx").on(t.eventId, t.dueDate), uniqueIndex("event_payment_items_quote_uq").on(t.inquiryId, t.kind)],
 );
 
 export const eventBudgetLines = pgTable(

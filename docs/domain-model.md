@@ -158,3 +158,10 @@ Invariants : pas de date de naissance (âge seulement) ; données de santé chif
 - **Option** (`professional_holds`) : `active` pendant 48 h, puis `confirmed` par le pro, `released` par l'une ou l'autre partie, ou `expired`. Une option active ou confirmée rend la date indisponible aux autres organisateurs.
 - **Devis** (`inquiry_quotes`) : une ligne par version (`version` croissante), la dernière fait foi ; `inquiries.quote_cents` reprend son total. Les conditions d'annulation proposées sont celles du professionnel, la plateforme ne les garantit pas.
 
+## Avis, jour J, paiements, réseau (2026-10-19)
+
+- **Avis vérifié** : `professional_reviews.verified_via` vaut `event` (prestataire confirmé sur un évènement passé de l'auteur, `event_id` renseigné) ou `inquiry` (demande confirmée par le pro, date passée). Un avis sans preuve n'est jamais affiché ni compté.
+- **Étape du jour J** (`event_milestones`) : `depends_on_milestone_id`, `delay_minutes`, `live_status`, `started_at`, `completed_at`. L'horaire prévu ne change jamais ; l'horaire attendu se calcule.
+- **Échéance de paiement** (`event_payment_items`) : acompte ou solde d'un devis accepté (`inquiry_id`, unique par type), `due_date`, `paid_at` saisi par l'organisateur. Aucun flux d'argent ne passe par la plateforme.
+- **Recommandation** (`professional_recommendations`) : un pro vers un autre, 12 au plus, note facultative.
+

@@ -58,6 +58,8 @@ export type ReviewRow = {
   body: string;
   replyBody: string | null;
   createdAt: string;
+  /** "Mariage, juin 2026": the finished collaboration that proves the review. */
+  verifiedLabel?: string | null;
 };
 
 export type AvailabilityRow = { weekday: number; startMinute: number; endMinute: number };

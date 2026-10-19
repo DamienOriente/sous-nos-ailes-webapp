@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { getActor } from "@/lib/session";
+import { PartnersPanel } from "@/components/directory/partners-panel";
+import { getOftenBookedWith, getRecommendedPartners } from "@/modules/professionals/application/recommendation-service";
 import { PlaceHoldForm } from "@/components/brief/hold-buttons";
 import { placeHoldAction } from "@/app/app/options/actions";
 import { listOrganizedEvents } from "@/modules/events/application/brief-service";
@@ -81,6 +83,7 @@ export default async function PublicProfessionalPage({ params, searchParams }: {
   const favorite = actor ? await isFavorite(actor.userId, pro.id).catch(() => false) : false;
   // The service refuses an option on one's own listing; the form is shown to any signed-in visitor.
   const organized = actor ? await listOrganizedEvents(actor) : [];
+  const [recommended, often] = await Promise.all([getRecommendedPartners(pro.id), getOftenBookedWith(pro.id)]);
   const holdDate = isIsoDate(sp.date) ? sp.date : null;
 
   if (!BOT_UA.test(ua)) {
@@ -156,6 +159,7 @@ export default async function PublicProfessionalPage({ params, searchParams }: {
           verificationBadge: <VerificationBadge level={pro.verificationLevel} statements={statements} size="md" />,
         }}
       />
+      <PartnersPanel displayName={pro.displayName} recommended={recommended} often={often} />
       <PlatformPanel activity={activity} displayName={pro.displayName} isDemo={pro.isDemo} />
     </>
   );

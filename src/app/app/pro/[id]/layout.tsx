@@ -36,6 +36,7 @@ export default async function ProWorkspaceLayout({ children, params }: { childre
     { href: `${base}/outils`, label: "Outils métier" },
     { href: `${base}/verification`, label: "Vérification" },
     { href: `${base}/avis`, label: "Avis" },
+    { href: `${base}/partenaires`, label: "Partenaires" },
     { href: `${base}/seo`, label: "SEO" },
     { href: `${base}/statistiques`, label: "Statistiques" },
     { href: `${base}/abonnement`, label: "Abonnement" },

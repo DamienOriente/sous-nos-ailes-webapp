@@ -367,7 +367,7 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
               « {first.body} »
             </blockquote>
             <figcaption className="mt-6 flex items-center justify-center gap-3 text-sm text-(--pg-muted)">
-              <span>{first.authorName}, avis vérifié{first.title ? `, « ${first.title} »` : ""}</span>
+              <span>{first.authorName}, avis vérifié{first.verifiedLabel ? ` (${first.verifiedLabel})` : ""}{first.title ? `, « ${first.title} »` : ""}</span>
             </figcaption>
           </figure>
         )}
@@ -378,7 +378,7 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
                 <Stars rating={r.rating} />
                 {r.title && <p className="mt-2 font-medium">{r.title}</p>}
                 <p className="mt-2 text-pretty">{r.body}</p>
-                <p className="mt-3 text-xs text-(--pg-muted)">{r.authorName}, avis vérifié</p>
+                <p className="mt-3 text-xs text-(--pg-muted)">{r.authorName}, avis vérifié{r.verifiedLabel ? ` (${r.verifiedLabel})` : ""}</p>
                 {r.replyBody && <p className="mt-3 rounded-(--pg-radius-sm) bg-(--pg-surface) p-3 text-sm text-pretty">Réponse : {r.replyBody}</p>}
               </li>
             ))}
@@ -397,7 +397,10 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
           {selected.map((r) => (
             <li key={r.id} className="py-5">
               <div className="flex items-center justify-between gap-4">
-                <p className="font-medium">{r.authorName}</p>
+                <p className="font-medium">
+                  {r.authorName}
+                  <span className="ml-2 text-xs font-normal text-(--pg-muted)">avis vérifié{r.verifiedLabel ? ` (${r.verifiedLabel})` : ""}</span>
+                </p>
                 <Stars rating={r.rating} />
               </div>
               {r.title && <p className="mt-1 font-medium">{r.title}</p>}
@@ -420,7 +423,7 @@ export function TestimonialsBlock({ block, ctx, variant = "cards" }: BlockProps<
             <Stars rating={r.rating} />
             {r.title && <p className="mt-4 font-medium">{r.title}</p>}
             <p className="mt-2 flex-1 text-(--pg-muted) text-pretty">{r.body}</p>
-            <p className="mt-4 text-xs text-(--pg-muted)">{r.authorName}, avis vérifié</p>
+            <p className="mt-4 text-xs text-(--pg-muted)">{r.authorName}, avis vérifié{r.verifiedLabel ? ` (${r.verifiedLabel})` : ""}</p>
             {r.replyBody && <p className="mt-3 border-t border-(--pg-border) pt-3 text-sm text-(--pg-muted) text-pretty">Réponse du professionnel : {r.replyBody}</p>}
           </li>
         ))}

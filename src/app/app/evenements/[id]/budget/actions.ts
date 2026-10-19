@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { toActionError, type ActionResult } from "@/lib/errors";
 import { requireActorOrThrow } from "@/lib/session";
+import { markPaymentPaid } from "@/modules/events/application/payment-service";
 import { applyBudgetTemplate, createBudgetLine, createExpense, deleteBudgetLine, deleteExpense, updateBudgetLine, updateExpense } from "@/modules/events/application/budget-service";
 
 function revalidate(eventId: string) {
@@ -77,6 +78,18 @@ export async function applyBudgetTemplateAction(eventId: string): Promise<Action
     const res = await applyBudgetTemplate(actor, z.uuid().parse(eventId));
     revalidate(eventId);
     return { ok: true, data: res };
+  } catch (e) {
+    return toActionError(e);
+  }
+}
+
+export async function markPaymentPaidAction(eventId: string, itemId: string, paid: boolean): Promise<ActionResult<undefined>> {
+  try {
+    const actor = await requireActorOrThrow();
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(new Date());
+    await markPaymentPaid(actor, z.uuid().parse(eventId), z.uuid().parse(itemId), paid ? today : null);
+    revalidate(eventId);
+    return { ok: true, data: undefined };
   } catch (e) {
     return toActionError(e);
   }

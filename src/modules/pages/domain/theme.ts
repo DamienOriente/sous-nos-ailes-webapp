@@ -47,8 +47,27 @@ export function contrastColorFor(hex: string): string {
 }
 
 function applyAccent(colors: PaletteColors, accent: string | null): PaletteColors {
-  if (!accent) return colors;
-  return { ...colors, accent, accentContrast: contrastColorFor(accent) };
+  const withAccent = accent ? { ...colors, accent, accentContrast: contrastColorFor(accent) } : colors;
+  return { ...withAccent, muted: readableMuted(withAccent) };
+}
+
+/** sRGB mix of two #rrggbb colours (t = share of `b`). */
+export function mixHex(a: string, b: string, t: number): string {
+  const ch = (hex: string, i: number) => Number.parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+  return `#${[0, 1, 2].map((i) => Math.round(ch(a, i) * (1 - t) + ch(b, i) * t).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * Secondary text must stay readable (WCAG AA, 4.5:1) on every background a block can use:
+ * page, surface and the accent tint (`--pg-accent-soft`, 12 % of accent). The muted colour is
+ * pulled toward the body text until it is, so a professional's custom accent cannot break it.
+ */
+export function readableMuted(c: PaletteColors): string {
+  const refs = [c.bg, c.surface, mixHex(c.bg, c.accent, 0.12)];
+  const target = 4.6; // a little margin: the browser mixes in oklab, this check in sRGB
+  let muted = c.muted;
+  for (let t = 0.1; t <= 1 && Math.min(...refs.map((r) => contrastRatio(muted, r))) < target; t += 0.1) muted = mixHex(c.muted, c.text, t);
+  return muted;
 }
 
 export function resolveTheme(templateKey: string, theme: PageTheme | null | undefined): ResolvedTheme {

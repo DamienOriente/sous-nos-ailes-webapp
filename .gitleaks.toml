@@ -1,0 +1,17 @@
+# Gitleaks configuration: default rules plus a narrow allowlist for known false positives.
+# Real secrets never live in the repository (.env is ignored, keys are generated per CI job).
+title = "Sous Nos Ailes"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known false positives"
+regexes = [
+  # Reference to an environment variable, not a value.
+  '''secretAccessKey: env\.S3_SECRET_KEY''',
+]
+paths = [
+  # Synthetic token fixtures used to test parsing/validation logic.
+  '''tests/unit/invitations/tokens\.test\.ts''',
+]

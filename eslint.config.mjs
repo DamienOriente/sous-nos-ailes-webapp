@@ -2,19 +2,17 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
-const eslintConfig = defineConfig([
+export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores([
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    "src/generated/**",
-    "playwright-report/**",
-    "test-results/**",
-    ".impeccable/**",
-  ]),
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
+      "no-console": ["error", { allow: ["warn", "error"] }],
+      // French UI copy is full of apostrophes; JSX escaping them hurts readability without any benefit.
+      "react/no-unescaped-entities": "off",
+    },
+  },
+  globalIgnores([".next/**", "node_modules/**", "next-env.d.ts", "playwright-report/**", "test-results/**", "coverage/**"]),
 ]);
-
-export default eslintConfig;

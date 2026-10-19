@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="12" fill="#f7f2ea"/>
-  <path d="M32 50c0-14 4-24 12-32-10 2-16 10-18 20-2-10-8-18-18-20 8 8 12 18 12 32" fill="none" stroke="#3b5447" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="32" cy="52" r="3" fill="#b4603a"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sous Nos Ailes">
+  <rect width="64" height="64" rx="16" fill="#f7f4ee"/>
+  <path d="M32 44c-8-2-16-9-20-18 7 0 14 3 20 9 6-6 13-9 20-9-4 9-12 16-20 18z" fill="#6b8f71"/>
+  <circle cx="32" cy="24" r="5" fill="#2f3437"/>
 </svg>

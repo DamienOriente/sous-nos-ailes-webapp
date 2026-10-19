@@ -1,0 +1,60 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { AuthCard, AuthLink, AuthPanel, AuthSplit } from "@/components/auth/auth-card";
+import { DemoAccountPicker } from "@/components/auth/demo-account-picker";
+import { SignInForm } from "@/components/auth/sign-in-form";
+import { WingsScene } from "@/components/illustrations";
+import { isDemo } from "@/lib/env";
+import { getActor } from "@/lib/session";
+import { showcasePhoto } from "@/modules/media/demo-photos";
+import { safeNextPath } from "@/modules/identity/domain/auth";
+
+export const metadata: Metadata = { title: "Connexion" };
+
+const NOTICES: Record<string, string> = {
+  "mot-de-passe-reinitialise": "Votre mot de passe a été réinitialisé. Connectez-vous avec le nouveau.",
+  deconnecte: "Vous êtes déconnecté.",
+  "session-expiree": "Votre session a expiré. Reconnectez-vous pour continuer.",
+  "compte-demo-indisponible": "Ce compte de démonstration n'est pas disponible. Relancez le jeu de données (pnpm db:seed) ou connectez-vous avec un e-mail.",
+};
+
+export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string; message?: string; changer?: string }> }) {
+  const params = await searchParams;
+  const next = safeNextPath(params.next);
+  const actor = await getActor();
+  // Demo mode: "Changer de compte" from the banner reopens this page while signed in.
+  const switching = isDemo && params.changer === "1";
+  if (actor && !switching) redirect(next);
+  const notice = params.message ? NOTICES[params.message] ?? null : null;
+  const celebrate = params.message === "mot-de-passe-reinitialise";
+
+  return (
+    <AuthSplit
+      panel={
+        <AuthPanel
+          photo={showcasePhoto("login")}
+          scene={<WingsScene />}
+          promise="Vos évènements, vos fiches et vos messages au même endroit."
+          benefits={["Chaque évènement avec son équipe, son budget et ses invités", "Les demandes reçues sur vos fiches professionnelles", "La garde d'enfants, du brief jusqu'à la remise aux parents"]}
+          caption="Photo d'ambiance de démonstration."
+        />
+      }
+    >
+      <AuthCard
+        flat
+        title={celebrate ? "Nouveau mot de passe enregistré" : "Connexion à votre espace"}
+        description={celebrate ? "Vos autres sessions ont été fermées. Connectez-vous avec votre nouveau mot de passe." : "Vos évènements, vos fiches professionnelles et vos messages."}
+        footer={
+          <p>
+            Pas encore de compte ? <AuthLink href={params.next ? `/inscription?next=${encodeURIComponent(next)}` : "/inscription"}>Créer un compte</AuthLink>
+          </p>
+        }
+      >
+        {celebrate && <WingsScene className="mx-auto -mt-2 mb-2 w-40" />}
+        {isDemo && <DemoAccountPicker next={params.next ? next : undefined} />}
+        {isDemo && <p className="my-5 text-center text-sm text-muted-foreground">ou avec votre e-mail</p>}
+        <SignInForm next={next} notice={notice} />
+      </AuthCard>
+    </AuthSplit>
+  );
+}

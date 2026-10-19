@@ -1,24 +1,40 @@
-// Minimal structured logger. Never pass user payloads, tokens or secrets.
-type LogFields = Record<string, string | number | boolean | null | undefined>;
+import pino from "pino";
+import { env, isProduction } from "@/lib/env";
 
-function emit(level: "info" | "warn" | "error", event: string, fields?: LogFields) {
-  const record = { level, event, time: new Date().toISOString(), ...fields };
-  if (process.env.NODE_ENV === "production") {
-    const line = JSON.stringify(record);
-    if (level === "error") console.error(line);
-    else if (level === "warn") console.warn(line);
-    else console.log(line);
-    return;
-  }
-  const extras = fields ? ` ${JSON.stringify(fields)}` : "";
-  const line = `[${level}] ${event}${extras}`;
-  if (level === "error") console.error(line);
-  else if (level === "warn") console.warn(line);
-  else console.log(line);
+/**
+ * Structured logger. JSON in production, pretty in development.
+ * Redaction removes anything that could leak a credential or personal data
+ * when a request object slips into a log line.
+ */
+export const logger = pino({
+  level: env.LOG_LEVEL,
+  base: { service: "sous-nos-ailes" },
+  redact: {
+    paths: [
+      "req.headers.authorization",
+      "req.headers.cookie",
+      "*.password",
+      "*.token",
+      "*.accessToken",
+      "*.refreshToken",
+      "*.secret",
+      "*.email",
+      "*.healthNotes",
+    ],
+    censor: "[redacted]",
+  },
+  ...(isProduction
+    ? {}
+    : {
+        transport: {
+          target: "pino-pretty",
+          options: { colorize: true, translateTime: "HH:MM:ss", ignore: "pid,hostname,service" },
+        },
+      }),
+});
+
+export type Logger = typeof logger;
+
+export function childLogger(bindings: Record<string, unknown>): Logger {
+  return logger.child(bindings);
 }
-
-export const log = {
-  info: (event: string, fields?: LogFields) => emit("info", event, fields),
-  warn: (event: string, fields?: LogFields) => emit("warn", event, fields),
-  error: (event: string, fields?: LogFields) => emit("error", event, fields),
-};

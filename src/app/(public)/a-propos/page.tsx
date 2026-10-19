@@ -1,62 +1,83 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getContent, getSettings, paragraphsOf } from "@/server/services/settings";
-import { buildMetadata } from "@/lib/seo";
-import { PageIntro } from "@/components/public/page-intro";
-import { Section, SectionTitle } from "@/components/public/section";
-import { ClosingInvitation } from "@/components/public/closing-invitation";
-import { PortraitPlaceholder } from "@/components/illustrations/botanical";
+import { WingsScene } from "@/components/illustrations";
+import { PhotoFrame } from "@/components/marketing/photo-frame";
+import { Container, Section } from "@/components/shared/section";
+import { showcasePhoto } from "@/modules/media/demo-photos";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
-  return buildMetadata({ title: `À propos de ${settings.ownerFirstName}`, description: `Qui est ${settings.ownerFirstName}, professionnelle de la petite enfance, et pourquoi elle propose la garde d’enfants lors de mariages et d’événements.`, path: "/a-propos" });
-}
+export const metadata: Metadata = {
+  title: "À propos",
+  description: "Pourquoi Sous Nos Ailes existe, ce que la plateforme fait et ne fait pas, et les engagements que nous prenons.",
+  alternates: { canonical: "/a-propos" },
+};
 
-export default async function AboutPage() {
-  const [settings, about] = await Promise.all([getSettings(), getContent("about.marie")]);
-  const paragraphs = paragraphsOf(about.body);
+const COMMITMENTS = [
+  { title: "Dire exactement ce qui a été vérifié", text: "Aucun label inventé. Les mentions de vérification décrivent des contrôles réels et nommés. Si nous n'avons rien contrôlé, la fiche le dit." },
+  { title: "Traiter les données des enfants comme des données rares", text: "Le minimum nécessaire à la garde, chiffré, visible de la seule équipe concernée, anonymisé après l'évènement." },
+  { title: "Rester un outil, pas un employeur", text: "Les professionnels sont indépendants. Nous ne fixons ni leurs prix ni leurs conditions ; nous facilitons la rencontre et la coordination." },
+  { title: "Rendre le refus aussi simple que l'acceptation", text: "Pour les cookies comme pour les abonnements : résiliation en ligne, pas de case pré-cochée, pas de relance culpabilisante." },
+];
+
+export default function AboutPage() {
+  const photo = showcasePhoto("about");
   return (
     <>
-      <PageIntro title={`À propos de ${settings.ownerFirstName}`} lead="Une professionnelle de la petite enfance, un réseau de personnes choisies, une seule interlocutrice." crumbs={[{ name: "À propos", path: "/a-propos" }]} sprig="gypsophila" />
-      <Section tone="paper" className="pt-4 sm:pt-8">
-        <div className="grid gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
-          <PortraitPlaceholder className="mx-auto w-full max-w-sm lg:mx-0" />
-          <div className="prose-lpi">
-            {paragraphs.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
+      <Section>
+        <Container size="wide" className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14">
+          <div>
+            <h1 className="text-4xl font-semibold text-balance sm:text-5xl">Des ailes pour les évènements où il y a des enfants</h1>
+            <div className="mt-8 space-y-5 text-lg leading-8 text-pretty">
+              <p>
+                Un mariage, un baptême, un séminaire d'entreprise avec les familles : il y a presque toujours des enfants, et presque jamais quelqu'un dont c'est le métier de s'en occuper. Les parents alternent entre la table et le coin jeux, les organisateurs improvisent, et la fête se vit à moitié.
+              </p>
+              <p>
+                Sous Nos Ailes part de là. La plateforme met en avant les professionnels de la garde d'enfants et de l'animation, puis tous les métiers de l'évènementiel autour d'eux, et donne à l'organisateur un espace commun pour coordonner tout ce monde : planning, invités, prestataires, messagerie, espace enfants.
+              </p>
+              <p>
+                Nous sommes une petite équipe. Le service est en phase de lancement : les fiches de démonstration sont signalées comme telles, les documents juridiques sont des brouillons en cours de validation, et nous préférons dire ce que nous ne faisons pas encore plutôt que de le promettre.
+              </p>
+            </div>
           </div>
-        </div>
+          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+            <PhotoFrame photo={photo} corner="tr" aspect="aspect-[4/5]" width={1000} height={1250} sizes="(max-width: 1024px) 100vw, 480px" caption="Photo de démonstration" alt="Enfant porté par sa mère, photo de démonstration" />
+            <WingsScene className="pointer-events-none absolute -bottom-4 -left-6 w-44" />
+          </div>
+        </Container>
+      </Section>
+      <Section className="bg-ivory-deep/60 dark:bg-ivory-deep/40">
+        <Container size="narrow">
+          <h2 className="text-3xl font-semibold text-balance sm:text-4xl">Nos engagements</h2>
+          <dl className="mt-8 divide-y border-y">
+            {COMMITMENTS.map((c) => (
+              <div key={c.title} className="py-5">
+                <dt className="text-lg font-semibold">{c.title}</dt>
+                <dd className="mt-1 leading-7 text-muted-foreground text-pretty">{c.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </Container>
       </Section>
       <Section>
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <SectionTitle>Ce que {settings.ownerFirstName} promet</SectionTitle>
-            <ul className="mt-6 grid gap-3 text-[15px] leading-relaxed text-ink-700">
-              <li className="border-l border-sage-300 pl-4">Étudier personnellement chaque demande et dire franchement ce qui est possible.</li>
-              <li className="border-l border-sage-300 pl-4">Ne confier une mission qu’à des personnes qu’elle connaît et a rencontrées.</li>
-              <li className="border-l border-sage-300 pl-4">Rester joignable avant et pendant la prestation.</li>
-              <li className="border-l border-sage-300 pl-4">Ne jamais collecter de données sur les enfants au-delà de leur nombre par âge.</li>
-            </ul>
-          </div>
-          <div>
-            <SectionTitle>Ce qu’elle ne prétend pas</SectionTitle>
-            <ul className="mt-6 grid gap-3 text-[15px] leading-relaxed text-ink-700">
-              <li className="border-l border-clay-300 pl-4">Être une crèche, une structure agréée ou un réseau certifié.</li>
-              <li className="border-l border-clay-300 pl-4">Garantir une disponibilité avant d’avoir constitué l’équipe.</li>
-              <li className="border-l border-clay-300 pl-4">Afficher des avis, des chiffres ou des partenaires qui n’existent pas encore.</li>
-            </ul>
-            <p className="mt-6 text-[15px] leading-relaxed text-ink-500">
-              Le fonctionnement complet est décrit dans{" "}
-              <Link href="/organisation" className="underline">
-                Notre organisation
-              </Link>
-              .
-            </p>
-          </div>
-        </div>
+        <Container size="narrow">
+          <h2 className="text-3xl font-semibold text-balance sm:text-4xl">Ce que nous ne sommes pas</h2>
+          <ul className="mt-8 list-disc space-y-3 pl-5 leading-7 text-muted-foreground marker:text-primary">
+            <li>Ni une agence de garde d'enfants, ni un employeur : chaque professionnel exerce sous sa propre responsabilité et ses propres assurances.</li>
+            <li>Ni un intermédiaire de paiement entre organisateurs et prestataires : les abonnements payants ne concernent que les outils de la plateforme.</li>
+            <li>Ni un organisme de certification : nos niveaux de vérification décrivent des contrôles documentaires, pas une garantie de qualité.</li>
+          </ul>
+          <p className="mt-8 text-muted-foreground">
+            L'éditeur, l'hébergeur et les contacts officiels figurent dans les{" "}
+            <Link href="/mentions-legales" className="font-medium text-primary underline underline-offset-4">
+              mentions légales
+            </Link>
+            . Pour nous écrire, voir la{" "}
+            <Link href="/contact" className="font-medium text-primary underline underline-offset-4">
+              page contact
+            </Link>
+            .
+          </p>
+        </Container>
       </Section>
-      <ClosingInvitation ownerFirstName={settings.ownerFirstName} />
     </>
   );
 }

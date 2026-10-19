@@ -1,39 +1,46 @@
-import type { Metadata } from "next";
-import "@fontsource/young-serif/400.css";
-import "@fontsource-variable/figtree/index.css";
+import { preload } from "react-dom";
+import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { env } from "@/lib/env";
 import "./globals.css";
-import { getEnv } from "@/lib/env";
 
-// Every page reads editable settings from the database: render dynamically,
-// so `next build` needs no database and content is always current.
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  metadataBase: new URL(env.APP_URL),
+  title: { default: "Sous Nos Ailes : garde d'enfants et professionnels pour vos évènements", template: "%s · Sous Nos Ailes" },
+  description:
+    "Trouvez des professionnels de la garde d'enfants et de l'évènementiel, organisez votre mariage, baptême ou séminaire et coordonnez tous vos prestataires depuis un seul espace.",
+  applicationName: "Sous Nos Ailes",
+  robots: env.INDEXING_ENABLED ? { index: true, follow: true } : { index: false, follow: false },
+  icons: { icon: "/icon.svg" },
+};
 
-export async function generateMetadata(): Promise<Metadata> {
-  const env = getEnv();
-  return {
-    metadataBase: new URL(env.APP_URL),
-    title: {
-      default: "Les Petits Invités — avec Marie",
-      template: "%s · Les Petits Invités",
-    },
-    description:
-      "Garde et accompagnement d’enfants lors de mariages, fêtes privées et événements professionnels, coordonnés par Marie.",
-    robots: env.INDEXING_ENABLED
-      ? { index: true, follow: true }
-      : { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
-    icons: { icon: "/icon.svg" },
-    openGraph: {
-      type: "website",
-      locale: "fr_FR",
-      siteName: "Les Petits Invités — avec Marie",
-    },
-  };
-}
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf8f3" },
+    { media: "(prefers-color-scheme: dark)", color: "#1f2026" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+};
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  // Font preloads are discovered from the HTML, not after the CSS has been parsed.
+  for (const file of ["source-sans-3-latin", "source-serif-4-latin"]) preload(`/fonts/${file}.woff2`, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   return (
-    <html lang="fr" className="h-full antialiased">
-      <body className="flex min-h-full flex-col">{children}</body>
+    <html lang="fr" suppressHydrationWarning data-scroll-behavior="smooth">
+      {/* suppressHydrationWarning: browser extensions (ColorZilla, Grammarly…) add attributes to <body> before React hydrates. */}
+      <body className="min-h-dvh bg-background text-foreground" suppressHydrationWarning>
+        <ThemeProvider nonce={nonce}>
+          <a href="#contenu" className="sr-only-focusable fixed top-2 left-2 z-[100] rounded-md bg-primary px-3 py-2 text-primary-foreground">
+            Aller au contenu
+          </a>
+          {children}
+          <Toaster position="top-center" richColors closeButton />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

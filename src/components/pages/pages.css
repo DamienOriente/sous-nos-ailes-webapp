@@ -1,0 +1,106 @@
+/*
+ * Professional public pages. Templates set their colours through CSS custom
+ * properties (`--pg-*`, computed in modules/pages/domain/theme.ts with
+ * light-dark()) and their type through `--pg-font-heading` / `--pg-font-body`.
+ * Everything else is Tailwind in the template components; this file only holds
+ * what utilities cannot express: colour-scheme wiring, dotted leaders, columns.
+ */
+/* Fonts offered to professionals for their own page (template pairings), independent of the app UI. */
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/figtree";
+@import "@fontsource-variable/cormorant";
+@import "@fontsource-variable/caveat";
+@import "@fontsource-variable/bricolage-grotesque";
+
+.pg-root {
+  color-scheme: light;
+  background: var(--pg-bg);
+  color: var(--pg-text);
+  font-family: var(--pg-font-body);
+  font-feature-settings: "kern", "liga";
+  -webkit-font-smoothing: antialiased;
+  --pg-accent-soft: color-mix(in oklab, var(--pg-accent) 12%, var(--pg-bg));
+  --pg-accent-softer: color-mix(in oklab, var(--pg-accent) 6%, var(--pg-bg));
+}
+.dark .pg-root {
+  color-scheme: dark;
+}
+.pg-root h1,
+.pg-root h2,
+.pg-root h3,
+.pg-root .pg-heading {
+  font-family: var(--pg-font-heading);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.pg-root :focus-visible {
+  outline: 2px solid var(--pg-accent);
+  outline-offset: 3px;
+}
+.pg-root a {
+  text-underline-offset: 0.18em;
+}
+.pg-root img {
+  display: block;
+}
+.pg-root ::selection {
+  background: color-mix(in oklab, var(--pg-accent) 30%, transparent);
+}
+
+/* Anchored navigation: hide the scrollbar but keep horizontal scrolling. */
+.pg-scroll-x {
+  scrollbar-width: none;
+  overflow-x: auto;
+}
+.pg-scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* Dotted leaders for menu-style lists (table-gourmande). */
+.pg-leaders {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+}
+.pg-leaders::after {
+  content: "";
+  flex: 1;
+  order: 1;
+  border-bottom: 2px dotted color-mix(in oklab, var(--pg-text) 35%, transparent);
+  transform: translateY(-0.3em);
+}
+.pg-leaders > :last-child {
+  order: 2;
+}
+
+/* Masonry via CSS columns. */
+.pg-masonry {
+  columns: 2;
+  column-gap: 1rem;
+}
+@media (min-width: 768px) {
+  .pg-masonry {
+    columns: 3;
+  }
+}
+.pg-masonry > * {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+/* Contact-sheet strip (argentique): a flat dark band behind the frames. */
+.pg-film {
+  padding: 1.25rem 0;
+  background: color-mix(in oklab, var(--pg-text) 88%, var(--pg-bg));
+}
+
+/* Slight tilt for the collage gallery of atelier-creatif only. */
+.pg-tilt-a {
+  transform: rotate(-2deg);
+}
+.pg-tilt-b {
+  transform: rotate(1.5deg);
+}
+.pg-tilt-c {
+  transform: rotate(-1deg);
+}

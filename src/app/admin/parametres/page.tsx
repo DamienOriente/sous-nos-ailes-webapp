@@ -1,123 +1,69 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { getSettings, listAllOptions } from "@/server/services/settings";
-import { getEnv } from "@/lib/env";
-import { centsToEuroInput, formatEuros } from "@/lib/money";
-import { PageHeader } from "@/components/ui/page-header";
-import { Table, Td, Th } from "@/components/ui/table";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { LinkButton } from "@/components/ui/button";
-import { AdminSection, HelpText } from "@/components/admin/section";
-import { PRICING_UNIT_LABELS } from "@/components/admin/badges";
-import { SettingsForm } from "@/components/admin/settings-form";
-import { OptionForm } from "@/components/admin/option-form";
+import { ActionForm, ActionSubmit } from "@/components/admin/action-form";
+import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
+import { PageHeader } from "@/components/shared/page-header";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { env, stripeConfigured } from "@/lib/env";
+import { listSettings, SETTING_DEFINITIONS } from "@/modules/admin/application/settings-service";
+import { requireAdminPage } from "../_lib/admin-page";
+import { updateSettingAction } from "./actions";
 
-export const metadata: Metadata = { title: "Paramètres" };
+export const dynamic = "force-dynamic";
 
-export default async function SettingsPage({ searchParams }: PageProps<"/admin/parametres">) {
-  const query = await searchParams;
-  const [settings, options] = await Promise.all([getSettings(), listAllOptions()]);
-  const env = getEnv();
-  const editingId = typeof query.option === "string" ? query.option : null;
-  const editing = editingId ? options.find((option) => option.id === editingId) ?? null : null;
+const GROUP_LABELS = { legal: "Variables légales (mentions, CGV…)", retention: "Rétention des données", billing: "Facturation", directory: "Annuaire", moderation: "Modération" } as const;
 
+export default async function SettingsPage() {
+  const { twoFactorWarning } = await requireAdminPage("admin.settings.manage", "/admin/parametres");
+  const rows = await listSettings();
+  const value = (key: string) => rows.find((r) => r.key === key)?.value;
   return (
-    <>
-      <PageHeader title="Paramètres" description="Identité, tarification, repères d’encadrement et options. Tout ce qui alimente le site public, les propositions et les suggestions d’équipe." />
-
-      <AdminSection id="reglages" title="Réglages généraux">
-        <SettingsForm
-          demoMode={env.DEMO_MODE}
-          values={{
-            brandName: settings.brandName,
-            tagline: settings.tagline,
-            ownerFirstName: settings.ownerFirstName,
-            contactEmail: settings.contactEmail,
-            contactPhone: settings.contactPhone,
-            areaLabel: settings.areaLabel,
-            hourlyRate: centsToEuroInput(settings.hourlyRateCents),
-            minimumHours: settings.minimumHours,
-            minimumAmount: settings.minimumAmountCents ? centsToEuroInput(settings.minimumAmountCents) : "",
-            defaultTravelFee: centsToEuroInput(settings.defaultTravelFeeCents),
-            nightSurchargeStartHour: settings.nightSurchargeStartHour,
-            nightSurchargePercent: settings.nightSurchargePercent,
-            sundaySurchargePercent: settings.sundaySurchargePercent,
-            vatMode: settings.vatMode,
-            vatRatePercent: centsToEuroInput(settings.vatRateBps),
-            publicEstimateEnabled: settings.publicEstimateEnabled,
-            publicEstimateMarginPct: settings.publicEstimateMarginPct,
-            ratioUnder3: settings.ratioUnder3,
-            ratio3to5: settings.ratio3to5,
-            ratio6to10: settings.ratio6to10,
-            ratio11plus: settings.ratio11plus,
-            minProviders: settings.minProviders,
-            travelBufferMinutes: settings.travelBufferMinutes,
-            invitationExpiryHours: settings.invitationExpiryHours,
-            dataRetentionMonths: settings.dataRetentionMonths,
-          }}
-        />
-      </AdminSection>
-
-      <AdminSection id="options" title="Options proposées" description="Prestations complémentaires que les clients peuvent cocher dans la demande et que le moteur ajoute aux propositions.">
-        {options.length ? (
-          <Table>
-            <thead>
-              <tr>
-                <Th>Code</Th>
-                <Th>Libellé</Th>
-                <Th className="text-right">Prix</Th>
-                <Th>Unité</Th>
-                <Th>État</Th>
-                <Th className="text-right">Ordre</Th>
-                <Th>
-                  <span className="sr-only">Actions</span>
-                </Th>
-              </tr>
-            </thead>
-            <tbody>
-              {options.map((option) => (
-                <tr key={option.id}>
-                  <Td className="whitespace-nowrap tabular">{option.code}</Td>
-                  <Td className="min-w-48">
-                    {option.label}
-                    {option.description ? <span className="block text-[13px] text-ink-500">{option.description}</span> : null}
-                  </Td>
-                  <Td className="text-right whitespace-nowrap tabular">{formatEuros(option.priceCents)}</Td>
-                  <Td className="whitespace-nowrap">{PRICING_UNIT_LABELS[option.pricingUnit]}</Td>
-                  <Td>{option.isActive ? <StatusBadge tone="sage">Proposée</StatusBadge> : <StatusBadge tone="neutral">Désactivée</StatusBadge>}</Td>
-                  <Td className="text-right tabular">{option.sortOrder}</Td>
-                  <Td className="whitespace-nowrap">
-                    <Link href={`/admin/parametres?option=${option.id}#option-form`} className="font-semibold text-sage-800 hover:underline" aria-current={editing?.id === option.id ? "true" : undefined}>
-                      Modifier
-                    </Link>
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        ) : (
-          <HelpText>Aucune option définie pour l’instant.</HelpText>
-        )}
-
-        <div id="option-form" className="rounded-md border border-sage-200 bg-ivory-50 p-4">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-sans text-[15px] font-semibold text-ink-900">{editing ? `Modifier l’option « ${editing.label} »` : "Nouvelle option"}</h3>
-            {editing ? (
-              <LinkButton href="/admin/parametres#option-form" variant="ghost" size="sm">
-                Créer une nouvelle option à la place
-              </LinkButton>
-            ) : null}
-          </div>
-          <OptionForm
-            key={editing?.id ?? "new"}
-            option={
-              editing
-                ? { id: editing.id, code: editing.code, label: editing.label, description: editing.description, price: centsToEuroInput(editing.priceCents), pricingUnit: editing.pricingUnit, isActive: editing.isActive, sortOrder: editing.sortOrder }
-                : undefined
-            }
-          />
-        </div>
-      </AdminSection>
-    </>
+    <div className="space-y-6">
+      <PageHeader title="Paramètres" description="Variables résolues dans les pages éditoriales, délais de rétention appliqués par le worker, et interrupteurs produit. Chaque modification est journalisée." />
+      <TwoFactorBanner show={twoFactorWarning} />
+      <Card className="gap-2 p-6 text-sm">
+        <h2 className="font-semibold">Environnement (lecture seule)</h2>
+        <dl className="grid gap-2 sm:grid-cols-2">
+          <div className="flex justify-between gap-2"><dt>Indexation moteurs (INDEXING_ENABLED)</dt><dd>{env.INDEXING_ENABLED ? <StatusBadge tone="success">activée</StatusBadge> : <StatusBadge tone="neutral">désactivée</StatusBadge>}</dd></div>
+          <div className="flex justify-between gap-2"><dt>Mode démo (DEMO_MODE)</dt><dd>{env.DEMO_MODE ? <StatusBadge tone="warning">oui</StatusBadge> : <StatusBadge tone="neutral">non</StatusBadge>}</dd></div>
+          <div className="flex justify-between gap-2"><dt>Stripe</dt><dd>{stripeConfigured ? <StatusBadge tone="success">clé configurée</StatusBadge> : <StatusBadge tone="neutral">non configuré (mock)</StatusBadge>}</dd></div>
+          <div className="flex justify-between gap-2"><dt>APP_ENV</dt><dd><code>{env.APP_ENV}</code></dd></div>
+        </dl>
+      </Card>
+      {(Object.keys(GROUP_LABELS) as Array<keyof typeof GROUP_LABELS>).map((group) => (
+        <Card key={group} className="gap-4 p-6">
+          <h2 className="font-semibold">{GROUP_LABELS[group]}</h2>
+          {group === "billing" && <p className="text-xs text-muted-foreground">« Paiement réel activé » ne suffit pas : il faut aussi des clés Stripe live, des CGV validées, un médiateur désigné et des mentions légales complètes (voir docs/billing.md).</p>}
+          <ul className="divide-y">
+            {SETTING_DEFINITIONS.filter((d) => d.group === group).map((d) => {
+              const v = value(d.key);
+              return (
+                <li key={d.key} className="py-3">
+                  <ActionForm action={updateSettingAction} successMessage="Paramètre enregistré." className="flex flex-wrap items-end gap-3 space-y-0">
+                    <input type="hidden" name="key" value={d.key} />
+                    <div className="flex-1 min-w-64 space-y-1">
+                      <Label htmlFor={d.key}>
+                        {d.label} <code className="text-xs text-muted-foreground">{d.key}</code>
+                      </Label>
+                      {d.kind === "boolean" ? (
+                        <label className="flex items-center gap-2 text-sm">
+                          <input id={d.key} type="checkbox" name="value" value="true" defaultChecked={v === true} /> Activé
+                        </label>
+                      ) : d.kind === "integer" ? (
+                        <Input id={d.key} name="value" type="number" min={d.min} max={d.max} defaultValue={typeof v === "number" ? v : ""} />
+                      ) : (
+                        <Input id={d.key} name="value" defaultValue={typeof v === "string" ? v : ""} className={typeof v === "string" && v.startsWith("[") ? "border-warning" : undefined} />
+                      )}
+                    </div>
+                    <ActionSubmit size="sm" variant="outline">Enregistrer</ActionSubmit>
+                  </ActionForm>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+      ))}
+    </div>
   );
 }

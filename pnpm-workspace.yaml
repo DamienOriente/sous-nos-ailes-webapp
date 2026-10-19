@@ -1,6 +1,11 @@
 allowBuilds:
-  sharp: false
-  unrs-resolver: false
-  "@prisma/engines": true
-  prisma: true
+  sharp: true
   esbuild: true
+  "@tailwindcss/oxide": true
+  unrs-resolver: true
+  msgpackr-extract: true
+minimumReleaseAgeExclude:
+  - bullmq@6.3.16
+# Security overrides for transitive dev-tool dependencies (pnpm audit).
+overrides:
+  "@esbuild-kit/core-utils>esbuild": ">=0.25.0"

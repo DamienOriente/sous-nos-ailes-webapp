@@ -1,112 +1,108 @@
-import fs from "node:fs";
-import path from "node:path";
-import { randomBytes } from "node:crypto";
+import { existsSync } from "node:fs";
 import { z } from "zod";
 
-// Runtime configuration. Parsed lazily so that `next build` never needs a
-// database or secrets, and so the seed script (tsx) can reuse it.
-
-const booleanish = z.preprocess((value) => {
-  if (typeof value === "boolean") return value;
-  if (typeof value !== "string") return undefined;
-  const normalized = value.trim().toLowerCase();
-  if (["1", "true", "yes", "on"].includes(normalized)) return true;
-  if (["0", "false", "no", "off", ""].includes(normalized)) return false;
-  return value;
-}, z.boolean().optional());
-
-const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  APP_ENV: z.enum(["local", "production"]).default("local"),
-  DEMO_MODE: booleanish,
-  INDEXING_ENABLED: booleanish,
-  APP_URL: z.url().default("http://localhost:3100"),
-  // Only required when a database client is created (see getDatabaseUrl), so that `next build` needs no database.
-  DATABASE_URL: z.string().min(1).optional(),
-  SMTP_HOST: z.string().default("localhost"),
-  SMTP_PORT: z.coerce.number().int().positive().default(1026),
-  MAIL_FROM: z.string().default("Les Petits Invités <no-reply@example.test>"),
-  SESSION_SECRET: z.string().min(32).optional(),
-  SECRETS_DIR: z.string().default(".secrets"),
-});
-
-export type AppEnv = Omit<z.infer<typeof envSchema>, "DEMO_MODE" | "INDEXING_ENABLED"> & {
-  DEMO_MODE: boolean;
-  INDEXING_ENABLED: boolean;
-  isProduction: boolean;
-};
-
-let cached: AppEnv | null = null;
-
-export function getEnv(): AppEnv {
-  if (cached) return cached;
-  const parsed = envSchema.safeParse(process.env);
-  if (!parsed.success) {
-    const flat = z.flattenError(parsed.error);
-    throw new Error(
-      `Invalid environment configuration: ${JSON.stringify(flat.fieldErrors)}`,
-    );
+// Scripts and workers run under tsx, which does not load .env (Next does).
+// loadEnvFile never overrides variables already present in the environment.
+if (!process.env.NEXT_RUNTIME && process.env.SKIP_DOTENV !== "1" && existsSync(".env")) {
+  try {
+    process.loadEnvFile(".env");
+  } catch {
+    // ignore: a malformed .env is reported by the schema validation below
   }
-  const raw = parsed.data;
-  const isProduction = raw.APP_ENV === "production";
-  const demoMode = raw.DEMO_MODE ?? !isProduction;
-  if (isProduction && demoMode) {
-    // Hard stop: demo accounts and fictitious data must never run in production.
-    throw new Error(
-      "DEMO_MODE=true is refused when APP_ENV=production. Disable demo mode or run with APP_ENV=local.",
-    );
-  }
-  cached = {
-    ...raw,
-    DEMO_MODE: demoMode,
-    INDEXING_ENABLED: raw.INDEXING_ENABLED ?? false,
-    isProduction,
-  };
-  return cached;
 }
-
-/** Database URL, required at runtime (client creation, seed, reset) but never at build time. */
-export function getDatabaseUrl(): string {
-  const url = getEnv().DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL is required to connect to PostgreSQL (see .env.example).");
-  return url;
-}
-
-let sessionSecretCache: string | null = null;
 
 /**
- * Returns the session signing secret. In local mode a random key is generated
- * on first use and persisted to `<SECRETS_DIR>/session.key` with mode 600.
- * Production requires SESSION_SECRET to be provided explicitly.
+ * Runtime environment, validated once at startup. Importing this module from a
+ * client component is a build error (server-only).
  */
-export function getSessionSecret(): string {
-  if (sessionSecretCache) return sessionSecretCache;
-  const env = getEnv();
-  if (env.SESSION_SECRET) {
-    sessionSecretCache = env.SESSION_SECRET;
-    return sessionSecretCache;
-  }
-  const dir = path.resolve(process.cwd(), env.SECRETS_DIR);
-  const file = path.join(dir, "session.key");
-  if (fs.existsSync(file)) {
-    const content = fs.readFileSync(file, "utf8").trim();
-    if (content.length >= 32) {
-      sessionSecretCache = content;
-      return content;
+const booleanish = z
+  .union([z.literal("true"), z.literal("false"), z.literal("1"), z.literal("0"), z.boolean()])
+  .transform((v) => v === true || v === "true" || v === "1");
+
+const schema = z
+  .object({
+    APP_ENV: z.enum(["local", "test", "production", "build"]).default("local"),
+    DEMO_MODE: booleanish.default(false),
+    INDEXING_ENABLED: booleanish.default(false),
+    APP_URL: z.url().default("http://localhost:3200"),
+    DEFAULT_TIMEZONE: z.string().default("Europe/Paris"),
+
+    DATABASE_URL: z.string().min(1).default("postgresql://sna:sna@localhost:5450/sna"),
+    DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(100).default(10),
+    REDIS_URL: z.string().min(1).default("redis://localhost:6390"),
+
+    BETTER_AUTH_SECRET: z.string().min(32).optional(),
+    DATA_ENCRYPTION_KEY: z.string().min(32).optional(),
+
+    SMTP_HOST: z.string().default("localhost"),
+    SMTP_PORT: z.coerce.number().int().default(1027),
+    SMTP_SECURE: booleanish.default(false),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASSWORD: z.string().optional(),
+    MAIL_FROM: z.string().default("Sous Nos Ailes <no-reply@sousnosailes.test>"),
+
+    S3_ENDPOINT: z.string().default("http://localhost:9010"),
+    S3_REGION: z.string().default("fr-par"),
+    S3_BUCKET: z.string().default("sna-files"),
+    S3_QUARANTINE_BUCKET: z.string().default("sna-quarantine"),
+    S3_ACCESS_KEY: z.string().default("sna-minio"),
+    S3_SECRET_KEY: z.string().default("sna-minio-local-only"),
+    S3_FORCE_PATH_STYLE: booleanish.default(true),
+
+    CLAMAV_ENABLED: booleanish.default(true),
+    CLAMAV_HOST: z.string().default("localhost"),
+    CLAMAV_PORT: z.coerce.number().int().default(3310),
+
+    STRIPE_SECRET_KEY: z.string().startsWith("sk_").optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
+    STRIPE_PUBLISHABLE_KEY: z.string().startsWith("pk_").optional(),
+
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    MICROSOFT_CLIENT_ID: z.string().optional(),
+    MICROSOFT_CLIENT_SECRET: z.string().optional(),
+    MICROSOFT_TENANT: z.string().default("common"),
+
+    LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).default("info"),
+    /** Force production-grade auth rate limits outside production (used to test the 429 path). */
+    AUTH_RATE_LIMIT_STRICT: booleanish.default(false),
+  })
+  .superRefine((env, ctx) => {
+    if (env.APP_ENV === "production") {
+      if (env.DEMO_MODE) {
+        ctx.addIssue({ code: "custom", path: ["DEMO_MODE"], message: "DEMO_MODE must be false in production" });
+      }
+      if (!env.BETTER_AUTH_SECRET) {
+        ctx.addIssue({ code: "custom", path: ["BETTER_AUTH_SECRET"], message: "required in production" });
+      }
+      if (!env.DATA_ENCRYPTION_KEY) {
+        ctx.addIssue({ code: "custom", path: ["DATA_ENCRYPTION_KEY"], message: "required in production" });
+      }
+      if (!env.APP_URL.startsWith("https://")) {
+        ctx.addIssue({ code: "custom", path: ["APP_URL"], message: "must be https in production" });
+      }
+      if (env.STRIPE_SECRET_KEY && !env.STRIPE_WEBHOOK_SECRET) {
+        ctx.addIssue({ code: "custom", path: ["STRIPE_WEBHOOK_SECRET"], message: "required when Stripe is enabled" });
+      }
     }
+  });
+
+export type Env = z.infer<typeof schema>;
+
+function load(): Env {
+  const parsed = schema.safeParse(process.env);
+  if (!parsed.success) {
+    const details = parsed.error.issues.map((i) => `  - ${i.path.join(".")}: ${i.message}`).join("\n");
+    throw new Error(`Invalid environment configuration:\n${details}`);
   }
-  if (env.isProduction) {
-    throw new Error("SESSION_SECRET is required in production.");
-  }
-  fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
-  const generated = randomBytes(32).toString("hex");
-  fs.writeFileSync(file, generated, { mode: 0o600 });
-  sessionSecretCache = generated;
-  return generated;
+  return parsed.data;
 }
 
-/** Test helper: forget the cached environment (used by unit tests). */
-export function resetEnvCacheForTests(): void {
-  cached = null;
-  sessionSecretCache = null;
-}
+export const env: Env = load();
+
+export const isProduction = env.APP_ENV === "production";
+export const isDemo = env.DEMO_MODE && !isProduction;
+/** Stripe runs for real only when a key is configured; otherwise a clearly labelled mock. */
+export const stripeConfigured = Boolean(env.STRIPE_SECRET_KEY);
+export const googleConfigured = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
+export const microsoftConfigured = Boolean(env.MICROSOFT_CLIENT_ID && env.MICROSOFT_CLIENT_SECRET);

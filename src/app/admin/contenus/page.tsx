@@ -1,28 +1,41 @@
-import type { Metadata } from "next";
-import { listContentBlocks } from "@/server/services/settings";
-import { formatInstantParis } from "@/lib/time";
-import { PageHeader } from "@/components/ui/page-header";
-import { Alert } from "@/components/ui/alert";
-import { ContentBlockForm } from "@/components/admin/content-block-form";
+import Link from "next/link";
+import { AdminTable, dateTime } from "@/components/admin/admin-table";
+import { TwoFactorBanner } from "@/components/admin/two-factor-banner";
+import { PageHeader } from "@/components/shared/page-header";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/ui/button";
+import { listEditorialPages } from "@/modules/admin/application/editorial-service";
+import { requireAdminPage } from "../_lib/admin-page";
 
-export const metadata: Metadata = { title: "Contenus" };
+export const dynamic = "force-dynamic";
 
-export default async function ContentsPage() {
-  const blocks = await listContentBlocks();
+export default async function EditorialPagesList() {
+  const { actor, twoFactorWarning } = await requireAdminPage("admin.content.manage", "/admin/contenus");
+  const { pages, missing } = await listEditorialPages(actor);
   return (
-    <>
-      <PageHeader title="Contenus" description="Textes éditables du site public. Chaque bloc s’enregistre séparément ; la modification est visible immédiatement." />
-      <Alert kind="info" role="status">
-        Texte brut uniquement : une ligne vide sépare deux paragraphes. Les textes marqués « brouillon » (mentions légales, confidentialité) doivent être relus avant toute mise en ligne réelle.
-      </Alert>
-      <div className="flex flex-col gap-6">
-        {blocks.map((block) => (
-          <section key={block.key} aria-label={block.title} className="rounded-md border border-sage-200 bg-ivory-50 p-4 sm:p-5">
-            <ContentBlockForm blockKey={block.key} title={block.title} body={block.body} />
-            <p className="mt-2 text-[13px] text-ink-500">{block.updatedAt ? `Modifié le ${formatInstantParis(block.updatedAt)}.` : "Texte par défaut, jamais modifié."}</p>
-          </section>
-        ))}
-      </div>
-    </>
+    <div className="space-y-6">
+      <PageHeader title="Pages éditoriales" description="Mentions légales, CGU/CGV, politiques, FAQ. Syntaxe restreinte (aucun HTML) et variables {{legal.*}} résolues depuis les paramètres." actions={<Button asChild><Link href="/admin/contenus/nouvelle-page">Nouvelle page</Link></Button>} />
+      <TwoFactorBanner show={twoFactorWarning} />
+      {missing.length > 0 && (
+        <p className="rounded-lg bg-warning/15 px-4 py-3 text-sm">
+          Pages attendues par le site mais absentes de la base (le texte par défaut du module juridique est affiché, en brouillon) :{" "}
+          {missing.map((s) => (
+            <Link key={s} href={`/admin/contenus/${s}`} className="mr-2 underline">
+              {s}
+            </Link>
+          ))}
+        </p>
+      )}
+      <AdminTable
+        rows={pages}
+        rowKey={(r) => r.slug}
+        emptyTitle="Aucune page"
+        columns={[
+          { key: "title", header: "Page", cell: (r) => (<div><Link href={`/admin/contenus/${r.slug}`} className="font-medium hover:underline">{r.title}</Link><p className="text-xs text-muted-foreground">/{r.slug}</p></div>) },
+          { key: "status", header: "Statut", cell: (r) => (r.isPublished === "published" ? <StatusBadge tone="success">publiée</StatusBadge> : <StatusBadge tone="neutral">brouillon</StatusBadge>) },
+          { key: "updated", header: "Modifiée le", cell: (r) => <span className="text-muted-foreground">{dateTime(r.updatedAt)}</span> },
+        ]}
+      />
+    </div>
   );
 }

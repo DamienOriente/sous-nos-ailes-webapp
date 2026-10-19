@@ -1,28 +1,32 @@
-import type { Metadata } from "next";
-import { requireAdmin } from "@/server/authz";
-import { getSettings } from "@/server/services/settings";
-import { getCurrentPath } from "@/components/shell/current-path";
-import { PrivateShell, type NavItem } from "@/components/shell/private-shell";
+import { redirect } from "next/navigation";
+import { AppShell } from "@/components/layout/app-shell";
+import type { NavItem } from "@/components/layout/app-nav-links";
+import { requireActor } from "@/lib/session";
+import { canGlobal } from "@/modules/authorization";
+import { countUnreadNotifications } from "@/modules/notifications/application/notification-service";
 
-export const metadata: Metadata = { robots: { index: false, follow: false } };
-
-const NAV: NavItem[] = [
+const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Tableau de bord", exact: true },
-  { href: "/admin/evenements", label: "Demandes et événements" },
-  { href: "/admin/planning", label: "Planning" },
-  { href: "/admin/intervenants", label: "Intervenant·es" },
-  { href: "/admin/lieux", label: "Lieux partenaires" },
-  { href: "/admin/candidatures", label: "Candidatures et contacts" },
+  { href: "/admin/moderation", label: "Modération" },
+  { href: "/admin/signalements", label: "Signalements" },
+  { href: "/admin/utilisateurs", label: "Utilisateurs" },
+  { href: "/admin/professionnels", label: "Professionnels" },
+  { href: "/admin/categories", label: "Catégories et métiers" },
+  { href: "/admin/outils", label: "Catalogue d'outils" },
+  { href: "/admin/offres", label: "Offres et abonnements" },
+  { href: "/admin/contenus", label: "Contenus éditoriaux" },
+  { href: "/admin/rgpd", label: "RGPD et demandes" },
+  { href: "/admin/securite", label: "Sécurité et audit" },
   { href: "/admin/parametres", label: "Paramètres" },
-  { href: "/admin/contenus", label: "Contenus" },
 ];
 
-export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  const user = await requireAdmin();
-  const [settings, currentPath] = await Promise.all([getSettings(), getCurrentPath()]);
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const actor = await requireActor("/admin");
+  if (!canGlobal(actor, "admin.dashboard")) redirect("/app");
+  const unread = await countUnreadNotifications(actor.userId);
   return (
-    <PrivateShell user={user} spaceLabel="Espace de gestion" nav={NAV} currentPath={currentPath} brandName={settings.brandName}>
-      <div className="flex flex-col gap-8">{children}</div>
-    </PrivateShell>
+    <AppShell actor={actor} unreadCount={unread} secondaryNav={{ title: "Administration", items: ADMIN_NAV }}>
+      {children}
+    </AppShell>
   );
 }

@@ -28,7 +28,7 @@ test("jour J : un retard décale ce qui en dépend", async ({ page }) => {
   const base = await weddingBase(page);
   await page.goto(`${base}/jour-j`);
   await expect(page.getByRole("heading", { level: 1, name: "Jour J en direct" })).toBeVisible();
-  await page.getByRole("button", { name: "Signaler 10 minutes de retard sur Cérémonie laïque" }).click();
+  await page.getByRole("button", { name: "Retard 10 min sur Cérémonie laïque" }).click();
   const next = page.locator("[data-testid=live-step]:visible").filter({ has: page.getByRole("heading", { name: /^Sortie de cérémonie/ }) });
   await expect(next.getByTestId("live-shift")).toContainText("à cause de « Cérémonie laïque »");
 });

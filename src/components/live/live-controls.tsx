@@ -19,7 +19,8 @@ export function LiveRefresh({ seconds = 30 }: { seconds?: number }) {
   return null;
 }
 
-export function LiveButton({ act, label, done, variant = "outline", ariaLabel }: { act: Act; label: string; done: string; variant?: "default" | "outline"; ariaLabel?: string }) {
+/** `context` is read after the visible label by screen readers only, so the accessible name still starts with what is shown. */
+export function LiveButton({ act, label, done, variant = "outline", context }: { act: Act; label: string; done: string; variant?: "default" | "outline"; context?: string }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   return (
@@ -28,7 +29,6 @@ export function LiveButton({ act, label, done, variant = "outline", ariaLabel }:
       size="sm"
       variant={variant}
       disabled={pending}
-      aria-label={ariaLabel}
       onClick={() =>
         start(async () => {
           const res = await act();
@@ -40,17 +40,19 @@ export function LiveButton({ act, label, done, variant = "outline", ariaLabel }:
       }
     >
       {label}
+      {context && <span className="sr-only"> {context}</span>}
     </Button>
   );
 }
 
 /** Organisers: which step this one waits for. */
-export function DependencySelect({ id, value, options, act }: { id: string; value: string; options: { id: string; title: string }[]; act: (dependsOnId: string) => Promise<ActionResult<undefined>> }) {
+export function DependencySelect({ id, value, options, act, stepTitle }: { id: string; value: string; options: { id: string; title: string }[]; act: (dependsOnId: string) => Promise<ActionResult<undefined>>; stepTitle: string }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   return (
     <select
       id={id}
+      aria-label={`Étape dont dépend « ${stepTitle} »`}
       value={value}
       disabled={pending}
       onChange={(e) => {

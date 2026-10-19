@@ -79,12 +79,12 @@ export default async function LiveDayPage({ params }: { params: Promise<{ id: st
                 </div>
                 {(s.canAct || data.canManage) && s.liveStatus !== "done" && (
                   <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
-                    {s.canAct && s.liveStatus === "planned" && <LiveButton act={setLiveStatusAction.bind(null, id, s.id, "in_progress")} label="Commencé" done={`« ${s.title} » a commencé.`} variant="default" />}
-                    {s.canAct && <LiveButton act={setLiveStatusAction.bind(null, id, s.id, "done")} label="Terminé" done={`« ${s.title} » est terminé.`} />}
+                    {s.canAct && s.liveStatus === "planned" && <LiveButton act={setLiveStatusAction.bind(null, id, s.id, "in_progress")} label="Commencé" done={`« ${s.title} » a commencé.`} variant="default" context={s.title} />}
+                    {s.canAct && <LiveButton act={setLiveStatusAction.bind(null, id, s.id, "done")} label="Terminé" done={`« ${s.title} » est terminé.`} context={s.title} />}
                     {s.canAct &&
-                      [10, 20, 30].map((m) => <LiveButton key={m} act={reportDelayAction.bind(null, id, s.id, m)} label={`Retard ${m} min`} done={`Retard de ${m} min signalé.`} ariaLabel={`Signaler ${m} minutes de retard sur ${s.title}`} />)}
+                      [10, 20, 30].map((m) => <LiveButton key={m} act={reportDelayAction.bind(null, id, s.id, m)} label={`Retard ${m} min`} done={`Retard de ${m} min signalé.`} context={`sur ${s.title}`} />)}
                     {data.canManage && (
-                      <DependencySelect id={`dep-${s.id}`} value={s.dependsOnMilestoneId ?? ""} options={data.steps.filter((o) => o.id !== s.id).map((o) => ({ id: o.id, title: o.title }))} act={setDependencyAction.bind(null, id, s.id)} />
+                      <DependencySelect id={`dep-${s.id}`} value={s.dependsOnMilestoneId ?? ""} options={data.steps.filter((o) => o.id !== s.id).map((o) => ({ id: o.id, title: o.title }))} act={setDependencyAction.bind(null, id, s.id)} stepTitle={s.title} />
                     )}
                   </div>
                 )}
